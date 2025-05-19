@@ -24,13 +24,14 @@ export default function HomeScreen() {
             fontSize: 24,
             fontWeight: "600",
             wordWrap: "break-word",
+            marginBottom: 20,
           },
         ]}
       >
-        keep up with your <br />
+        Keep up with your {"\n"}
         favorite creators
       </Text>
-      <br />
+
       <Text
         style={[
           styles.text,
@@ -40,12 +41,13 @@ export default function HomeScreen() {
             fontSize: 16,
             fontWeight: "400",
             wordWrap: "break-word",
+            marginBottom: 20,
           },
         ]}
       >
-        when you follow creators, you’ll see <br /> them here
+        when you follow creators, you’ll see {"\n"} them here
       </Text>
-      <br />
+
       <Text
         style={[
           styles.text,
@@ -55,10 +57,11 @@ export default function HomeScreen() {
             fontSize: 16,
             fontWeight: "500",
             wordWrap: "break-word",
+            marginBottom: 20,
           },
         ]}
       >
-        Discover new channels and find more <br /> creators to follow
+        Discover new channels and find more {"\n"} creators to follow
       </Text>
     </View>
   );
