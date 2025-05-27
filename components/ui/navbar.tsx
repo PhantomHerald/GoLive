@@ -13,13 +13,21 @@ export default function Navbar() {
             key={index}
             onPress={() => setActiveTab(tab)}
             style={styles.tab}
+            activeOpacity={0.7}
           >
             <Text
               style={[styles.tabText, activeTab === tab && styles.activeText]}
             >
               {tab}
             </Text>
-            {activeTab === tab && <View style={styles.underline} />}
+            {/* Always render underline container to reserve space */}
+            <View style={{ height: 6, alignItems: "center", marginTop: 2 }}>
+              {activeTab === tab ? (
+                <View style={styles.underline} />
+              ) : (
+                <View style={{ height: 4, width: 28 }} />
+              )}
+            </View>
           </TouchableOpacity>
         ))}
       </View>
@@ -58,7 +66,6 @@ const styles = StyleSheet.create({
     color: "#fff",
   },
   underline: {
-    marginTop: 4,
     height: 4,
     width: 28,
     backgroundColor: "#fff",
