@@ -2,14 +2,14 @@ import { Image } from "expo-image";
 import React, { useState } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
-export default function Navbar() {
-  const tabs = ["Following", "Live", "Clips"];
-  const [activeTab, setActiveTab] = useState("Following");
+export default function Searchtabs() {
+  const tabs = ["Categories", "Live channels"];
+  const [activeTab, setActiveTab] = useState("Categories");
 
   // Render content based on active tab
   const renderTabContent = () => {
     switch (activeTab) {
-      case "Following":
+      case "Categories":
         return (
           <View
             style={{
@@ -34,7 +34,7 @@ export default function Navbar() {
             </Text>
           </View>
         );
-      case "Live":
+      case "Live channels":
         return (
           <View>
             <Text
@@ -61,7 +61,7 @@ export default function Navbar() {
               }}
             >
               <Image
-                source={require("@/assets/images/nolivesimg.png")}
+                source={require("@/assets/images/ChatGPT Image May 15, 2025, 10_25_26 PM.png")}
                 style={{
                   width: 200,
                   height: 200,
@@ -79,15 +79,7 @@ export default function Navbar() {
             </View>
           </View>
         );
-      case "Clips":
-        return (
-          <View>
-            <Text style={styles.followingDiscover}>
-              {" "}
-              clips of your favorite creators
-            </Text>
-          </View>
-        );
+
       default:
         return null;
     }
@@ -112,12 +104,6 @@ export default function Navbar() {
               {activeTab === tab && <View style={styles.underline} />}
             </TouchableOpacity>
           ))}
-        </View>
-        {/* Stacked Circles (Icon) */}
-        <View style={styles.circlesContainer}>
-          <View style={[styles.circle, { right: 20 }]} />
-          <View style={[styles.circle, { right: 10 }]} />
-          <View style={[styles.circle, { right: 0 }]} />
         </View>
       </View>
       <View style={styles.contentContainer}>{renderTabContent()}</View>
