@@ -1,7 +1,7 @@
 import Searchtabs from "@/components/ui/searchtabs";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import React, { useState } from "react";
-import { StyleSheet, TextInput, View } from "react-native";
+import { SafeAreaView, StyleSheet, TextInput, View } from "react-native";
 
 const styles = StyleSheet.create({
   container: {
@@ -41,25 +41,27 @@ const SearchBar = ({ placeholder, onSearch }: SearchBarProps) => {
   };
 
   return (
-    <View
-      style={{
-        flexDirection: "row",
-        alignItems: "center",
-        marginHorizontal: 10,
-      }}
-    >
-      {/* Search icon outside the container */}
-      <Ionicons name="search" size={20} color="#888" style={styles.icon} />
-      <View style={styles.container}>
-        <TextInput
-          style={styles.input}
-          placeholder={placeholder || "Search"}
-          value={query}
-          onChangeText={handleChange}
-          placeholderTextColor="#888"
-        />
+    <SafeAreaView>
+      <View
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          marginHorizontal: 10,
+        }}
+      >
+        {/* Search icon outside the container */}
+        <Ionicons name="search" size={20} color="#888" style={styles.icon} />
+        <View style={styles.container}>
+          <TextInput
+            style={styles.input}
+            placeholder={placeholder || "Search"}
+            value={query}
+            onChangeText={handleChange}
+            placeholderTextColor="#888"
+          />
+        </View>
       </View>
-    </View>
+    </SafeAreaView>
   );
 };
 

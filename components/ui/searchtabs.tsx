@@ -1,12 +1,17 @@
 import { Image } from "expo-image";
 import React, { useState } from "react";
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import {
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 export default function Searchtabs() {
   const tabs = ["Categories", "Live channels"];
   const [activeTab, setActiveTab] = useState("Categories");
 
-  // Render content based on active tab
   const renderTabContent = () => {
     switch (activeTab) {
       case "Categories":
@@ -36,48 +41,50 @@ export default function Searchtabs() {
         );
       case "Live channels":
         return (
-          <View>
-            <Text
-              style={{
-                color: "#FFF",
-                fontSize: 20,
-                fontStyle: "normal",
-                fontWeight: "700",
-                lineHeight: 20,
-                width: 141,
-                height: 42,
-                flexDirection: "column",
-                justifyContent: "center",
-                flexShrink: 0,
-                paddingLeft: 10,
-              }}
-            >
-              Live Now
-            </Text>
-            <View
-              style={{
-                justifyContent: "center",
-                alignItems: "center",
-              }}
-            >
-              <Image
-                source={require("@/assets/images/ChatGPT Image May 15, 2025, 10_25_26 PM.png")}
+          <SafeAreaView>
+            <View>
+              <Text
                 style={{
-                  width: 200,
-                  height: 200,
+                  color: "#FFF",
+                  fontSize: 20,
+                  fontStyle: "normal",
+                  fontWeight: "700",
+                  lineHeight: 20,
+                  width: 141,
+                  height: 30,
+                  flexDirection: "column",
+                  justifyContent: "center",
+                  flexShrink: 0,
+                  paddingLeft: 10,
+                }}
+              >
+                Live Now
+              </Text>
+              <View
+                style={{
                   justifyContent: "center",
                   alignItems: "center",
                 }}
-              />
-              <Text style={styles.followingTitle}>
-                They will be back! {"\n"}
-              </Text>
-              <Text style={styles.followingSub}>
-                meanwhile, explore the Live Feed for other {"\n"}content you
-                might be interested in!
-              </Text>
+              >
+                <Image
+                  source={require("@/assets/images/ChatGPT Image May 15, 2025, 10_25_26 PM.png")}
+                  style={{
+                    width: 200,
+                    height: 200,
+                    justifyContent: "center",
+                    alignItems: "center",
+                  }}
+                />
+                <Text style={styles.followingTitle}>
+                  They will be back! {"\n"}
+                </Text>
+                <Text style={styles.followingSub}>
+                  meanwhile, explore the Live Feed for other {"\n"}content you
+                  might be interested in!
+                </Text>
+              </View>
             </View>
-          </View>
+          </SafeAreaView>
         );
 
       default:
@@ -170,20 +177,5 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "500",
     marginBottom: 20,
-  },
-  circlesContainer: {
-    width: 60,
-    height: 40,
-    justifyContent: "center",
-    position: "relative",
-    flexDirection: "row",
-    marginLeft: 16,
-  },
-  circle: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: "#444",
-    position: "absolute",
   },
 });
