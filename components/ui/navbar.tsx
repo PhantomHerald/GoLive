@@ -2,9 +2,13 @@ import { Image } from "expo-image";
 import React, { useState } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
-export default function Navbar() {
+type NavbarProps = {
+  initialTab?: string;
+};
+
+export default function Navbar({ initialTab = "Following" }: NavbarProps) {
   const tabs = ["Following", "Live", "Clips"];
-  const [activeTab, setActiveTab] = useState("Following");
+  const [activeTab, setActiveTab] = useState(initialTab);
 
   // Render content based on active tab
   const renderTabContent = () => {
