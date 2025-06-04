@@ -44,7 +44,7 @@ export const mockUsers = [
     avatar:
       "https://images.pexels.com/photos/1270076/pexels-photo-1270076.jpeg?auto=compress&cs=tinysrgb&w=600",
     bio: "Professional gamer and streamer",
-    followers: 18500000,
+    followers: 1850,
     following: 280,
     isStreamer: true,
   },

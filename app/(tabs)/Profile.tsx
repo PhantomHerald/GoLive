@@ -1,122 +1,420 @@
-import React from "react";
-import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Avatar } from "@/components/ui/Avatar";
+import { Button } from "@/components/ui/Button";
+import { Separator } from "@/components/ui/Separator";
+import { Colors } from "@/constants/Colors";
+import Layout from "@/constants/Layout";
+import { mockUsers } from "@/data/mockdata";
+import {
+  ChevronRight,
+  CreditCard,
+  Heart,
+  LogOut,
+  Moon,
+  Settings,
+  Shield,
+  User,
+} from "lucide-react-native";
+import React, { useState } from "react";
+import {
+  Image,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Switch,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 export default function ProfileScreen() {
+  const [activeTab, setActiveTab] = useState<
+    "Home" | "About" | "Clips" | "Videos"
+  >("Home");
+  const [darkMode, setDarkMode] = useState(true);
+
   return (
-    <View style={styles.container}>
-      <View style={styles.header} />
-
-      <View style={styles.profileContainer}>
-        <View style={styles.avatar} />
-        <Text style={styles.username}>jsisjjais</Text>
-        <Text style={styles.status}>Offline</Text>
-
-        <View style={styles.buttonsRow}>
-          <TouchableOpacity style={styles.button}>
-            <Text style={styles.buttonText}>Stream Manager</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.button}>
-            <Text style={styles.buttonText}>Analytics</Text>
-          </TouchableOpacity>
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#0e0e10" }}>
+      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+        <View style={styles.profilesection}>
+          <View style={styles.avatarcontainer}>
+            <Avatar
+              source={mockUsers[1] ? { uri: mockUsers[1].avatar } : {}}
+              size="xl"
+              borderColor="primary"
+            />
+          </View>
+          <Text style={styles.displayname}>
+            {mockUsers[0] ? mockUsers[0].displayName : ""}
+          </Text>
+          <Text style={styles.username}>{mockUsers[0].username}</Text>
+          <View style={styles.statscontainer}>
+            <View style={styles.statitem}>
+              <Text style={styles.statNumber}>{mockUsers[0].followers}</Text>
+              <Text style={styles.statLabel}>Following</Text>
+            </View>
+            <View style={styles.statDivider} />
+            <View style={styles.statitem}>
+              <Text style={styles.statNumber}>{mockUsers[0].following}</Text>
+              <Text style={styles.statLabel}>Followers</Text>
+            </View>
+          </View>
+          <View style={styles.buttonContainer}>
+            <TouchableOpacity
+              style={[
+                styles.buttonContainer,
+                {
+                  backgroundColor: "purple",
+                  borderRadius: 8,
+                  padding: 12,
+                  marginRight: 8,
+                  justifyContent: "center",
+                  alignContent: "center",
+                  alignSelf: "center",
+                },
+              ]}
+              onPress={() => {
+                console.log("Edit Profile Pressed");
+              }}
+            >
+              <Text
+                style={{
+                  justifyContent: "center",
+                  alignContent: "center",
+                  color: "#fff",
+                  flexDirection: "row",
+                  fontSize: Layout.fontSize.md,
+                  textAlign: "center",
+                }}
+              >
+                Edit profile
+              </Text>
+            </TouchableOpacity>
+          </View>
+          <View style={styles.bioContainer}>
+            <Text style={styles.bioText}>{mockUsers[0].bio}</Text>
+          </View>
         </View>
-
-        <View style={styles.tabBar}>
-          {["Home", "About", "Clips", "Videos", "Schedule"].map((tab, i) => (
-            <Text key={i} style={[styles.tabItem, i === 0 && styles.activeTab]}>
-              {tab}
+        <Separator horizontal color={Colors.neutral[800]} />
+        <View style={styles.tabContainer}>
+          <TouchableOpacity
+            style={[styles.tab, activeTab === "Home" && styles.activeTab]}
+            onPress={() => setActiveTab("Home")}
+          >
+            <Text
+              style={[
+                styles.tabText,
+                activeTab === "Home" && styles.activeTabText,
+              ]}
+            >
+              Home
             </Text>
-          ))}
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.tab, activeTab === "About" && styles.activeTab]}
+            onPress={() => setActiveTab("About")}
+          >
+            <Text
+              style={[
+                styles.tabText,
+                activeTab === "About" && styles.activeTabText,
+              ]}
+            >
+              Following
+            </Text>
+          </TouchableOpacity>
         </View>
 
-        <View style={styles.emptyContent}>
-          <Image
-            source={require("@/assets/images/favicon.png")} // Add a similar PNG or SVG to your assets
-            style={styles.icon}
-          />
-          <Text style={styles.noContentText}>This channel has no content</Text>
-          <Text style={styles.quietText}>It's quiet... too quiet...</Text>
-        </View>
-      </View>
-    </View>
+        <Separator horizontal color={Colors.neutral[800]} />
+
+        {activeTab === "Home" ? (
+          <>
+            {/* Prime Gaming */}
+            <View style={styles.section}>
+              <View style={styles.primeContainer}>
+                <View style={styles.primeTextContainer}>
+                  <Text style={styles.primeTitle}>Prime Gaming</Text>
+                  <Text style={styles.primeSubtitle}>
+                    Included with Amazon Prime
+                  </Text>
+                </View>
+                <Image
+                  source={{
+                    uri: "https://images.pexels.com/photos/1293261/pexels-photo-1293261.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500",
+                  }}
+                  style={styles.primeImage}
+                />
+              </View>
+
+              <View style={styles.primeInfo}>
+                <Text style={styles.primeInfoText}>
+                  Free games and in-game loot each month
+                </Text>
+                <Button
+                  label="Learn More"
+                  onPress={() => {}}
+                  variant="primary"
+                  style={styles.primeButton}
+                />
+              </View>
+            </View>{" "}
+            <Separator horizontal color={Colors.neutral[800]} />
+            {/* Settings */}
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Settings</Text>
+
+              <View style={styles.settingsList}>
+                <TouchableOpacity style={styles.settingItem}>
+                  <View style={styles.settingLeft}>
+                    <View style={styles.settingIcon}>
+                      <Settings size={20} />
+                    </View>
+                    <Text style={styles.settingText}>Notifications</Text>
+                  </View>
+                  <ChevronRight size={20} />
+                </TouchableOpacity>
+
+                <TouchableOpacity style={styles.settingItem}>
+                  <View style={styles.settingLeft}>
+                    <View style={styles.settingIcon}>
+                      <User size={20} />
+                    </View>
+                    <Text style={styles.settingText}>Account</Text>
+                  </View>
+                  <ChevronRight size={20} />
+                </TouchableOpacity>
+
+                <TouchableOpacity style={styles.settingItem}>
+                  <View style={styles.settingLeft}>
+                    <View style={styles.settingIcon}>
+                      <Heart size={20} />
+                    </View>
+                    <Text style={styles.settingText}>Subscriptions</Text>
+                  </View>
+                  <ChevronRight size={20} />
+                </TouchableOpacity>
+
+                <TouchableOpacity style={styles.settingItem}>
+                  <View style={styles.settingLeft}>
+                    <View style={styles.settingIcon}>
+                      <CreditCard size={20} />
+                    </View>
+                    <Text style={styles.settingText}>Bits & Payments</Text>
+                  </View>
+                  <ChevronRight size={20} />
+                </TouchableOpacity>
+
+                <TouchableOpacity style={styles.settingItem}>
+                  <View style={styles.settingLeft}>
+                    <View style={styles.settingIcon}>
+                      <Shield size={20} />
+                    </View>
+                    <Text style={styles.settingText}>Privacy</Text>
+                  </View>
+                  <ChevronRight size={20} />
+                </TouchableOpacity>
+
+                <View style={styles.settingItem}>
+                  <View style={styles.settingLeft}>
+                    <View style={styles.settingIcon}>
+                      <Moon size={20} />
+                    </View>
+                    <Text style={styles.settingText}>Dark Mode</Text>
+                  </View>
+                  <Switch
+                    value={darkMode}
+                    onValueChange={setDarkMode}
+                    trackColor={{
+                      false: Colors.neutral[600],
+                      true: Colors.primary.main,
+                    }}
+                    thumbColor={Colors.neutral[100]}
+                  />
+                </View>
+
+                <TouchableOpacity style={styles.settingItem}>
+                  <View style={styles.settingLeft}>
+                    <View style={styles.settingIcon}>
+                      <LogOut size={20} />
+                    </View>
+                    <Text
+                      style={[styles.settingText, { color: Colors.error.main }]}
+                    >
+                      Log Out
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </>
+        ) : null}
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#0e0e10" },
-  header: {
-    height: 100,
-    backgroundColor: "#9147ff",
-    borderBottomLeftRadius: 30,
-    borderBottomRightRadius: 30,
+  content: {
+    flex: 1,
   },
-  profileContainer: {
+  profilesection: {
+    flex: 1,
+    backgroundColor: "#0e0e10",
     alignItems: "center",
-    marginTop: -50,
+    justifyContent: "center",
+    paddingVertical: Layout.spacing.lg,
   },
-  avatar: {
-    backgroundColor: "#d5ff00",
-    height: 80,
-    width: 80,
-    borderRadius: 40,
-    marginBottom: 8,
+  avatarcontainer: {
+    marginBottom: Layout.spacing.md,
+  },
+  displayname: {
+    color: "#fff",
+    fontSize: 20,
+    fontWeight: "bold",
+    marginTop: 8,
   },
   username: {
-    color: "#fff",
-    fontSize: 18,
-    fontWeight: "600",
+    color: Colors.text.secondary,
+    fontSize: Layout.fontSize.md,
+    marginBottom: Layout.spacing.md,
   },
-  status: {
-    color: "gray",
-    marginBottom: 10,
-  },
-  buttonsRow: {
+  statscontainer: {
     flexDirection: "row",
-    marginVertical: 10,
+    alignItems: "center",
+    marginBottom: Layout.spacing.md,
   },
-  button: {
-    backgroundColor: "#2e2e32",
-    paddingVertical: 8,
-    paddingHorizontal: 15,
-    borderRadius: 8,
-    marginHorizontal: 5,
+  statitem: {
+    alignItems: "center",
+    paddingHorizontal: Layout.spacing.lg,
   },
-  buttonText: {
-    color: "#fff",
+  statNumber: {
+    color: Colors.text.primary,
+    fontSize: Layout.fontSize.lg,
+    fontWeight: "bold",
+    marginBottom: 2,
   },
-  tabBar: {
+  statLabel: {
+    color: Colors.text.secondary,
+    fontSize: Layout.fontSize.sm,
+  },
+  statDivider: {
+    width: 1,
+    height: 24,
+    backgroundColor: Colors.neutral[700],
+  },
+  buttonContainer: {
     flexDirection: "row",
-    justifyContent: "space-around",
-    borderBottomColor: "#9147ff",
-    borderBottomWidth: 2,
-    marginTop: 15,
+    marginBottom: Layout.spacing.md,
+  },
+  bioContainer: {
+    paddingHorizontal: Layout.spacing.xl,
     width: "100%",
   },
-  tabItem: {
-    color: "#ccc",
-    fontSize: 14,
-    paddingBottom: 8,
+  bioText: {
+    color: Colors.text.primary,
+    fontSize: Layout.fontSize.sm,
+    textAlign: "center",
+    lineHeight: 20,
+  },
+  tabContainer: {
+    flexDirection: "row",
+    paddingHorizontal: Layout.spacing.md,
+    paddingVertical: Layout.spacing.sm,
+  },
+  tab: {
+    marginRight: Layout.spacing.lg,
+    paddingVertical: Layout.spacing.xs,
   },
   activeTab: {
-    color: "#9147ff",
-    fontWeight: "bold",
+    borderBottomWidth: 2,
+    borderBottomColor: Colors.primary.main,
   },
-  emptyContent: {
-    marginTop: 50,
+  tabText: {
+    color: Colors.text.secondary,
+    fontWeight: "500",
+    fontSize: Layout.fontSize.md,
+  },
+  activeTabText: {
+    color: Colors.text.primary,
+  },
+  section: {
+    paddingVertical: Layout.spacing.md,
+    paddingHorizontal: Layout.spacing.md,
+  },
+  sectionTitle: {
+    color: Colors.text.primary,
+    fontSize: Layout.fontSize.lg,
+    fontWeight: "bold",
+    marginBottom: Layout.spacing.md,
+  },
+  primeContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    backgroundColor: Colors.background.card,
+    borderRadius: Layout.borderRadius.md,
+    padding: Layout.spacing.md,
+    marginBottom: Layout.spacing.md,
+  },
+  primeTextContainer: {
+    flex: 1,
+  },
+  primeTitle: {
+    color: Colors.text.primary,
+    fontSize: Layout.fontSize.lg,
+    fontWeight: "bold",
+    marginBottom: Layout.spacing.xs,
+  },
+  primeSubtitle: {
+    color: Colors.text.secondary,
+    fontSize: Layout.fontSize.sm,
+  },
+  primeImage: {
+    width: 60,
+    height: 60,
+    borderRadius: Layout.borderRadius.sm,
+  },
+  primeInfo: {
+    backgroundColor: Colors.background.card,
+    borderRadius: Layout.borderRadius.md,
+    padding: Layout.spacing.md,
     alignItems: "center",
   },
-  icon: {
-    width: 80,
-    height: 80,
-    marginBottom: 15,
+  primeInfoText: {
+    color: Colors.text.primary,
+    fontSize: Layout.fontSize.sm,
+    textAlign: "center",
+    marginBottom: Layout.spacing.md,
   },
-  noContentText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "600",
+  primeButton: {
+    width: 200,
   },
-  quietText: {
-    color: "gray",
-    fontSize: 14,
+  settingsList: {
+    backgroundColor: Colors.background.card,
+    borderRadius: Layout.borderRadius.md,
+  },
+  settingItem: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingVertical: Layout.spacing.md,
+    paddingHorizontal: Layout.spacing.md,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.neutral[800],
+  },
+  settingLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  settingIcon: {
+    marginRight: Layout.spacing.md,
+  },
+  settingText: {
+    color: Colors.text.primary,
+    fontSize: Layout.fontSize.md,
+  },
+  appInfo: {
+    alignItems: "center",
+    paddingVertical: Layout.spacing.md,
   },
 });
-
