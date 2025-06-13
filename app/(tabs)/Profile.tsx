@@ -33,8 +33,17 @@ export default function ProfileScreen() {
   const [darkMode, setDarkMode] = useState(true);
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#0e0e10" }}>
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+    <SafeAreaView
+      style={{
+        flex: 1,
+        backgroundColor: "#0e0e10",
+        marginBottom: 70,
+      }}
+    >
+      <ScrollView
+        style={[styles.content, { paddingBottom: 50 }]}
+        showsVerticalScrollIndicator={false}
+      >
         <View style={styles.profilesection}>
           <View style={styles.avatarcontainer}>
             <Avatar

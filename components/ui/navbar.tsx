@@ -1,3 +1,4 @@
+import ClipsScreen from "@/app/stream/clips";
 import { Image } from "expo-image";
 import React, { useState } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
@@ -85,11 +86,8 @@ export default function Navbar({ initialTab = "Following" }: NavbarProps) {
         );
       case "Clips":
         return (
-          <View>
-            <Text style={styles.followingDiscover}>
-              {" "}
-              clips of your favorite creators
-            </Text>
+          <View style={{ flex: 1 }}>
+            <ClipsScreen />
           </View>
         );
       default:
