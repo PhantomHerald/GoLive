@@ -37,7 +37,6 @@ export default function ProfileScreen() {
       style={{
         flex: 1,
         backgroundColor: "#0e0e10",
-        marginBottom: 70,
       }}
     >
       <ScrollView
@@ -166,9 +165,9 @@ export default function ProfileScreen() {
                   style={styles.primeButton}
                 />
               </View>
-            </View>{" "}
+            </View>
             <Separator horizontal color={Colors.neutral[800]} />
-            {/* Settings */}
+
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>Settings</Text>
 

@@ -1,4 +1,4 @@
-import { Video, ResizeMode } from "expo-av";
+import { ResizeMode, Video } from "expo-av";
 import React, { useRef } from "react";
 import { Dimensions, FlatList, StyleSheet, Text, View } from "react-native";
 

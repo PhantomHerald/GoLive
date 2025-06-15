@@ -1,4 +1,5 @@
 import Icon from "@expo/vector-icons/MaterialCommunityIcons";
+import { router } from "expo-router";
 import React, { useState } from "react";
 import {
   Platform,
@@ -9,7 +10,6 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-
 export default function Signup() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -19,10 +19,13 @@ export default function Signup() {
   const [year, setYear] = useState("");
   const [phone, setPhone] = useState("");
   const [country, setCountry] = useState("US");
-
+  const [useemailclicked, setUseEmailClicked] = useState(false);
+  const handleSigninAndNavigate = () => {
+    alert("Signned Up!");
+    router.replace("/Home");
+  };
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "black", padding: 10 }}>
-      {/* Top bar */}
+    <SafeAreaView style={{ flex: 1, backgroundColor: "", padding: 10 }}>
       <View style={styles.topBar}>
         <TouchableOpacity
           style={styles.backBtn}
@@ -32,11 +35,8 @@ export default function Signup() {
         </TouchableOpacity>
       </View>
 
-      {/* Main Card */}
-
       <Text style={styles.title}>Join Twitch today</Text>
 
-      {/* Username */}
       <Text style={styles.label}>Username</Text>
       <TextInput
         style={styles.input}
@@ -46,7 +46,6 @@ export default function Signup() {
         onChangeText={setUsername}
       />
 
-      {/* Password */}
       <Text style={styles.label}>Password</Text>
       <View style={styles.inputRow}>
         <TextInput
@@ -69,7 +68,6 @@ export default function Signup() {
         </TouchableOpacity>
       </View>
 
-      {/* Date of Birth */}
       <Text style={styles.label}>Date of birth</Text>
       <View style={styles.dobRow}>
         <TextInput
@@ -101,26 +99,48 @@ export default function Signup() {
         />
       </View>
 
-      {/* Phone number */}
-      <Text style={styles.label}>Phone number</Text>
-      <View style={styles.inputRow}>
-        <View style={styles.countryBox}>
-          <Text style={{ color: "#fff" }}>US</Text>
-        </View>
-        <TextInput
-          style={[styles.input, { flex: 1, marginBottom: 0 }]}
-          placeholder="Phone number"
-          placeholderTextColor="#aaa"
-          value={phone}
-          onChangeText={setPhone}
-          keyboardType="phone-pad"
-        />
-      </View>
-
-      {/* Use email instead */}
-      <TouchableOpacity>
-        <Text style={styles.emailInstead}>Use email instead</Text>
-      </TouchableOpacity>
+      {useemailclicked ? (
+        <>
+          <Text style={styles.label}>Phone number</Text>
+          <View style={styles.inputRow}>
+            <View style={styles.countryBox}>
+              <Text style={{ color: "#fff" }}>US</Text>
+            </View>
+            <TextInput
+              style={[styles.input, { flex: 1, marginBottom: 0 }]}
+              placeholder="Phone number"
+              placeholderTextColor="#aaa"
+              value={phone}
+              onChangeText={setPhone}
+              keyboardType="phone-pad"
+            />
+          </View>
+          <TouchableOpacity
+            onPress={() => setUseEmailClicked(false)}
+            style={{ width: "auto", alignSelf: "flex-start" }}
+          >
+            <Text style={styles.emailInstead}>Use email instead</Text>
+          </TouchableOpacity>
+        </>
+      ) : (
+        <>
+          <Text style={styles.label}>E-mail</Text>
+          <View style={styles.inputRow}>
+            <TextInput
+              style={[styles.input, { flex: 1, marginBottom: 0 }]}
+              placeholder="E-mail"
+              placeholderTextColor="#aaa"
+              keyboardType="email-address"
+            />
+          </View>
+          <TouchableOpacity
+            onPress={() => setUseEmailClicked(true)}
+            style={{ width: "auto", alignSelf: "flex-start" }}
+          >
+            <Text style={styles.emailInstead}>Use phone instead</Text>
+          </TouchableOpacity>
+        </>
+      )}
 
       {/* Terms */}
       <Text style={styles.terms}>
@@ -130,7 +150,10 @@ export default function Signup() {
       </Text>
 
       {/* Sign up button */}
-      <TouchableOpacity style={styles.signupBtn}>
+      <TouchableOpacity
+        style={styles.signupBtn}
+        onPress={handleSigninAndNavigate}
+      >
         <Text style={styles.signupBtnText}>Sign up</Text>
       </TouchableOpacity>
     </SafeAreaView>
@@ -185,7 +208,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     color: "#fff",
     paddingHorizontal: 12,
-    paddingVertical: Platform.OS === "ios" ? 14 : 10,
+    paddingVertical: Platform.OS === "ios" ? 16 : 14,
     fontSize: 16,
     marginBottom: 16,
   },

@@ -1,4 +1,5 @@
 import Icon from "@expo/vector-icons/MaterialCommunityIcons";
+import { router } from "expo-router";
 import React from "react";
 import {
   StyleSheet,
@@ -8,13 +9,13 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-
 export default function Login() {
   const [email, setEmail] = React.useState("");
   const [password, setPassword] = React.useState("");
 
-  const handleLogin = () => {
+  const handleLoginAndNavigate = () => {
     alert("Logged in!");
+    router.replace("/Home");
   };
 
   return (
@@ -78,7 +79,10 @@ export default function Login() {
             Forgot Password?
           </Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.button} onPress={handleLogin}>
+        <TouchableOpacity
+          style={styles.button}
+          onPress={handleLoginAndNavigate}
+        >
           <Text style={styles.buttonText}>Login</Text>
         </TouchableOpacity>
       </View>
@@ -89,10 +93,10 @@ export default function Login() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "black",
-    paddingHorizontal: 20,
+    padding: 20,
+
+    alignContent: "center",
+    display: "flex",
   },
   logo: {
     height: 200,

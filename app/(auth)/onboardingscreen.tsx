@@ -99,7 +99,7 @@ const OnboardingModal: React.FC = () => {
 
   const goToSignIn = () => {
     setVisible(false);
-    router.replace("/Home");
+    router.replace("/Login");
   };
 
   return (

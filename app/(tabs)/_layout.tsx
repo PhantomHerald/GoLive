@@ -46,9 +46,15 @@ export default function TabLayout() {
       <Tabs.Screen
         name="Create"
         options={{
-          title: "Create",
+          title: "",
+          tabBarLabel: "",
           tabBarIcon: ({ color }) => (
-            <IconSymbol size={28} name="plus.circle.fill" color={color} />
+            <IconSymbol
+              size={50}
+              name="plus.circle.fill"
+              color={color}
+              style={{ marginBottom: "auto" }}
+            />
           ),
         }}
       />
