@@ -15,7 +15,6 @@ A modern and responsive mobile Twitch clone built with **React Native** and **Ex
 - **React Native** – Cross-platform mobile app development
 - **Expo** – Developer tooling and build service
 - **Expo Router** – File-based navigation system
-- **NativeWind** – Tailwind CSS for React Native
 - **React Navigation** – Navigation management
 - **React Native Vector Icons** – Icon system
 - **[DummyJSON / Twitch API]** – Data source for streams and channels
