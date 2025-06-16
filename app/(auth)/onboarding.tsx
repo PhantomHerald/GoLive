@@ -1,6 +1,12 @@
 import { router } from "expo-router";
 import * as React from "react";
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import {
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  useWindowDimensions,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 const goToSignIn = () => {
@@ -11,20 +17,30 @@ const goToLogin = () => {
 };
 
 export default function Onboarding() {
+  const { height } = useWindowDimensions();
+  const isShort = height < 850;
   return (
     <SafeAreaView style={styles.viewBg}>
       <View style={[styles.view, styles.viewLayout]}>
         <Text style={[styles.grrntGamesCallContainer, styles.containerTypo1]}>
           <Text style={styles.g}>g</Text>
           <Text style={styles.rrntGamesTypo}>
-            <Text style={styles.rrnt}>{`rrNT `}</Text>
-            <Text style={styles.games}>Games</Text>
+            <Text style={[styles.rrnt, styles.containerTypo]}>{`rrNT `}</Text>
+            <Text style={[styles.games, styles.containerTypo]}>Games</Text>
           </Text>
           <Text style={styles.games}>
             <Text style={styles.text1}>{` `}</Text>
           </Text>
-          <Text style={[styles.callOfDuty, styles.rrntGamesTypo]}>
-            Call of duty: Mobile
+          <Text
+            style={[
+              styles.callOfDuty,
+              styles.rrntGamesTypo,
+              styles.containerTypo,
+              styles.have,
+            ]}
+            numberOfLines={1}
+          >
+            Call of duty: Mo
           </Text>
         </Text>
         <Text
@@ -40,7 +56,7 @@ export default function Onboarding() {
             <Text style={styles.h}>{` `}</Text>
           </Text>
           <Text style={[styles.electronicPunk, styles.containerTypo]}>
-            Electronic Punk
+            Electronic Punk E
           </Text>
         </Text>
         <Text style={[styles.newsTalkShowsContainer, styles.containerLayout]}>
@@ -53,7 +69,7 @@ export default function Onboarding() {
             <Text style={styles.text1}>{` `}</Text>
           </Text>
           <Text style={[styles.electronicPunk, styles.containerTypo]}>
-            Shows History Ed
+            Shows History Edu
           </Text>
         </Text>
         <Text style={[styles.allSportsBaseballContainer, styles.containerTypo]}>
@@ -66,7 +82,7 @@ export default function Onboarding() {
         <Text style={[styles.totallyTravelContainer, styles.containerTypo]}>
           <Text style={styles.have}>totally</Text>
           <Text style={styles.games}>{` Travel & Outdoors `}</Text>
-          <Text style={styles.have}>Ani</Text>
+          <Text style={styles.have}>Anim</Text>
         </Text>
         <Text
           style={[
@@ -77,21 +93,21 @@ export default function Onboarding() {
           <Text style={styles.games}>n</Text>
           <Text style={styles.have}>othing</Text>
           <Text style={styles.games}>{` Just Chatting `}</Text>
-          <Text style={styles.have}>News M</Text>
+          <Text style={styles.have}>News M.</Text>
         </Text>
         <Text
           style={[styles.nothingFoodContainer, styles.nothingContainerTypo]}
         >
           <Text style={styles.have}>{`nothing `}</Text>
           <Text style={styles.games}>{`Food & Drink `}</Text>
-          <Text style={styles.have}>Social Enj</Text>
+          <Text style={styles.have}>Social Engi</Text>
         </Text>
         <Text
           style={[styles.specialsSpecialEventsContainer, styles.containerTypo]}
         >
           <Text style={styles.have}>Specials</Text>
           <Text style={styles.games}>{` Special Events `}</Text>
-          <Text style={styles.have}>Sports</Text>
+          <Text style={styles.have}>Sports fo</Text>
         </Text>
       </View>
 
@@ -109,58 +125,22 @@ export default function Onboarding() {
         <Text
           style={{
             color: "white",
-            fontFamily: "Poppins-SemiBold",
-            fontSize: 32,
+            fontSize: 35,
             position: "absolute",
+            fontFamily: "Inter-SemiBold",
+            fontWeight: "600",
+            paddingTop: isShort ? 70 : 10,
           }}
         >
-          There’s something for you on Twitch
+          There’s something for you on GoLive
         </Text>
       </View>
-      <View
-        style={{
-          display: "flex",
-          alignItems: "center",
-          flexDirection: "row",
-          position: "absolute",
-          bottom: 20,
-          width: "100%",
-          justifyContent: "space-between",
-        }}
-      >
-        <TouchableOpacity
-          style={{
-            borderRadius: 8,
-            backgroundColor: "#8e36d1",
-            padding: 12,
-            position: "absolute",
-            bottom: 50,
-            left: 20,
-            right: 200,
-            alignItems: "center",
-            justifyContent: "center",
-            width: "auto",
-          }}
-          onPress={goToLogin}
-        >
-          <Text>login</Text>
+      <View style={styles.buttonContainer}>
+        <TouchableOpacity style={styles.loginButton} onPress={goToLogin}>
+          <Text style={styles.buttonTextWhite}>Login</Text>
         </TouchableOpacity>
-        <TouchableOpacity
-          style={{
-            borderRadius: 8,
-            backgroundColor: "#8e36d1",
-            padding: 12,
-            position: "absolute",
-            bottom: 50,
-            left: 200,
-            right: 20,
-            alignItems: "center",
-            justifyContent: "center",
-            width: "auto",
-          }}
-          onPress={goToSignIn}
-        >
-          <Text>Sign Up</Text>
+        <TouchableOpacity style={styles.signupButton} onPress={goToSignIn}>
+          <Text style={styles.buttonTextDark}>Sign Up</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -171,6 +151,39 @@ const styles = StyleSheet.create({
   onboarding: {
     flex: 1,
     backgroundColor: "#ae44fe",
+  },
+  buttonContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingHorizontal: 24,
+    paddingBottom: 30,
+    backgroundColor: "#ae44fe",
+  },
+  loginButton: {
+    flex: 1,
+    marginRight: 8,
+    backgroundColor: "#8e36d1",
+    borderRadius: 8,
+    padding: 14,
+    alignItems: "center",
+  },
+  signupButton: {
+    flex: 1,
+    marginLeft: 8,
+    backgroundColor: "#ffffff",
+    borderRadius: 8,
+    padding: 14,
+    alignItems: "center",
+  },
+  buttonTextWhite: {
+    color: "#ffffff",
+    fontFamily: "Poppins-Medium",
+    fontSize: 16,
+  },
+  buttonTextDark: {
+    color: "#303030",
+    fontFamily: "Poppins-Medium",
+    fontSize: 16,
   },
   viewLayout: {
     overflow: "hidden",
@@ -396,5 +409,6 @@ const styles = StyleSheet.create({
     flex: 1,
     alignContent: "center",
     justifyContent: "center",
+    overflow: "hidden",
   },
 });

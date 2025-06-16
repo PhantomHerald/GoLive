@@ -47,6 +47,7 @@ export const mockUsers = [
     followers: 1850,
     following: 280,
     isStreamer: true,
+    stream: true,
   },
   {
     id: "user-2",
@@ -113,6 +114,7 @@ export const mockStreams = [
     tags: ["English", "FPS", "Battle Royale"],
     isLive: true,
     startedAt: new Date(Date.now() - 3600000 * 2),
+    stream: true,
   },
   {
     id: "stream-2",

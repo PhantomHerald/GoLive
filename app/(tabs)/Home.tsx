@@ -1,6 +1,6 @@
 import Navbar from "@/components/ui/navbar";
 import React from "react";
-import { SafeAreaView, StyleSheet } from "react-native";
+import { Platform, SafeAreaView, StyleSheet } from "react-native";
 
 export default function HomeScreen() {
   return (
@@ -13,5 +13,9 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
+    ...Platform.select({
+      android: { marginTop: 30 },
+      default: {},
+    }),
   },
 });

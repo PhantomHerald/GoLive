@@ -7,7 +7,7 @@ export default function _layout() {
     <>
       <StatusBar style="dark" />
       <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="Onboarding" />
+        <Stack.Screen name="onboarding" />
         <Stack.Screen name="Signup" />
         <Stack.Screen name="Login" />
         <Stack.Screen name="Contactsupport" />

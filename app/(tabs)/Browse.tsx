@@ -1,7 +1,13 @@
 import Searchtabs from "@/components/ui/searchtabs";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import React, { useState } from "react";
-import { SafeAreaView, StyleSheet, TextInput, View } from "react-native";
+import {
+  Platform,
+  SafeAreaView,
+  StyleSheet,
+  TextInput,
+  View,
+} from "react-native";
 
 const styles = StyleSheet.create({
   container: {
@@ -41,7 +47,15 @@ const SearchBar = ({ placeholder, onSearch }: SearchBarProps) => {
   };
 
   return (
-    <SafeAreaView>
+    <SafeAreaView
+      style={[
+        { paddingTop: 20 },
+        Platform.select({
+          android: { marginTop: 30 },
+          default: {},
+        }),
+      ]}
+    >
       <View
         style={{
           flexDirection: "row",

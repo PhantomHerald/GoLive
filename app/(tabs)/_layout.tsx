@@ -6,6 +6,7 @@ import { HapticTab } from "@/components/HapticTab";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import TabBarBackground from "@/components/ui/TabBarBackground";
 import { useColorScheme } from "@/hooks/useColorScheme";
+import { Bell, CirclePlus, CircleUser, Search } from "lucide-react-native";
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
@@ -38,9 +39,7 @@ export default function TabLayout() {
         name="Browse"
         options={{
           title: "Browse",
-          tabBarIcon: ({ color }) => (
-            <IconSymbol size={28} name="magnifyingglass" color={color} />
-          ),
+          tabBarIcon: ({ color }) => <Search size={28} color={color} />,
         }}
       />
       <Tabs.Screen
@@ -49,9 +48,8 @@ export default function TabLayout() {
           title: "",
           tabBarLabel: "",
           tabBarIcon: ({ color }) => (
-            <IconSymbol
+            <CirclePlus
               size={50}
-              name="plus.circle.fill"
               color={color}
               style={{ marginBottom: "auto" }}
             />
@@ -65,22 +63,14 @@ export default function TabLayout() {
           headerShown: true,
           headerStyle: { backgroundColor: "black" },
 
-          tabBarIcon: ({ color }) => (
-            <IconSymbol size={28} name="bell.fill" color={color} />
-          ),
+          tabBarIcon: ({ color }) => <Bell size={28} color={color} />,
         }}
       />
       <Tabs.Screen
         name="Profile"
         options={{
           title: "Profile",
-          tabBarIcon: ({ color }) => (
-            <IconSymbol
-              size={28}
-              name="person.crop.circle.fill"
-              color={color}
-            />
-          ),
+          tabBarIcon: ({ color }) => <CircleUser size={28} color={color} />,
         }}
       />
     </Tabs>

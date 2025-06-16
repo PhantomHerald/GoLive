@@ -27,10 +27,7 @@ export default function Signup() {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "", padding: 10 }}>
       <View style={styles.topBar}>
-        <TouchableOpacity
-          style={styles.backBtn}
-          onPress={() => alert("Go back")}
-        >
+        <TouchableOpacity style={styles.backBtn} onPress={() => router.back}>
           <Icon name="arrow-left" size={28} color="#fff" />
         </TouchableOpacity>
       </View>

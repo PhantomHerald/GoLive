@@ -17,6 +17,7 @@ import {
 import React, { useState } from "react";
 import {
   Image,
+  Platform,
   SafeAreaView,
   ScrollView,
   StyleSheet,
@@ -37,6 +38,10 @@ export default function ProfileScreen() {
       style={{
         flex: 1,
         backgroundColor: "#0e0e10",
+        ...Platform.select({
+          android: { marginTop: 30 },
+          default: {},
+        }),
       }}
     >
       <ScrollView

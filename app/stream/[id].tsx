@@ -43,7 +43,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
 export default function StreamScreen() {
   //get stream id
   const { id } = useLocalSearchParams<{ id: string }>();
-  const stream = mockStreams.find((s) => s.id === id);
+  const stream = mockStreams.find((s) => s.id === "stream-1");
 
   // State for follow functionality
   const [isFollowing, setIsFollowing] = useState(false);
