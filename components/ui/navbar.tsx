@@ -130,7 +130,7 @@ export default function Navbar({ initialTab = "Following" }: NavbarProps) {
 const styles = StyleSheet.create({
   wrapper: {
     flexDirection: "column",
-    backgroundColor: "black",
+    backgroundColor: "transparent",
     padding: 20,
     flex: 1,
   },
@@ -138,14 +138,17 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     marginBottom: 8,
+    backgroundColor: "transparent",
   },
   tabContainer: {
     flexDirection: "row",
     flex: 1,
+    backgroundColor: "transparent",
   },
   tab: {
     marginHorizontal: 12,
     alignItems: "center",
+    backgroundColor: "transparent",
   },
   tabText: {
     color: "#ccc",

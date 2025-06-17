@@ -17,7 +17,9 @@ export default function Login() {
     alert("Logged in!");
     router.replace("/Home");
   };
-
+  const forgotpassword = () => {
+    router.replace("/Forgotpassword");
+  };
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <View style={styles.container}>
@@ -67,7 +69,7 @@ export default function Login() {
             onChangeText={setPassword}
           />
         </View>
-        <TouchableOpacity onPress={() => alert("Forgot Password?")}>
+        <TouchableOpacity onPress={forgotpassword}>
           <Text
             style={{
               color: "#9147FF",

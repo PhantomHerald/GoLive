@@ -1,8 +1,12 @@
+import { router } from "expo-router";
 import React from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function Contactsupport() {
+  const contact = () => {
+    router.replace("/Forgotpassword");
+  };
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "black" }}>
       <View style={styles.container}>
@@ -31,7 +35,7 @@ export default function Contactsupport() {
             marginTop: 24,
           }}
           onPress={() => {
-            alert("Contact Support button pressed");
+            alert("Calling support team");
           }}
         >
           <Text style={styles.buttontext}>Contact Support</Text>

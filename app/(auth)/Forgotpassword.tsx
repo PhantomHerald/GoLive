@@ -1,3 +1,4 @@
+import { router } from "expo-router";
 import { Mail, Phone } from "lucide-react-native";
 import React, { useState } from "react";
 import {
@@ -11,6 +12,9 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function Forgotpassword() {
+  const contactsupport = () => {
+    router.replace("/Contactsupport");
+  };
   const [useemailclicked, setUseEmailClicked] = useState(false);
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "black" }}>
@@ -115,7 +119,7 @@ export default function Forgotpassword() {
           </>
         )}
 
-        <TouchableOpacity>
+        <TouchableOpacity onPress={contactsupport}>
           <Text style={{ color: "white", fontSize: 18 }}>
             {"\n"} Having problems with your email or {"\n"} phone?
           </Text>
