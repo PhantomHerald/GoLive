@@ -1,6 +1,7 @@
 import { router } from "expo-router";
 import * as React from "react";
 import {
+  Dimensions,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -21,12 +22,47 @@ export default function Onboarding() {
   const isShort = height < 850;
   return (
     <SafeAreaView style={styles.viewBg}>
-      <View style={[styles.view, styles.viewLayout]}>
-        <Text style={[styles.grrntGamesCallContainer, styles.containerTypo1]}>
+      <View
+        style={[
+          styles.view,
+          styles.viewLayout,
+          { width: Dimensions.get("window").width, overflow: "hidden" },
+        ]}
+      >
+        <Text
+          style={[
+            styles.grrntGamesCallContainer,
+            styles.containerTypo1,
+            {
+              fontWeight: !isShort ? 900 : 600,
+              width: Dimensions.get("window").width * 2,
+            },
+          ]}
+        >
           <Text style={styles.g}>g</Text>
           <Text style={styles.rrntGamesTypo}>
-            <Text style={[styles.rrnt, styles.containerTypo]}>{`rrNT `}</Text>
-            <Text style={[styles.games, styles.containerTypo]}>Games</Text>
+            <Text
+              style={[
+                styles.rrnt,
+                styles.containerTypo,
+                {
+                  fontWeight: !isShort ? 900 : 600,
+                  fontSize: !isShort ? 36 : 32,
+                },
+              ]}
+            >{`rrNT `}</Text>
+            <Text
+              style={[
+                styles.games,
+                styles.containerTypo,
+                {
+                  fontWeight: !isShort ? 900 : 600,
+                  fontSize: !isShort ? 36 : 32,
+                },
+              ]}
+            >
+              Games
+            </Text>
           </Text>
           <Text style={styles.games}>
             <Text style={styles.text1}>{` `}</Text>
@@ -37,77 +73,216 @@ export default function Onboarding() {
               styles.rrntGamesTypo,
               styles.containerTypo,
               styles.have,
+              {
+                fontWeight: !isShort ? 900 : 600,
+                fontSize: !isShort ? 36 : 32,
+                textAlign: "right",
+                flex: 1,
+                flexShrink: 1,
+              },
             ]}
             numberOfLines={1}
+            ellipsizeMode="tail"
           >
-            Call of duty: Mo
+            Call of duty: Mobile
           </Text>
         </Text>
         <Text
-          style={[styles.haveMusicElectronicContainer, styles.containerLayout]}
+          style={[
+            styles.haveMusicElectronicContainer,
+            styles.containerLayout,
+            {
+              fontWeight: !isShort ? 900 : 600,
+              width: Dimensions.get("window").width * 2,
+              fontSize: !isShort ? 36 : 32,
+            },
+          ]}
         >
           <Text style={styles.have}>
             <Text style={styles.h}>h</Text>
-            <Text style={styles.containerTypo}>ave</Text>
+            <Text
+              style={[
+                styles.containerTypo,
+                {
+                  fontWeight: !isShort ? 900 : 600,
+                  width: Dimensions.get("window").width * 2,
+                  fontSize: !isShort ? 36 : 32,
+                },
+              ]}
+            >
+              ave
+            </Text>
           </Text>
-          <Text style={styles.games}>
+          <Text
+            style={[
+              styles.games,
+              {
+                fontWeight: !isShort ? 900 : 600,
+                width: Dimensions.get("window").width * 2,
+                fontSize: !isShort ? 36 : 32,
+              },
+            ]}
+          >
             <Text style={styles.h}>{` `}</Text>
-            <Text style={styles.containerTypo}>Music</Text>
+            <Text
+              style={[
+                styles.containerTypo,
+                {
+                  fontWeight: !isShort ? 900 : 600,
+                  width: Dimensions.get("window").width * 2,
+                  fontSize: !isShort ? 36 : 32,
+                },
+              ]}
+            >
+              Music
+            </Text>
             <Text style={styles.h}>{` `}</Text>
           </Text>
-          <Text style={[styles.electronicPunk, styles.containerTypo]}>
-            Electronic Punk E
+          <Text
+            style={[
+              styles.electronicPunk,
+              styles.containerTypo,
+              {
+                fontWeight: !isShort ? 900 : 600,
+                width: Dimensions.get("window").width * 2,
+                fontSize: !isShort ? 36 : 32,
+              },
+            ]}
+          >
+            Electronic Punk Electric
           </Text>
         </Text>
-        <Text style={[styles.newsTalkShowsContainer, styles.containerLayout]}>
-          <Text style={[styles.electronicPunk, styles.containerTypo]}>
+        <Text
+          style={[
+            styles.newsTalkShowsContainer,
+            styles.containerLayout,
+            {
+              fontWeight: !isShort ? 900 : 600,
+              width: Dimensions.get("window").width * 2,
+              fontSize: !isShort ? 36 : 32,
+            },
+          ]}
+        >
+          <Text
+            style={[
+              styles.electronicPunk,
+              styles.containerTypo,
+              {
+                fontWeight: !isShort ? 900 : 600,
+                width: Dimensions.get("window").width * 2,
+                fontSize: !isShort ? 36 : 32,
+              },
+            ]}
+          >
             News
           </Text>
           <Text style={styles.games}>
             <Text style={styles.text1}>{` `}</Text>
-            <Text style={styles.containerTypo}>Talk</Text>
+            <Text
+              style={[
+                styles.containerTypo,
+                {
+                  fontWeight: !isShort ? 900 : 600,
+                  width: Dimensions.get("window").width * 2,
+                  fontSize: !isShort ? 36 : 32,
+                },
+              ]}
+            >
+              Talk
+            </Text>
             <Text style={styles.text1}>{` `}</Text>
           </Text>
-          <Text style={[styles.electronicPunk, styles.containerTypo]}>
-            Shows History Edu
+          <Text
+            style={[
+              styles.electronicPunk,
+              styles.containerTypo,
+              {
+                fontWeight: !isShort ? 900 : 600,
+                width: Dimensions.get("window").width * 2,
+                fontSize: !isShort ? 36 : 32,
+              },
+            ]}
+          >
+            Shows History Education
           </Text>
         </Text>
-        <Text style={[styles.allSportsBaseballContainer, styles.containerTypo]}>
+        <Text
+          style={[
+            styles.allSportsBaseballContainer,
+            styles.containerTypo,
+            {
+              fontWeight: !isShort ? 900 : 600,
+              width: Dimensions.get("window").width * 2,
+              fontSize: !isShort ? 36 : 32,
+            },
+          ]}
+        >
           <Text style={styles.have}>all</Text>
           <Text style={styles.games}>{` Sports `}</Text>
-          <Text style={styles.have}>Baseball Soccer a</Text>
+          <Text style={styles.have}>Baseball Soccer and many</Text>
           <Text style={styles.games}>{`n
 `}</Text>
         </Text>
-        <Text style={[styles.totallyTravelContainer, styles.containerTypo]}>
+        <Text
+          style={[
+            styles.totallyTravelContainer,
+            styles.containerTypo,
+            {
+              fontWeight: !isShort ? 900 : 600,
+              width: Dimensions.get("window").width * 2,
+              fontSize: !isShort ? 36 : 32,
+            },
+          ]}
+        >
           <Text style={styles.have}>totally</Text>
           <Text style={styles.games}>{` Travel & Outdoors `}</Text>
-          <Text style={styles.have}>Anim</Text>
+          <Text style={styles.have}>Animation</Text>
         </Text>
         <Text
           style={[
             styles.nothingJustChattingContainer,
             styles.nothingContainerTypo,
+            {
+              fontWeight: !isShort ? 900 : 600,
+              width: Dimensions.get("window").width * 2,
+              fontSize: !isShort ? 36 : 32,
+            },
           ]}
         >
           <Text style={styles.games}>n</Text>
           <Text style={styles.have}>othing</Text>
           <Text style={styles.games}>{` Just Chatting `}</Text>
-          <Text style={styles.have}>News M.</Text>
+          <Text style={styles.have}>News Movies and more</Text>
         </Text>
         <Text
-          style={[styles.nothingFoodContainer, styles.nothingContainerTypo]}
+          style={[
+            styles.nothingFoodContainer,
+            styles.nothingContainerTypo,
+            {
+              fontWeight: !isShort ? 900 : 600,
+              width: Dimensions.get("window").width * 2,
+              fontSize: !isShort ? 36 : 32,
+            },
+          ]}
         >
           <Text style={styles.have}>{`nothing `}</Text>
           <Text style={styles.games}>{`Food & Drink `}</Text>
-          <Text style={styles.have}>Social Engi</Text>
+          <Text style={styles.have}>Social Entertainment</Text>
         </Text>
         <Text
-          style={[styles.specialsSpecialEventsContainer, styles.containerTypo]}
+          style={[
+            styles.specialsSpecialEventsContainer,
+            styles.containerTypo,
+            {
+              fontWeight: !isShort ? 900 : 600,
+              width: Dimensions.get("window").width * 2,
+              fontSize: !isShort ? 36 : 32,
+            },
+          ]}
         >
           <Text style={styles.have}>Specials</Text>
           <Text style={styles.games}>{` Special Events `}</Text>
-          <Text style={styles.have}>Sports fo</Text>
+          <Text style={styles.have}>Sports food M</Text>
         </Text>
       </View>
 
@@ -125,11 +300,11 @@ export default function Onboarding() {
         <Text
           style={{
             color: "white",
-            fontSize: 35,
             position: "absolute",
             fontFamily: "Inter-SemiBold",
-            fontWeight: "600",
-            paddingTop: isShort ? 70 : 10,
+            paddingTop: isShort ? 90 : 10,
+            fontSize: !isShort ? 36 : 32,
+            fontWeight: !isShort ? 900 : 600,
           }}
         >
           There’s something for you on GoLive
