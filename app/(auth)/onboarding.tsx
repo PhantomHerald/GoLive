@@ -47,7 +47,6 @@ export default function Onboarding() {
                 styles.containerTypo,
                 {
                   fontWeight: !isShort ? 900 : 600,
-                  fontSize: !isShort ? 36 : 32,
                 },
               ]}
             >{`rrNT `}</Text>
@@ -57,7 +56,6 @@ export default function Onboarding() {
                 styles.containerTypo,
                 {
                   fontWeight: !isShort ? 900 : 600,
-                  fontSize: !isShort ? 36 : 32,
                 },
               ]}
             >
@@ -75,7 +73,7 @@ export default function Onboarding() {
               styles.have,
               {
                 fontWeight: !isShort ? 900 : 600,
-                fontSize: !isShort ? 36 : 32,
+
                 textAlign: "right",
                 flex: 1,
                 flexShrink: 1,
@@ -94,7 +92,6 @@ export default function Onboarding() {
             {
               fontWeight: !isShort ? 900 : 600,
               width: Dimensions.get("window").width * 2,
-              fontSize: !isShort ? 36 : 32,
             },
           ]}
         >
@@ -106,7 +103,6 @@ export default function Onboarding() {
                 {
                   fontWeight: !isShort ? 900 : 600,
                   width: Dimensions.get("window").width * 2,
-                  fontSize: !isShort ? 36 : 32,
                 },
               ]}
             >
@@ -119,7 +115,6 @@ export default function Onboarding() {
               {
                 fontWeight: !isShort ? 900 : 600,
                 width: Dimensions.get("window").width * 2,
-                fontSize: !isShort ? 36 : 32,
               },
             ]}
           >
@@ -130,7 +125,6 @@ export default function Onboarding() {
                 {
                   fontWeight: !isShort ? 900 : 600,
                   width: Dimensions.get("window").width * 2,
-                  fontSize: !isShort ? 36 : 32,
                 },
               ]}
             >
@@ -145,7 +139,6 @@ export default function Onboarding() {
               {
                 fontWeight: !isShort ? 900 : 600,
                 width: Dimensions.get("window").width * 2,
-                fontSize: !isShort ? 36 : 32,
               },
             ]}
           >
@@ -159,7 +152,6 @@ export default function Onboarding() {
             {
               fontWeight: !isShort ? 900 : 600,
               width: Dimensions.get("window").width * 2,
-              fontSize: !isShort ? 36 : 32,
             },
           ]}
         >
@@ -170,7 +162,6 @@ export default function Onboarding() {
               {
                 fontWeight: !isShort ? 900 : 600,
                 width: Dimensions.get("window").width * 2,
-                fontSize: !isShort ? 36 : 32,
               },
             ]}
           >
@@ -184,7 +175,6 @@ export default function Onboarding() {
                 {
                   fontWeight: !isShort ? 900 : 600,
                   width: Dimensions.get("window").width * 2,
-                  fontSize: !isShort ? 36 : 32,
                 },
               ]}
             >
@@ -199,7 +189,6 @@ export default function Onboarding() {
               {
                 fontWeight: !isShort ? 900 : 600,
                 width: Dimensions.get("window").width * 2,
-                fontSize: !isShort ? 36 : 32,
               },
             ]}
           >
@@ -213,7 +202,6 @@ export default function Onboarding() {
             {
               fontWeight: !isShort ? 900 : 600,
               width: Dimensions.get("window").width * 2,
-              fontSize: !isShort ? 36 : 32,
             },
           ]}
         >
@@ -230,7 +218,6 @@ export default function Onboarding() {
             {
               fontWeight: !isShort ? 900 : 600,
               width: Dimensions.get("window").width * 2,
-              fontSize: !isShort ? 36 : 32,
             },
           ]}
         >
@@ -245,7 +232,6 @@ export default function Onboarding() {
             {
               fontWeight: !isShort ? 900 : 600,
               width: Dimensions.get("window").width * 2,
-              fontSize: !isShort ? 36 : 32,
             },
           ]}
         >
@@ -261,7 +247,6 @@ export default function Onboarding() {
             {
               fontWeight: !isShort ? 900 : 600,
               width: Dimensions.get("window").width * 2,
-              fontSize: !isShort ? 36 : 32,
             },
           ]}
         >
@@ -276,7 +261,6 @@ export default function Onboarding() {
             {
               fontWeight: !isShort ? 900 : 600,
               width: Dimensions.get("window").width * 2,
-              fontSize: !isShort ? 36 : 32,
             },
           ]}
         >
