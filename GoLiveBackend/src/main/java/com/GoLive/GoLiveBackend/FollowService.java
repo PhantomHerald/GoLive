@@ -64,7 +64,7 @@ public class FollowService {
         logger.info("Getting followed users for user with token");
 
         User user = userService.validateToken(token);
-        List<User> followedUsers = followRepository.findFollowedUsersByFollowerId(user.getId());
+        List<User> followedUsers = followRepository.findFollowedByFollowerId(user.getId());
         logger.info("Found {} followed users for user {}", followedUsers.size(), user.getUsername());
         return followedUsers;
     }
