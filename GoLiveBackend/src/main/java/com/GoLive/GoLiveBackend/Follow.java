@@ -5,7 +5,7 @@ import java.sql.Timestamp;
 
 @Entity
 @Table(name = "follows", uniqueConstraints = {
-        @UniqueConstraint(columnNames = { "follower_id", "following_id" })
+        @UniqueConstraint(columnNames = { "follower_id", "followed_id" })
 })
 public class Follow {
 
@@ -18,11 +18,11 @@ public class Follow {
     private User follower;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "following_id", nullable = false)
-    private User following;
+    @JoinColumn(name = "followed_id", nullable = false)
+    private User followed;
 
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private Timestamp createdAt = new Timestamp(System.currentTimeMillis());
+    @Column(name = "followed_at", nullable = false, updatable = false)
+    private Timestamp followedAt = new Timestamp(System.currentTimeMillis());
 
     // Getters and Setters
     public Long getId() {
@@ -41,20 +41,20 @@ public class Follow {
         this.follower = follower;
     }
 
-    public User getFollowing() {
-        return following;
+    public User getFollowed() {
+        return followed;
     }
 
-    public void setFollowing(User following) {
-        this.following = following;
+    public void setFollowed(User followed) {
+        this.followed = followed;
     }
 
-    public Timestamp getCreatedAt() {
-        return createdAt;
+    public Timestamp getFollowedAt() {
+        return followedAt;
     }
 
-    public void setCreatedAt(Timestamp createdAt) {
-        this.createdAt = createdAt;
+    public void setFollowedAt(Timestamp followedAt) {
+        this.followedAt = followedAt;
     }
 
     @Override
@@ -62,8 +62,8 @@ public class Follow {
         return "Follow{" +
                 "id=" + id +
                 ", follower=" + (follower != null ? follower.getUsername() : "null") +
-                ", following=" + (following != null ? following.getUsername() : "null") +
-                ", createdAt=" + createdAt +
+                ", followed=" + (followed != null ? followed.getUsername() : "null") +
+                ", followedAt=" + followedAt +
                 '}';
     }
 }

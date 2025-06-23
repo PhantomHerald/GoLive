@@ -11,17 +11,17 @@ import java.util.Optional;
 @Repository
 public interface FollowRepository extends JpaRepository<Follow, Long> {
     
-    @Query("SELECT f FROM Follow f WHERE f.follower.id = :followerId AND f.following.id = :followingId")
-    Optional<Follow> findByFollowerAndFollowing(@Param("followerId") Long followerId, @Param("followingId") Long followingId);
+    @Query("SELECT f FROM Follow f WHERE f.follower.id = :followerId AND f.followed.id = :followedId")
+    Optional<Follow> findByFollowerAndFollowed(@Param("followerId") Long followerId, @Param("followedId") Long followedId);
     
-    @Query("SELECT f.following FROM Follow f WHERE f.follower.id = :followerId")
-    List<User> findFollowedUsersByFollowerId(@Param("followerId") Long followerId);
+    @Query("SELECT f.followed FROM Follow f WHERE f.follower.id = :followerId")
+    List<User> findFollowedByFollowerId(@Param("followerId") Long followerId);
     
-    @Query("SELECT f.follower FROM Follow f WHERE f.following.id = :followingId")
-    List<User> findFollowersByFollowingId(@Param("followingId") Long followingId);
+    @Query("SELECT f.follower FROM Follow f WHERE f.followed.id = :followedId")
+    List<User> findFollowersByFollowedId(@Param("followedId") Long followedId);
     
-    @Query("SELECT COUNT(f) FROM Follow f WHERE f.following.id = :userId")
-    Long countFollowersByUserId(@Param("userId") Long userId);
+    @Query("SELECT COUNT(f) FROM Follow f WHERE f.followed.id = :userId")
+    Long countFollowedByUserId(@Param("userId") Long userId);
     
     @Query("SELECT COUNT(f) FROM Follow f WHERE f.follower.id = :userId")
     Long countFollowingByUserId(@Param("userId") Long userId);

@@ -65,7 +65,7 @@ public class NotificationService {
     // Notify followers when streamer goes live
     public void notifyStreamLive(Long streamerId, String streamTitle, Long streamId) {
         try {
-            List<User> followers = followRepository.findFollowersByFollowingId(streamerId);
+            List<User> followers = followRepository.findFollowersByFollowedId(streamerId);
             User streamer = userService.getUserById(streamerId);
 
             String title = streamer.getUsername() + " is now live!";
@@ -90,15 +90,15 @@ public class NotificationService {
     }
 
     // Notify when someone follows
-    public void notifyNewFollower(Long followerId, Long followingId) {
+    public void notifyNewFollower(Long followerId, Long followedId) {
         try {
             User follower = userService.getUserById(followerId);
-            User following = userService.getUserById(followingId);
+            User followed = userService.getUserById(followedId);
 
             String title = "New Follower!";
             String message = follower.getUsername() + " started following you";
 
-            createNotification(followingId, title, message,
+            createNotification(followedId, title, message,
                     Notification.NotificationType.NEW_FOLLOWER, followerId, null);
         } catch (Exception e) {
             logger.error("Error notifying new follower", e);
@@ -108,7 +108,7 @@ public class NotificationService {
     // Notify when stream ends
     public void notifyStreamEnded(Long streamerId, String streamTitle, Long streamId) {
         try {
-            List<User> followers = followRepository.findFollowersByFollowingId(streamerId);
+            List<User> followers = followRepository.findFollowersByFollowedId(streamerId);
             User streamer = userService.getUserById(streamerId);
 
             String title = streamer.getUsername() + " ended their stream";
