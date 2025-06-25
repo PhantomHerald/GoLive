@@ -1,4 +1,4 @@
-# 🎮 Twitch Clone Mobile App
+# 🎮GoLive - A Twitch Clone
 
 A modern and responsive mobile Twitch clone built with **React Native** and **Expo**. This app emulates the core experience of Twitch, offering users the ability to explore livestreams, view channels, and enjoy a sleek, dark-themed user interface.
 
