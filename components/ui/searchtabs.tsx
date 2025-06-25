@@ -1,3 +1,4 @@
+import CategoriesScreen from "@/app/stream/categories";
 import { Image } from "expo-image";
 import React, { useState } from "react";
 import {
@@ -11,34 +12,11 @@ import {
 export default function Searchtabs() {
   const tabs = ["Categories", "Live channels"];
   const [activeTab, setActiveTab] = useState("Categories");
-
+  const trail = true;
   const renderTabContent = () => {
     switch (activeTab) {
       case "Categories":
-        return (
-          <View
-            style={{
-              alignItems: "center",
-              justifyContent: "center",
-              flex: 1,
-            }}
-          >
-            <Image
-              source={require("@/assets/images/ChatGPT Image May 15, 2025, 10_25_26 PM.png")}
-              style={{ width: 200, height: 200 }}
-            />
-            <Text style={styles.followingTitle}>
-              Keep up with your {"\n"}
-              favorite creators
-            </Text>
-            <Text style={styles.followingSub}>
-              when you follow creators, you’ll see {"\n"} them here
-            </Text>
-            <Text style={styles.followingDiscover}>
-              Discover new channels and find more {"\n"} creators to follow
-            </Text>
-          </View>
-        );
+        return <CategoriesScreen />;
       case "Live channels":
         return (
           <SafeAreaView>
@@ -75,13 +53,7 @@ export default function Searchtabs() {
                     alignItems: "center",
                   }}
                 />
-                <Text style={styles.followingTitle}>
-                  They will be back! {"\n"}
-                </Text>
-                <Text style={styles.followingSub}>
-                  meanwhile, explore the Live Feed for other {"\n"}content you
-                  might be interested in!
-                </Text>
+                <Text style={styles.followingTitle}>Coming Soon {"\n"}</Text>
               </View>
             </View>
           </SafeAreaView>

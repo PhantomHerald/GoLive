@@ -20,8 +20,16 @@ export default function Login() {
   const forgotpassword = () => {
     router.replace("/Forgotpassword");
   };
+  const handleback = () => {
+    router.replace("/onboarding");
+  };
   return (
     <SafeAreaView style={{ flex: 1 }}>
+      <View style={styles.topBar}>
+        <TouchableOpacity style={styles.backBtn} onPress={handleback}>
+          <Icon name="arrow-left" size={28} color="#fff" />
+        </TouchableOpacity>
+      </View>
       <View style={styles.container}>
         <Text style={styles.title}>Welcome Back </Text>
         <Text
@@ -99,6 +107,17 @@ const styles = StyleSheet.create({
 
     alignContent: "center",
     display: "flex",
+  },
+  topBar: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 10,
+    marginLeft: 10,
+    marginBottom: 10,
+  },
+  backBtn: {
+    padding: 4,
+    borderRadius: 20,
   },
   logo: {
     height: 200,

@@ -24,10 +24,13 @@ export default function Signup() {
     alert("Signned Up!");
     router.replace("/Home");
   };
+  const handleback = () => {
+    router.replace("/onboarding");
+  };
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "", padding: 10 }}>
       <View style={styles.topBar}>
-        <TouchableOpacity style={styles.backBtn} onPress={() => router.back}>
+        <TouchableOpacity style={styles.backBtn} onPress={handleback}>
           <Icon name="arrow-left" size={28} color="#fff" />
         </TouchableOpacity>
       </View>
