@@ -54,6 +54,9 @@ export default function Searchtabs() {
                   }}
                 />
                 <Text style={styles.followingTitle}>Coming Soon {"\n"}</Text>
+                <Text style={styles.followingSub}>
+                  Live channel browsing is not available yet, but stay tuned!
+                </Text>
               </View>
             </View>
           </SafeAreaView>
@@ -93,14 +96,14 @@ export default function Searchtabs() {
 const styles = StyleSheet.create({
   wrapper: {
     flexDirection: "column",
-    backgroundColor: "black",
+    backgroundColor: "transparent",
     padding: 20,
     flex: 1,
   },
   topBar: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 8,
+    marginBottom: 2,
   },
   tabContainer: {
     flexDirection: "row",
