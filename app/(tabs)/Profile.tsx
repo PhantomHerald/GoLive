@@ -45,7 +45,17 @@ export default function ProfileScreen() {
       }}
     >
       <ScrollView
-        style={[styles.content, { paddingBottom: 50 }]}
+        style={[
+          styles.content,
+          {
+            marginBottom: 40,
+            backgroundColor: "transparent",
+            ...Platform.select({
+              android: { marginBottom: 0 },
+              ios: { marginBottom: 40 },
+            }),
+          },
+        ]}
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.profilesection}>

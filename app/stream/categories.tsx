@@ -1,5 +1,5 @@
 import React from "react";
-import { ScrollView, StyleSheet, View } from "react-native";
+import { Platform, ScrollView, StyleSheet, View } from "react-native";
 
 import { CategoryCard } from "@/components/CategoryCard";
 import SectionHeader from "@/components/SectionHeader";
@@ -9,7 +9,15 @@ export default function CategoriesScreen() {
   return (
     <View style={[styles.container, { backgroundColor: "" }]}>
       <ScrollView
-        style={styles.scrollView}
+        style={[
+          styles.scrollView,
+          {
+            ...Platform.select({
+              android: { marginBottom: -40 },
+              ios: { marginBottom: 0 },
+            }),
+          },
+        ]}
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.section}>
@@ -49,6 +57,6 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   bottomSpacing: {
-    height: 50,
+    height: 30,
   },
 });
