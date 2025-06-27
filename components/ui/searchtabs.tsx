@@ -1,13 +1,7 @@
 import CategoriesScreen from "@/app/stream/categories";
-import { Image } from "expo-image";
+import LiveChannelsScreen from "@/app/stream/livechannels";
 import React, { useState } from "react";
-import {
-  SafeAreaView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 export default function Searchtabs() {
   const tabs = ["Categories", "Live channels"];
@@ -18,49 +12,7 @@ export default function Searchtabs() {
       case "Categories":
         return <CategoriesScreen />;
       case "Live channels":
-        return (
-          <SafeAreaView>
-            <View>
-              <Text
-                style={{
-                  color: "#FFF",
-                  fontSize: 20,
-                  fontStyle: "normal",
-                  fontWeight: "700",
-                  lineHeight: 20,
-                  width: 141,
-                  height: 30,
-                  flexDirection: "column",
-                  justifyContent: "center",
-                  flexShrink: 0,
-                  paddingLeft: 10,
-                }}
-              >
-                Live Now
-              </Text>
-              <View
-                style={{
-                  justifyContent: "center",
-                  alignItems: "center",
-                }}
-              >
-                <Image
-                  source={require("@/assets/images/ChatGPT Image May 15, 2025, 10_25_26 PM.png")}
-                  style={{
-                    width: 200,
-                    height: 200,
-                    justifyContent: "center",
-                    alignItems: "center",
-                  }}
-                />
-                <Text style={styles.followingTitle}>Coming Soon {"\n"}</Text>
-                <Text style={styles.followingSub}>
-                  Live channel browsing is not available yet, but stay tuned!
-                </Text>
-              </View>
-            </View>
-          </SafeAreaView>
-        );
+        return <LiveChannelsScreen />;
 
       default:
         return null;
@@ -154,3 +106,47 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
 });
+
+/*(
+          <SafeAreaView>
+            <View>
+              <Text
+                style={{
+                  color: "#FFF",
+                  fontSize: 20,
+                  fontStyle: "normal",
+                  fontWeight: "700",
+                  lineHeight: 20,
+                  width: 141,
+                  height: 30,
+                  flexDirection: "column",
+                  justifyContent: "center",
+                  flexShrink: 0,
+                  paddingLeft: 10,
+                }}
+              >
+                Live Now
+              </Text>
+              <View
+                style={{
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              >
+                <Image
+                  source={require("@/assets/images/ChatGPT Image May 15, 2025, 10_25_26 PM.png")}
+                  style={{
+                    width: 200,
+                    height: 200,
+                    justifyContent: "center",
+                    alignItems: "center",
+                  }}
+                />
+                <Text style={styles.followingTitle}>Coming Soon {"\n"}</Text>
+                <Text style={styles.followingSub}>
+                  Live channel browsing is not available yet, but stay tuned!
+                </Text>
+              </View>
+            </View>
+          </SafeAreaView>
+        )*/

@@ -6,7 +6,7 @@
     "orientation": "portrait",
     "icon": "./assets/Twitch1.png",
     "scheme": "twitchclone2",
-    "userInterfaceStyle": "automatic",
+    "userInterfaceStyle": "dark",
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true

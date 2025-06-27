@@ -6,7 +6,7 @@ import { HapticTab } from "@/components/HapticTab";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import TabBarBackground from "@/components/ui/TabBarBackground";
 import { useColorScheme } from "@/hooks/useColorScheme";
-import { Bell, CirclePlus, CircleUser, Search } from "lucide-react-native";
+import { Bell, CircleUser, Plus, Search } from "lucide-react-native";
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
@@ -48,11 +48,7 @@ export default function TabLayout() {
           title: "",
           tabBarLabel: "",
           tabBarIcon: ({ color }) => (
-            <CirclePlus
-              size={50}
-              color={color}
-              style={{ marginBottom: "auto" }}
-            />
+            <Plus size={50} color={color} style={{ marginBottom: "auto" }} />
           ),
         }}
       />

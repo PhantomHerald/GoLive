@@ -1,10 +1,27 @@
 import ClipsScreen from "@/app/stream/clips";
+import { mockFollowedChannels, mockStreams } from "@/data/mockdata";
 import { Image } from "expo-image";
 import React, { useState } from "react";
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import {
+  FlatList,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 type NavbarProps = {
   initialTab?: string;
+};
+// Get only live users
+const liveChannels = mockFollowedChannels.filter((ch) => ch.isLive);
+
+// Helper to get the stream title for a user
+const getStreamTitle = (username: string) => {
+  const stream = mockStreams.find(
+    (s) => s.streamer.username === username && s.isLive
+  );
+  return stream ? stream.title : "";
 };
 
 export default function Navbar({ initialTab = "Following" }: NavbarProps) {
@@ -16,28 +33,60 @@ export default function Navbar({ initialTab = "Following" }: NavbarProps) {
     switch (activeTab) {
       case "Following":
         return (
-          <View
-            style={{
-              alignItems: "center",
-              justifyContent: "center",
-              flex: 1,
-            }}
-          >
-            <Image
-              source={require("@/assets/images/ChatGPT Image May 15, 2025, 10_25_26 PM.png")}
-              style={{ width: 200, height: 200 }}
-            />
-            <Text style={styles.followingTitle}>
-              Keep up with your {"\n"}
-              favorite creators
-            </Text>
-            <Text style={styles.followingSub}>
-              when you follow creators, you’ll see {"\n"} them here
-            </Text>
-            <Text style={styles.followingDiscover}>
-              Discover new channels and find more {"\n"} creators to follow
-            </Text>
-          </View>
+          <FlatList
+            data={mockFollowedChannels}
+            keyExtractor={(item) => item.id}
+            renderItem={({ item }) => (
+              <View style={styles.channelRow}>
+                <View style={{ position: "relative" }}>
+                  <Image source={{ uri: item.avatar }} style={styles.avatar} />
+                  {item.isLive && (
+                    <View
+                      style={{
+                        position: "absolute",
+                        bottom: 4,
+                        right: 4,
+                        width: 12,
+                        height: 12,
+                        borderRadius: 6,
+                        backgroundColor: "red",
+                        borderWidth: 2,
+                        borderColor: "#18181b",
+                      }}
+                    />
+                  )}
+                </View>
+                <View style={styles.info}>
+                  <Text style={styles.displayName}>{item.displayName}</Text>
+                  <Text style={styles.username}>@{item.username}</Text>
+                </View>
+              </View>
+            )}
+            ListEmptyComponent={
+              <View
+                style={{
+                  alignItems: "center",
+                  justifyContent: "center",
+                  flex: 1,
+                }}
+              >
+                <Image
+                  source={require("@/assets/images/ChatGPT Image May 15, 2025, 10_25_26 PM.png")}
+                  style={{ width: 200, height: 200 }}
+                />
+                <Text style={styles.followingTitle}>
+                  Keep up with your {"\n"}
+                  favorite creators
+                </Text>
+                <Text style={styles.followingSub}>
+                  when you follow creators, you’ll see {"\n"} them here
+                </Text>
+                <Text style={styles.followingDiscover}>
+                  Discover new channels and find more {"\n"} creators to follow
+                </Text>
+              </View>
+            }
+          />
         );
       case "Live":
         return (
@@ -204,5 +253,32 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     backgroundColor: "#444",
     position: "absolute",
+  },
+  channelRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: "#333",
+  },
+  avatar: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    marginRight: 12,
+  },
+  info: {
+    flex: 1,
+  },
+  displayName: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "500",
+    marginBottom: 4,
+  },
+  username: {
+    color: "#ccc",
+    fontSize: 14,
+    fontWeight: "400",
   },
 });
