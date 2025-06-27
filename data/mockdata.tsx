@@ -115,6 +115,7 @@ export const mockStreams = [
     isLive: true,
     startedAt: new Date(Date.now() - 3600000 * 2),
     stream: true,
+    isfollowed: true,
   },
   {
     id: "stream-2",
@@ -133,6 +134,7 @@ export const mockStreams = [
     tags: ["English", "FPS", "Tactical Shooter"],
     isLive: true,
     startedAt: new Date(Date.now() - 3600000 * 1.5),
+    isfollowed: true,
   },
   {
     id: "stream-3",
@@ -151,6 +153,7 @@ export const mockStreams = [
     tags: ["English", "FPS", "Esports"],
     isLive: true,
     startedAt: new Date(Date.now() - 3600000 * 3),
+    isfollowed: true,
   },
   {
     id: "stream-4",
