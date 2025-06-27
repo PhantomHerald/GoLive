@@ -32,6 +32,9 @@ public class UserService {
         User user = new User();
         user.setUsername(request.getUsername());
         user.setEmail(request.getEmail());
+        user.setBirthMonth(request.getBirthMonth());
+        user.setBirthDay(request.getBirthDay());
+        user.setBirthYear(request.getBirthYear());
 
         // Hash the password before saving
         String hashedPassword = passwordEncoder.encode(request.getPassword());

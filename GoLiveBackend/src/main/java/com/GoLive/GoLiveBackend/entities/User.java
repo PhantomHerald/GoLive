@@ -38,6 +38,15 @@ public class User {
     @Column(name = "roles")
     private String roles = "USER";
 
+    @Column(name = "birth_month")
+    private int birthMonth;
+
+    @Column(name = "birth_day")
+    private int birthDay;
+
+    @Column(name = "birth_year")
+    private int birthYear;
+
     // Getters and Setters
     public Long getId() {
         return id;
@@ -117,6 +126,30 @@ public class User {
 
     public void setRoles(String roles) {
         this.roles = roles;
+    }
+
+    public int getBirthMonth() {
+        return birthMonth;
+    }
+
+    public void setBirthMonth(int birthMonth) {
+        this.birthMonth = birthMonth;
+    }
+
+    public int getBirthDay() {
+        return birthDay;
+    }
+
+    public void setBirthDay(int birthDay) {
+        this.birthDay = birthDay;
+    }
+
+    public int getBirthYear() {
+        return birthYear;
+    }
+
+    public void setBirthYear(int birthYear) {
+        this.birthYear = birthYear;
     }
 
     @Override
