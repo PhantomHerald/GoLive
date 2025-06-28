@@ -1,7 +1,12 @@
-package com.GoLive.GoLiveBackend;
+package com.GoLive.GoLiveBackend.services;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import com.GoLive.GoLiveBackend.entities.StreamCategories;
+import com.GoLive.GoLiveBackend.entities.StreamCategoriesId;
+import com.GoLive.GoLiveBackend.repositories.StreamCategoriesRepository;
 
 import java.util.List;
 
@@ -30,4 +35,4 @@ public class StreamCategoriesService {
         StreamCategoriesId id = new StreamCategoriesId(streamId, categoryId);
         streamCategoriesRepository.deleteById(id);
     }
-} 
+}

@@ -1,4 +1,4 @@
-package com.GoLive.GoLiveBackend;
+package com.GoLive.GoLiveBackend.dtos;
 
 import java.sql.Timestamp;
 

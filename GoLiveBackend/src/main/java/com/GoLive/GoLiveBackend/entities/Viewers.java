@@ -1,4 +1,4 @@
-package com.GoLive.GoLiveBackend;
+package com.GoLive.GoLiveBackend.entities;
 
 import jakarta.persistence.*;
 import java.sql.Timestamp;
@@ -53,4 +53,4 @@ public class Viewers {
     public void setJoinedAt(Timestamp joinedAt) {
         this.joinedAt = joinedAt;
     }
-} 
+}

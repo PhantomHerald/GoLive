@@ -1,10 +1,13 @@
-package com.GoLive.GoLiveBackend;
+package com.GoLive.GoLiveBackend.services;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import com.GoLive.GoLiveBackend.entities.User;
+import com.GoLive.GoLiveBackend.repositories.UserRepository;
+import com.GoLive.GoLiveBackend.dtos.AuthRequest;
 
 @Service
 public class UserService {
@@ -32,6 +35,9 @@ public class UserService {
         User user = new User();
         user.setUsername(request.getUsername());
         user.setEmail(request.getEmail());
+        user.setBirthMonth(request.getBirthMonth());
+        user.setBirthDay(request.getBirthDay());
+        user.setBirthYear(request.getBirthYear());
 
         // Hash the password before saving
         String hashedPassword = passwordEncoder.encode(request.getPassword());
@@ -114,7 +120,7 @@ public class UserService {
             user.setBio(newBio.trim());
             logger.info("Bio updated for user: {}", user.getUsername());
         }
-        
+
         User updatedUser = userRepository.save(user);
 
         logger.info("Bio update completed successfully for user: {}", updatedUser.getUsername());

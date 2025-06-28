@@ -1,8 +1,12 @@
-package com.GoLive.GoLiveBackend;
+package com.GoLive.GoLiveBackend.controllers;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import com.GoLive.GoLiveBackend.entities.Category;
+import com.GoLive.GoLiveBackend.services.CategoryService;
 
 import java.util.List;
 import java.util.Optional;
@@ -10,6 +14,8 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/api/categories")
 public class CategoryController {
+    private static final Logger logger = LoggerFactory.getLogger(CategoryController.class);
+
     @Autowired
     private CategoryService categoryService;
 
@@ -40,4 +46,4 @@ public class CategoryController {
         categoryService.deleteCategory(id);
         return ResponseEntity.noContent().build();
     }
-} 
+}

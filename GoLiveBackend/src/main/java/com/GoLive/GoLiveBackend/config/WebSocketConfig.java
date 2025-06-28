@@ -1,4 +1,4 @@
-package com.GoLive.GoLiveBackend;
+package com.GoLive.GoLiveBackend.config;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;

@@ -1,6 +1,7 @@
-package com.GoLive.GoLiveBackend;
+package com.GoLive.GoLiveBackend.repositories;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import com.GoLive.GoLiveBackend.entities.Viewers;
 import org.springframework.stereotype.Repository;
  
 @Repository

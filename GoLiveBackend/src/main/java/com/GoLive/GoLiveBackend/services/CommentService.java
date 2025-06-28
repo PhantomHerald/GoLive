@@ -1,4 +1,4 @@
-package com.GoLive.GoLiveBackend;
+package com.GoLive.GoLiveBackend.services;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -7,6 +7,13 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import com.GoLive.GoLiveBackend.entities.Comment;
+import com.GoLive.GoLiveBackend.repositories.CommentRepository;
+import com.GoLive.GoLiveBackend.repositories.StreamRepository;
+import com.GoLive.GoLiveBackend.entities.User;
+import com.GoLive.GoLiveBackend.services.UserService;
+import com.GoLive.GoLiveBackend.dtos.CommentRequest;
+import com.GoLive.GoLiveBackend.entities.Stream;
 
 import java.util.List;
 

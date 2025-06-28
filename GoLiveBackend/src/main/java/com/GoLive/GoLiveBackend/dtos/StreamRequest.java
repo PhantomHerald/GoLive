@@ -1,4 +1,4 @@
-package com.GoLive.GoLiveBackend;
+package com.GoLive.GoLiveBackend.dtos;
 
 public class StreamRequest {
     private String title;
@@ -38,4 +38,4 @@ public class StreamRequest {
     public void setThumbnailUrl(String thumbnailUrl) {
         this.thumbnailUrl = thumbnailUrl;
     }
-} 
+}

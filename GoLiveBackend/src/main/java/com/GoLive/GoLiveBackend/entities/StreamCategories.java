@@ -1,6 +1,7 @@
-package com.GoLive.GoLiveBackend;
+package com.GoLive.GoLiveBackend.entities;
 
 import jakarta.persistence.*;
+import java.sql.Timestamp;
 
 @Entity
 @Table(name = "stream_categories")

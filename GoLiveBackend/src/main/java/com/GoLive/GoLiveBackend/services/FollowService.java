@@ -1,9 +1,12 @@
-package com.GoLive.GoLiveBackend;
+package com.GoLive.GoLiveBackend.services;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import com.GoLive.GoLiveBackend.entities.Follow;
+import com.GoLive.GoLiveBackend.entities.User;
+import com.GoLive.GoLiveBackend.repositories.FollowRepository;
 
 import java.util.List;
 import java.util.Optional;

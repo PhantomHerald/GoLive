@@ -1,7 +1,11 @@
-package com.GoLive.GoLiveBackend;
+package com.GoLive.GoLiveBackend.services;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import com.GoLive.GoLiveBackend.entities.Category;
+import com.GoLive.GoLiveBackend.repositories.CategoryRepository;
 
 import java.util.List;
 import java.util.Optional;
@@ -30,4 +34,4 @@ public class CategoryService {
     public void deleteCategory(Integer id) {
         categoryRepository.deleteById(id);
     }
-} 
+}

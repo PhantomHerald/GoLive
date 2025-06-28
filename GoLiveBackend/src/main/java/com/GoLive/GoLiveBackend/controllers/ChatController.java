@@ -1,4 +1,4 @@
-package com.GoLive.GoLiveBackend;
+package com.GoLive.GoLiveBackend.controllers;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.MessageMapping;
@@ -6,6 +6,9 @@ import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.web.bind.annotation.*;
+import com.GoLive.GoLiveBackend.services.ChatService;
+import com.GoLive.GoLiveBackend.entities.ChatMessage;
+import com.GoLive.GoLiveBackend.dtos.ChatMessageDTO;
 
 import java.util.List;
 import java.util.stream.Collectors;

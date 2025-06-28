@@ -1,8 +1,10 @@
-package com.GoLive.GoLiveBackend;
+package com.GoLive.GoLiveBackend.controllers;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import com.GoLive.GoLiveBackend.services.ViewersService;
+import com.GoLive.GoLiveBackend.entities.Viewers;
 
 import java.util.List;
 import java.util.Optional;

@@ -1,4 +1,4 @@
-package com.GoLive.GoLiveBackend;
+package com.GoLive.GoLiveBackend.services;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
@@ -9,6 +9,10 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
+import com.GoLive.GoLiveBackend.entities.Notification;
+import com.GoLive.GoLiveBackend.entities.User;
+import com.GoLive.GoLiveBackend.repositories.NotificationRepository;
+import com.GoLive.GoLiveBackend.repositories.FollowRepository;
 
 import java.util.HashMap;
 import java.util.List;

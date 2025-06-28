@@ -1,8 +1,10 @@
-package com.GoLive.GoLiveBackend;
+package com.GoLive.GoLiveBackend.controllers;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import com.GoLive.GoLiveBackend.services.StreamCategoriesService;
+import com.GoLive.GoLiveBackend.entities.StreamCategories;
 
 import java.util.List;
 

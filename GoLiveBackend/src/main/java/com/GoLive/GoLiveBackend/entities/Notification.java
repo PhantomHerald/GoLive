@@ -1,4 +1,4 @@
-package com.GoLive.GoLiveBackend;
+package com.GoLive.GoLiveBackend.entities;
 
 import jakarta.persistence.*;
 import java.sql.Timestamp;
@@ -39,13 +39,13 @@ public class Notification {
     private Timestamp createdAt = new Timestamp(System.currentTimeMillis());
 
     public enum NotificationType {
-        STREAM_LIVE,           // Streamer went live
-        NEW_FOLLOWER,          // New follower
-        STREAM_ENDED,          // Stream ended
-        NEW_COMMENT,           // New comment on stream
-        NEW_LIKE,              // New like on stream
-        SYSTEM_MESSAGE,        // System notification
-        STREAM_SCHEDULED       // Stream scheduled
+        STREAM_LIVE, // Streamer went live
+        NEW_FOLLOWER, // New follower
+        STREAM_ENDED, // Stream ended
+        NEW_COMMENT, // New comment on stream
+        NEW_LIKE, // New like on stream
+        SYSTEM_MESSAGE, // System notification
+        STREAM_SCHEDULED // Stream scheduled
     }
 
     // Getters and Setters
@@ -133,4 +133,4 @@ public class Notification {
                 ", createdAt=" + createdAt +
                 '}';
     }
-} 
+}

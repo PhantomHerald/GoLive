@@ -1,9 +1,15 @@
-package com.GoLive.GoLiveBackend;
+package com.GoLive.GoLiveBackend.services;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import com.GoLive.GoLiveBackend.entities.Like;
+import com.GoLive.GoLiveBackend.repositories.LikeRepository;
+import com.GoLive.GoLiveBackend.repositories.StreamRepository;
+import com.GoLive.GoLiveBackend.entities.User;
+import com.GoLive.GoLiveBackend.services.UserService;
+import com.GoLive.GoLiveBackend.entities.Stream;
 
 import java.util.Optional;
 
@@ -23,7 +29,7 @@ public class LikeService {
 
     public void likeStream(Long streamId, String token) throws Exception {
         logger.info("User with token liking stream: {}", streamId);
-        
+
         User user = userService.validateToken(token);
         Stream stream = streamRepository.findById(streamId)
                 .orElseThrow(() -> new RuntimeException("Stream not found"));
@@ -44,7 +50,7 @@ public class LikeService {
 
     public void unlikeStream(Long streamId, String token) throws Exception {
         logger.info("User with token unliking stream: {}", streamId);
-        
+
         User user = userService.validateToken(token);
 
         Optional<Like> like = likeRepository.findByUserIdAndStreamId(user.getId(), streamId);
@@ -65,7 +71,7 @@ public class LikeService {
 
     public boolean isLiked(Long streamId, String token) throws Exception {
         logger.info("Checking if user with token liked stream: {}", streamId);
-        
+
         User user = userService.validateToken(token);
         Optional<Like> like = likeRepository.findByUserIdAndStreamId(user.getId(), streamId);
         boolean isLiked = like.isPresent();
@@ -79,4 +85,4 @@ public class LikeService {
         logger.info("User {} has {} likes", userId, count);
         return count;
     }
-} 
+}

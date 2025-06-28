@@ -1,4 +1,4 @@
-package com.GoLive.GoLiveBackend;
+package com.GoLive.GoLiveBackend.dtos;
 
 public class StreamRecordingRequest {
     private String recordingUrl;

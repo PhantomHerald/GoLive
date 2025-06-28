@@ -1,4 +1,4 @@
-package com.GoLive.GoLiveBackend;
+package com.GoLive.GoLiveBackend.security;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;

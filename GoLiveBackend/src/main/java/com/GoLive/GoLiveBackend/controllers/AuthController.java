@@ -1,10 +1,16 @@
-package com.GoLive.GoLiveBackend;
+package com.GoLive.GoLiveBackend.controllers;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
+import com.GoLive.GoLiveBackend.security.JwtUtil;
+import com.GoLive.GoLiveBackend.services.UserService;
+import com.GoLive.GoLiveBackend.entities.User;
+import com.GoLive.GoLiveBackend.dtos.AuthRequest;
+import com.GoLive.GoLiveBackend.dtos.AuthResponse;
+import com.GoLive.GoLiveBackend.dtos.BioUpdateRequest;
 
 @RestController
 @RequestMapping("/api/auth")
