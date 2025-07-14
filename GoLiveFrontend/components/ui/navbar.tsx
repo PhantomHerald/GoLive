@@ -1,13 +1,15 @@
 import ClipsScreen from "@/app/stream/clips";
 import { mockFollowedChannels, mockStreams } from "@/data/mockdata";
 import { Image } from "expo-image";
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import {
   FlatList,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
+  ScrollView,
+  PanResponder,
 } from "react-native";
 
 type NavbarProps = {
@@ -27,6 +29,33 @@ const getStreamTitle = (username: string) => {
 export default function Navbar({ initialTab = "Following" }: NavbarProps) {
   const tabs = ["Following", "Live", "Clips"];
   const [activeTab, setActiveTab] = useState(initialTab);
+  const [tabWidths, setTabWidths] = useState<{ [key: string]: number }>({});
+
+  const tabIndex = tabs.indexOf(activeTab);
+
+  const handleTabTextLayout = (tab: string, event: any) => {
+    const width = event.nativeEvent.layout.width;
+    setTabWidths((prev) => ({ ...prev, [tab]: width }));
+  };
+
+  // PanResponder for swipe gestures
+  const panResponder = useRef(
+    PanResponder.create({
+      onMoveShouldSetPanResponder: (_, gestureState) => {
+        // Only respond to horizontal swipes
+        return Math.abs(gestureState.dx) > Math.abs(gestureState.dy) && Math.abs(gestureState.dx) > 20;
+      },
+      onPanResponderRelease: (_, gestureState) => {
+        if (gestureState.dx < -30 && tabIndex < tabs.length - 1) {
+          // Swipe left
+          setActiveTab(tabs[tabIndex + 1]);
+        } else if (gestureState.dx > 30 && tabIndex > 0) {
+          // Swipe right
+          setActiveTab(tabs[tabIndex - 1]);
+        }
+      },
+    })
+  ).current;
 
   // Render content based on active tab
   const renderTabContent = () => {
@@ -79,7 +108,7 @@ export default function Navbar({ initialTab = "Following" }: NavbarProps) {
                   favorite creators
                 </Text>
                 <Text style={styles.followingSub}>
-                  when you follow creators, you’ll see {"\n"} them here
+                  when you follow creators, you'll see {"\n"} them here
                 </Text>
                 <Text style={styles.followingDiscover}>
                   Discover new channels and find more {"\n"} creators to follow
@@ -90,7 +119,7 @@ export default function Navbar({ initialTab = "Following" }: NavbarProps) {
         );
       case "Live":
         return (
-          <View>
+          <View style={{ flex: 1 }}>
             <Text
               style={{
                 color: "#FFF",
@@ -108,12 +137,7 @@ export default function Navbar({ initialTab = "Following" }: NavbarProps) {
             >
               Live Now
             </Text>
-            <View
-              style={{
-                justifyContent: "center",
-                alignItems: "center",
-              }}
-            >
+            <ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', alignItems: 'center' }}>
               <Image
                 source={require("@/assets/images/nolivesimg.png")}
                 style={{
@@ -130,7 +154,7 @@ export default function Navbar({ initialTab = "Following" }: NavbarProps) {
                 meanwhile, explore the Live Feed for other {"\n"}content you
                 might be interested in!
               </Text>
-            </View>
+            </ScrollView>
           </View>
         );
       case "Clips":
@@ -145,7 +169,7 @@ export default function Navbar({ initialTab = "Following" }: NavbarProps) {
   };
 
   return (
-    <View style={styles.wrapper}>
+    <View style={styles.wrapper} {...panResponder.panHandlers}>
       <View style={styles.topBar}>
         <View style={styles.tabContainer}>
           {tabs.map((tab, index) => (
@@ -157,10 +181,18 @@ export default function Navbar({ initialTab = "Following" }: NavbarProps) {
             >
               <Text
                 style={[styles.tabText, activeTab === tab && styles.activeText]}
+                onLayout={(e) => handleTabTextLayout(tab, e)}
               >
                 {tab}
               </Text>
-              {activeTab === tab && <View style={styles.underline} />}
+              {activeTab === tab && (
+                <View
+                  style={[
+                    styles.underline,
+                    { width: tabWidths[tab] || undefined },
+                  ]}
+                />
+              )}
             </TouchableOpacity>
           ))}
         </View>
@@ -209,14 +241,13 @@ const styles = StyleSheet.create({
   },
   underline: {
     marginTop: 4,
-    height: 4,
-    width: 28,
-    backgroundColor: "#fff",
+    height: 2.5,
+    backgroundColor: "#BF94FE",
     borderRadius: 2,
   },
   contentContainer: {
     flex: 1,
-    marginTop: 20,
+    marginTop: 8,
   },
   followingTitle: {
     textAlign: "center",

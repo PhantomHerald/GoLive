@@ -21,4 +21,6 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
     List<Comment> findCommentsByStreamIdWithLimit(@Param("streamId") Long streamId, Pageable pageable);
 
     Long countByStreamId(Long streamId);
+
+    void deleteByUserId(Long userId);
 }

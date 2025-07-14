@@ -7,6 +7,13 @@ export default function Searchtabs() {
   const tabs = ["Categories", "Live channels"];
   const [activeTab, setActiveTab] = useState("Categories");
   const trail = true;
+  const [tabWidths, setTabWidths] = useState<{ [key: string]: number }>({});
+
+  const handleTabTextLayout = (tab: string, event: any) => {
+    const width = event.nativeEvent.layout.width;
+    setTabWidths((prev) => ({ ...prev, [tab]: width }));
+  };
+
   const renderTabContent = () => {
     switch (activeTab) {
       case "Categories":
@@ -32,10 +39,18 @@ export default function Searchtabs() {
             >
               <Text
                 style={[styles.tabText, activeTab === tab && styles.activeText]}
+                onLayout={(e) => handleTabTextLayout(tab, e)}
               >
                 {tab}
               </Text>
-              {activeTab === tab && <View style={styles.underline} />}
+              {activeTab === tab && (
+                <View
+                  style={[
+                    styles.underline,
+                    { width: tabWidths[tab] || undefined },
+                  ]}
+                />
+              )}
             </TouchableOpacity>
           ))}
         </View>
@@ -49,13 +64,13 @@ const styles = StyleSheet.create({
   wrapper: {
     flexDirection: "column",
     backgroundColor: "transparent",
-    padding: 20,
+    padding: 10,
     flex: 1,
   },
   topBar: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 2,
+    marginBottom: 0,
   },
   tabContainer: {
     flexDirection: "row",
@@ -75,14 +90,13 @@ const styles = StyleSheet.create({
   },
   underline: {
     marginTop: 4,
-    height: 4,
-    width: 28,
-    backgroundColor: "#fff",
+    height: 2.5,
+    backgroundColor: "#BF94FE",
     borderRadius: 2,
   },
   contentContainer: {
     flex: 1,
-    marginTop: 20,
+    marginTop: 10,
   },
   followingTitle: {
     textAlign: "center",

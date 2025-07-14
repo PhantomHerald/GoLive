@@ -5,7 +5,7 @@ import { Platform, SafeAreaView, StyleSheet } from "react-native";
 export default function HomeScreen() {
   return (
     <SafeAreaView style={styles.safeArea}>
-      <Navbar />
+      <Navbar initialTab="Live" />
     </SafeAreaView>
   );
 }

@@ -1,23 +1,27 @@
 import { Image } from "expo-image";
 import React, { useState } from "react";
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { StyleSheet, Text, TouchableOpacity, View, ScrollView } from "react-native";
+import { useLocalSearchParams } from "expo-router";
 
 export default function Activity() {
   const tabs = ["Notifications", "Whisper"];
-  const [activeTab, setActiveTab] = useState("Notifications");
+  const params = useLocalSearchParams();
+  const initialTab = typeof params.tab === 'string' && tabs.includes(params.tab) ? params.tab : "Notifications";
+  const [activeTab, setActiveTab] = useState(initialTab);
+  const [tabWidths, setTabWidths] = useState<{ [key: string]: number }>({});
+
+  const handleTabTextLayout = (tab: string, event: any) => {
+    const width = event.nativeEvent.layout.width;
+    setTabWidths((prev) => ({ ...prev, [tab]: width }));
+  };
 
   // Render content based on active tab
   const renderTabContent = () => {
     switch (activeTab) {
       case "Notifications":
         return (
-          <View>
-            <View
-              style={{
-                justifyContent: "center",
-                alignItems: "center",
-              }}
-            >
+          <View style={{ flex: 1 }}>
+            <ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', alignItems: 'center' }}>
               <Image
                 source={require("@/assets/images/nolivesimg.png")} ///remember to change the image to the correct on and reduce the size
                 style={{
@@ -31,18 +35,13 @@ export default function Activity() {
                 You're all caught up. What a pro! {"\n"}
               </Text>
               <Text style={styles.followingSub}>You have no messages.</Text>
-            </View>
+            </ScrollView>
           </View>
         );
       case "Whisper":
         return (
-          <View>
-            <View
-              style={{
-                justifyContent: "center",
-                alignItems: "center",
-              }}
-            >
+          <View style={{ flex: 1 }}>
+            <ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', alignItems: 'center' }}>
               <Image
                 source={require("@/assets/images/nolivesimg.png")} ///remember to change the image to the correct on and reduce the size
                 style={{
@@ -82,7 +81,7 @@ export default function Activity() {
                   Start a conversation
                 </Text>
               </TouchableOpacity>
-            </View>
+            </ScrollView>
           </View>
         );
 
@@ -104,10 +103,18 @@ export default function Activity() {
             >
               <Text
                 style={[styles.tabText, activeTab === tab && styles.activeText]}
+                onLayout={(e) => handleTabTextLayout(tab, e)}
               >
                 {tab}
               </Text>
-              {activeTab === tab && <View style={styles.underline} />}
+              {activeTab === tab && (
+                <View
+                  style={[
+                    styles.underline,
+                    { width: tabWidths[tab] || undefined },
+                  ]}
+                />
+              )}
             </TouchableOpacity>
           ))}
         </View>
@@ -147,9 +154,8 @@ const styles = StyleSheet.create({
   },
   underline: {
     marginTop: 4,
-    height: 4,
-    width: 28,
-    backgroundColor: "#fff",
+    height: 2.5,
+    backgroundColor: "#BF94FE",
     borderRadius: 2,
   },
   contentContainer: {
