@@ -10,6 +10,7 @@ export default function ConfirmDeleteAccount() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [deleted, setDeleted] = useState(false);
 
   const handleBack = () => {
     router.back();
@@ -20,33 +21,37 @@ export default function ConfirmDeleteAccount() {
       Alert.alert("Error", "Please enter your password.");
       return;
     }
-    setLoading(true);
-    try {
-      // First, verify password by attempting deletion
-      await userService.deleteAccount(password);
-      // If successful, show final confirmation
-      Alert.alert(
-        "Permanently Delete Account",
-        "Are you sure you want to permanently delete your account? This action cannot be undone.",
-        [
-          { text: "Cancel", style: "cancel", onPress: () => setLoading(false) },
-          {
-            text: "Delete",
-            style: "destructive",
-            onPress: async () => {
+    if (deleted) {
+      Alert.alert("Account Deleted", "This account has already been deleted.");
+      return;
+    }
+    Alert.alert(
+      "Permanently Delete Account",
+      "Are you sure you want to permanently delete your account? This action cannot be undone.",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => {
+            setLoading(true);
+            try {
+              await userService.deleteAccount(password);
               setShowSuccess(true);
+              setDeleted(true);
               setTimeout(() => {
                 setShowSuccess(false);
                 router.replace("/(auth)/Login");
               }, 2000);
-            },
+            } catch (error: any) {
+              Alert.alert("Error", error.message || "Incorrect password or failed to delete account.");
+            } finally {
+              setLoading(false);
+            }
           },
-        ]
-      );
-    } catch (error: any) {
-      setLoading(false);
-      Alert.alert("Error", error.message || "Incorrect password or failed to delete account.");
-    }
+        },
+      ]
+    );
   };
 
   return (
@@ -68,7 +73,7 @@ export default function ConfirmDeleteAccount() {
           <View style={{ width: 40 }} />
         </View>
         <View style={styles.container}>
-          <Text style={styles.label}>Enter your password to permanently delete your account:</Text>
+          <Text style={styles.label}>Enter password to permanently delete this account:</Text>
           <TextInput
             style={styles.input}
             placeholder="Password"
@@ -79,9 +84,9 @@ export default function ConfirmDeleteAccount() {
             editable={!loading}
           />
           <TouchableOpacity
-            style={[styles.deleteButton, loading && { opacity: 0.6 }]}
+            style={[styles.deleteButton, (loading || deleted) && { opacity: 0.6 }]}
             onPress={handleDelete}
-            disabled={loading}
+            disabled={loading || deleted}
           >
             {loading ? (
               <ActivityIndicator color="#fff" />
@@ -156,4 +161,4 @@ const styles = StyleSheet.create({
     position: 'relative',
     left: 0,
   },
-}); 
+});

@@ -36,17 +36,24 @@ api.interceptors.response.use(
   },
   async (error: AxiosError) => {
     if (error.response?.status === 401) {
-      // Token expired or invalid, clear storage and redirect to login
-      try {
-        await AsyncStorage.removeItem('authToken');
-        await AsyncStorage.removeItem('user');
-        // You can add navigation logic here to redirect to login
-      } catch (storageError) {
-        console.error('Error clearing storage:', storageError);
+      // Only clear token if error is due to invalid/expired token, not wrong password
+      const message = (error.response.data as any)?.message || '';
+      if (
+        message.toLowerCase().includes('token') ||
+        message.toLowerCase().includes('jwt') ||
+        message.toLowerCase().includes('expired')
+      ) {
+        try {
+          await AsyncStorage.removeItem('authToken');
+          await AsyncStorage.removeItem('user');
+          // You can add navigation logic here to redirect to login
+        } catch (storageError) {
+          console.error('Error clearing storage:', storageError);
+        }
       }
     }
     return Promise.reject(error);
   }
 );
 
-export default api; 
+export default api;
