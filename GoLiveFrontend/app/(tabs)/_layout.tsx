@@ -48,7 +48,7 @@ export default function TabLayout() {
           title: "",
           tabBarLabel: "",
           tabBarIcon: ({ color }) => (
-            <Plus size={50} color={color} style={{ marginBottom: "auto" }} />
+            <Plus size={48} color={color} style={{ marginBottom: "auto" }} />
           ),
         }}
       />

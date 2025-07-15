@@ -1,7 +1,7 @@
 import CategoriesScreen from "@/app/stream/categories";
 import LiveChannelsScreen from "@/app/stream/livechannels";
 import React, { useState } from "react";
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Keyboard, StyleSheet, Text, TouchableOpacity, TouchableWithoutFeedback, View } from "react-native";
 
 export default function Searchtabs() {
   const tabs = ["Categories", "Live channels"];
@@ -20,28 +20,30 @@ export default function Searchtabs() {
   };
 
   return (
-    <View style={styles.wrapper}>
-      <View style={styles.topBar}>
-        <View style={styles.tabContainer}>
-          {tabs.map((tab, index) => (
-            <TouchableOpacity
-              key={index}
-              onPress={() => setActiveTab(tab)}
-              style={styles.tab}
-              activeOpacity={0.7}
-            >
-              <Text
-                style={[styles.tabText, activeTab === tab && styles.activeText]}
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+      <View style={styles.wrapper}>
+        <View style={styles.topBar}>
+          <View style={styles.tabContainer}>
+            {tabs.map((tab, index) => (
+              <TouchableOpacity
+                key={index}
+                onPress={() => setActiveTab(tab)}
+                style={styles.tab}
+                activeOpacity={0.7}
               >
-                {tab}
-              </Text>
-              {activeTab === tab && <View style={styles.underline} />}
-            </TouchableOpacity>
-          ))}
+                <Text
+                  style={[styles.tabText, activeTab === tab && styles.activeText]}
+                >
+                  {tab}
+                </Text>
+                {activeTab === tab && <View style={styles.underline} />}
+              </TouchableOpacity>
+            ))}
+          </View>
         </View>
+        <View style={styles.contentContainer}>{renderTabContent()}</View>
       </View>
-      <View style={styles.contentContainer}>{renderTabContent()}</View>
-    </View>
+    </TouchableWithoutFeedback>
   );
 }
 

@@ -3,12 +3,18 @@ import { mockFollowedChannels, mockStreams } from "@/data/mockdata";
 import { Image } from "expo-image";
 import React, { useState } from "react";
 import {
+  Animated,
+  Platform,
   FlatList,
+  PanResponder,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
+import { useEffect } from "react";
+import { useNavigation, useFocusEffect } from "@react-navigation/native";
+import LiveStreamApp from "@/app/stream/live";
 
 type NavbarProps = {
   initialTab?: string;
@@ -24,9 +30,47 @@ const getStreamTitle = (username: string) => {
   return stream ? stream.title : "";
 };
 
-export default function Navbar({ initialTab = "Following" }: NavbarProps) {
+export default function Navbar({ initialTab = "Live" }: NavbarProps) {
   const tabs = ["Following", "Live", "Clips"];
   const [activeTab, setActiveTab] = useState(initialTab);
+  const tabIndex = tabs.indexOf(activeTab);
+  const navigation = useNavigation();
+
+  // Listen for Home tab press and reset to 'Live'
+  useFocusEffect(
+    React.useCallback(() => {
+      const unsubscribe = navigation.addListener?.("focus", () => {
+        // If already focused and Home tab is pressed again, reset to 'Live'
+        setActiveTab("Live");
+      });
+      return unsubscribe;
+    }, [navigation])
+  );
+
+  // Animated underline logic
+  const underlineAnim = React.useRef(new Animated.Value(tabIndex)).current;
+  React.useEffect(() => {
+    Animated.spring(underlineAnim, {
+      toValue: tabIndex,
+      useNativeDriver: false,
+      friction: 7,
+      tension: 80,
+    }).start();
+  }, [tabIndex, underlineAnim]);
+
+  // Swipe gesture logic
+  const panResponder = PanResponder.create({
+    onMoveShouldSetPanResponder: (_, gestureState) => {
+      return Math.abs(gestureState.dx) > 20;
+    },
+    onPanResponderRelease: (_, gestureState) => {
+      if (gestureState.dx < -50 && tabIndex < tabs.length - 1) {
+        setActiveTab(tabs[tabIndex + 1]);
+      } else if (gestureState.dx > 50 && tabIndex > 0) {
+        setActiveTab(tabs[tabIndex - 1]);
+      }
+    },
+  });
 
   // Render content based on active tab
   const renderTabContent = () => {
@@ -62,6 +106,7 @@ export default function Navbar({ initialTab = "Following" }: NavbarProps) {
                 </View>
               </View>
             )}
+            contentContainerStyle={{ paddingTop: 60 }}
             ListEmptyComponent={
               <View
                 style={{
@@ -90,6 +135,11 @@ export default function Navbar({ initialTab = "Following" }: NavbarProps) {
         );
       case "Live":
         return (
+          <View style={{ flex: 1 }}>
+            <LiveStreamApp />
+          </View>
+        );
+      /*  return (
           <View>
             <Text
               style={{
@@ -132,7 +182,7 @@ export default function Navbar({ initialTab = "Following" }: NavbarProps) {
               </Text>
             </View>
           </View>
-        );
+        );*/
       case "Clips":
         return (
           <View style={{ flex: 1 }}>
@@ -146,7 +196,7 @@ export default function Navbar({ initialTab = "Following" }: NavbarProps) {
 
   return (
     <View style={styles.wrapper}>
-      <View style={styles.topBar}>
+      <View style={styles.topBar} pointerEvents="box-none">
         <View style={styles.tabContainer}>
           {tabs.map((tab, index) => (
             <TouchableOpacity
@@ -155,12 +205,37 @@ export default function Navbar({ initialTab = "Following" }: NavbarProps) {
               style={styles.tab}
               activeOpacity={0.7}
             >
-              <Text
-                style={[styles.tabText, activeTab === tab && styles.activeText]}
-              >
-                {tab}
-              </Text>
-              {activeTab === tab && <View style={styles.underline} />}
+              <View style={{ alignItems: "center" }}>
+                <Text
+                  style={[
+                    styles.tabText,
+                    activeTab === tab && styles.activeText,
+                  ]}
+                >
+                  {tab}
+                </Text>
+                {/* Animated underline directly under text */}
+                {activeTab === tab && (
+                  <Animated.View
+                    style={[
+                      styles.underline,
+                      {
+                        marginTop: 2,
+                        opacity: 1,
+                        transform: [
+                          {
+                            scaleX: underlineAnim.interpolate({
+                              inputRange: [index - 1, index, index + 1],
+                              outputRange: [0.7, 1, 0.7],
+                              extrapolate: "clamp",
+                            }),
+                          },
+                        ],
+                      },
+                    ]}
+                  />
+                )}
+              </View>
             </TouchableOpacity>
           ))}
         </View>
@@ -171,23 +246,31 @@ export default function Navbar({ initialTab = "Following" }: NavbarProps) {
           <View style={[styles.circle, { right: 0 }]} />
         </View>
       </View>
-      <View style={styles.contentContainer}>{renderTabContent()}</View>
+      <View style={styles.contentContainer} {...panResponder.panHandlers}>
+        {renderTabContent()}
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   wrapper: {
-    flexDirection: "column",
-    backgroundColor: "transparent",
-    padding: 20,
     flex: 1,
+    backgroundColor: "transparent",
   },
   topBar: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 8,
-    backgroundColor: "transparent",
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 100,
+    height: 60,
+    backgroundColor: "rgba(0, 0, 0, 0)", // true transparent overlay
+    paddingTop: Platform.OS === "android" ? 20 : 10,
+    elevation: 0,
+    shadowOpacity: 0,
   },
   tabContainer: {
     flexDirection: "row",
@@ -208,15 +291,15 @@ const styles = StyleSheet.create({
     color: "#fff",
   },
   underline: {
-    marginTop: 4,
     height: 4,
     width: 28,
     backgroundColor: "#fff",
     borderRadius: 2,
+    alignSelf: "center",
   },
   contentContainer: {
     flex: 1,
-    marginTop: 20,
+    // Removed marginTop so content starts at the very top, under the overlay navbar
   },
   followingTitle: {
     textAlign: "center",
@@ -246,12 +329,13 @@ const styles = StyleSheet.create({
     position: "relative",
     flexDirection: "row",
     marginLeft: 16,
+    backgroundColor: "transparent", // Make container transparent
   },
   circle: {
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: "#444",
+    backgroundColor: "rgba(68,68,68,0.3)",
     position: "absolute",
   },
   channelRow: {

@@ -1,21 +1,56 @@
 import Icon from "@expo/vector-icons/MaterialCommunityIcons";
 import { router } from "expo-router";
-import React from "react";
+import React, { useState } from "react";
 import {
+  Keyboard,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
+  TouchableWithoutFeedback,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+
 export default function Login() {
   const [email, setEmail] = React.useState("");
   const [password, setPassword] = React.useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleLoginAndNavigate = () => {
-    alert("Logged in!");
-    router.replace("/Home");
+  const handleLoginAndNavigate = async () => {
+    setError("");
+    if (!email || !password) {
+      setError("Please enter both username/email and password.");
+      return;
+    }
+    // Demo login for development without backend
+    if (email === "gerald" && password === "iamadmin") {
+      setError("");
+      router.replace("/Home");
+      return;
+    }
+    setLoading(true);
+    try {
+      const response = await fetch("http://localhost:8080/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: email,
+          password: password,
+        }),
+      });
+      const data = await response.json();
+      if (data.token) {
+        setError("");
+        router.replace("/Home");
+      } else {
+        setError(data.message || "Login failed. Please try again.");
+      }
+    } catch (err) {
+      setError("Network error. Please try again later.");
+    }
+    setLoading(false);
   };
   const forgotpassword = () => {
     router.replace("/Forgotpassword");
@@ -24,79 +59,85 @@ export default function Login() {
     router.replace("/onboarding");
   };
   return (
-    <SafeAreaView style={{ flex: 1 }}>
-      <View style={styles.topBar}>
-        <TouchableOpacity style={styles.backBtn} onPress={handleback}>
-          <Icon name="arrow-left" size={28} color="#fff" />
-        </TouchableOpacity>
-      </View>
-      <View style={styles.container}>
-        <Text style={styles.title}>Welcome Back </Text>
-        <Text
-          style={{
-            color: "white",
-            padding: 10,
-            textAlign: "left",
-            display: "flex",
-            flexDirection: "row",
-            width: "100%",
-          }}
-        >
-          Username
-        </Text>
-        <View style={styles.inputContainer}>
-          <Icon name="email-outline" size={25} style={styles.icon} />
-          <TextInput
-            style={styles.input}
-            placeholder="Username/Email"
-            autoCapitalize="none"
-            keyboardType="email-address"
-            value={email}
-            onChangeText={setEmail}
-          />
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+      <SafeAreaView style={{ flex: 1 }}>
+        <View style={styles.topBar}>
+          <TouchableOpacity style={styles.backBtn} onPress={handleback}>
+            <Icon name="arrow-left" size={28} color="#fff" />
+          </TouchableOpacity>
         </View>
-        <Text
-          style={{
-            color: "white",
-            padding: 10,
-            textAlign: "left",
-            display: "flex",
-            flexDirection: "row",
-            width: "100%",
-          }}
-        >
-          Password
-        </Text>
-        <View style={styles.inputContainer}>
-          <Icon name="lock-outline" size={25} style={styles.icon} />
-          <TextInput
-            style={styles.input}
-            placeholder="Password"
-            secureTextEntry
-            value={password}
-            onChangeText={setPassword}
-          />
-        </View>
-        <TouchableOpacity onPress={forgotpassword}>
+        <View style={styles.container}>
+          <Text style={styles.title}>Welcome Back </Text>
+          {error ? <Text style={styles.errorText}>{error}</Text> : null}
           <Text
             style={{
-              color: "#9147FF",
-              textAlign: "right",
+              color: "white",
+              padding: 10,
+              textAlign: "left",
+              display: "flex",
+              flexDirection: "row",
               width: "100%",
-              marginBottom: 20,
             }}
           >
-            Forgot Password?
+            Username
           </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.button}
-          onPress={handleLoginAndNavigate}
-        >
-          <Text style={styles.buttonText}>Login</Text>
-        </TouchableOpacity>
-      </View>
-    </SafeAreaView>
+          <View style={styles.inputContainer}>
+            <Icon name="email-outline" size={25} style={styles.icon} />
+            <TextInput
+              style={styles.input}
+              placeholder="Username/Email"
+              autoCapitalize="none"
+              keyboardType="email-address"
+              value={email}
+              onChangeText={setEmail}
+            />
+          </View>
+          <Text
+            style={{
+              color: "white",
+              padding: 10,
+              textAlign: "left",
+              display: "flex",
+              flexDirection: "row",
+              width: "100%",
+            }}
+          >
+            Password
+          </Text>
+          <View style={styles.inputContainer}>
+            <Icon name="lock-outline" size={25} style={styles.icon} />
+            <TextInput
+              style={styles.input}
+              placeholder="Password"
+              secureTextEntry
+              value={password}
+              onChangeText={setPassword}
+            />
+          </View>
+          <TouchableOpacity onPress={forgotpassword}>
+            <Text
+              style={{
+                color: "#9147FF",
+                textAlign: "right",
+                width: "100%",
+                marginBottom: 20,
+              }}
+            >
+              Forgot Password?
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.button}
+            onPress={handleLoginAndNavigate}
+            disabled={loading}
+          >
+            <Text style={styles.buttonText}>
+              {loading ? "Logging in..." : "Login"}
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    </TouchableWithoutFeedback>
   );
 }
 
@@ -163,5 +204,12 @@ const styles = StyleSheet.create({
   buttonText: {
     color: "#fff",
     fontSize: 18,
+  },
+  errorText: {
+    color: "#ff4d4f",
+    fontSize: 16,
+    marginBottom: 12,
+    textAlign: "center",
+    fontWeight: "bold",
   },
 });
