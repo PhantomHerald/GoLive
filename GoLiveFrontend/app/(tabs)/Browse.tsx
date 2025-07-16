@@ -7,6 +7,8 @@ import {
   StyleSheet,
   TextInput,
   View,
+  TouchableWithoutFeedback,
+  Keyboard,
 } from "react-native";
 
 const styles = StyleSheet.create({
@@ -82,9 +84,11 @@ const SearchBar = ({ placeholder, onSearch }: SearchBarProps) => {
 export default function Browsescreen() {
   return (
     <>
-      {/* searchbar */}
-      <SearchBar />
-      <Searchtabs />
+      {/* searchbar */}{" "}
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+        <SearchBar />
+        <Searchtabs />
+      </TouchableWithoutFeedback>
     </>
   );
 }

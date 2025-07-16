@@ -7,11 +7,13 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
+  TouchableWithoutFeedback,
   View,
   Alert,
   ActivityIndicator,
   ScrollView,
   KeyboardAvoidingView,
+  Keyboard,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import authService from "../../services/authService";
@@ -94,170 +96,177 @@ export default function Signup() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "", padding: 10 }}>
-      <SuccessToast
-        message="Account created successfully!"
-        visible={showSuccessToast}
-        onHide={() => setShowSuccessToast(false)}
-      />
-      <KeyboardAvoidingView 
-        style={{ flex: 1 }} 
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
-      >
-        <View style={styles.topBar}>
-          <TouchableOpacity style={styles.backBtn} onPress={handleback}>
-            <Icon name="arrow-left" size={28} color="#fff" />
-          </TouchableOpacity>
-          <Text style={styles.title}>Join Twitch today</Text>
-          <View style={styles.placeholder} />
-        </View>
-        <ScrollView 
-          contentContainerStyle={{ flexGrow: 1 }}
-          showsVerticalScrollIndicator={false}
-          keyboardShouldPersistTaps="handled"
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+        <SuccessToast
+          message="Account created successfully!"
+          visible={showSuccessToast}
+          onHide={() => setShowSuccessToast(false)}
+        />
+        <KeyboardAvoidingView
+          style={{ flex: 1 }}
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
         >
-          <Text style={styles.label}>Username</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Enter username"
-            placeholderTextColor="#aaa"
-            value={username}
-            onChangeText={setUsername}
-            editable={!loading}
-          />
-
-          <Text style={styles.label}>Password</Text>
-          <View style={styles.inputRow}>
+          <View style={styles.topBar}>
+            <TouchableOpacity style={styles.backBtn} onPress={handleback}>
+              <Icon name="arrow-left" size={28} color="#fff" />
+            </TouchableOpacity>
+            <Text style={styles.title}>Join Twitch today</Text>
+            <View style={styles.placeholder} />
+          </View>
+          <ScrollView
+            contentContainerStyle={{ flexGrow: 1 }}
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+          >
+            <Text style={styles.label}>Username</Text>
             <TextInput
-              style={[styles.input, { flex: 1, marginBottom: 0 }]}
-              placeholder="Password"
+              style={styles.input}
+              placeholder="Enter username"
               placeholderTextColor="#aaa"
-              secureTextEntry={!showPass}
-              value={password}
-              onChangeText={setPassword}
+              value={username}
+              onChangeText={setUsername}
               editable={!loading}
             />
+
+            <Text style={styles.label}>Password</Text>
+            <View style={styles.inputRow}>
+              <TextInput
+                style={[styles.input, { flex: 1, marginBottom: 0 }]}
+                placeholder="Password"
+                placeholderTextColor="#aaa"
+                secureTextEntry={!showPass}
+                value={password}
+                onChangeText={setPassword}
+                editable={!loading}
+              />
+              <TouchableOpacity
+                onPress={() => setShowPass((v) => !v)}
+                style={styles.eyeBtn}
+                disabled={loading}
+              >
+                <Icon
+                  name={showPass ? "eye-off-outline" : "eye-outline"}
+                  size={24}
+                  color="#aaa"
+                />
+              </TouchableOpacity>
+            </View>
+
+            <Text style={styles.label}>Date of birth</Text>
+            <View style={styles.dobRow}>
+              <TextInput
+                style={[styles.input, styles.dobInput]}
+                placeholder="Month"
+                placeholderTextColor="#aaa"
+                value={month}
+                onChangeText={setMonth}
+                keyboardType="numeric"
+                maxLength={2}
+                editable={!loading}
+              />
+              <TextInput
+                style={[styles.input, styles.dobInput]}
+                placeholder="Day"
+                placeholderTextColor="#aaa"
+                value={day}
+                onChangeText={setDay}
+                keyboardType="numeric"
+                maxLength={2}
+                editable={!loading}
+              />
+              <TextInput
+                style={[styles.input, styles.dobInput]}
+                placeholder="Year"
+                placeholderTextColor="#aaa"
+                value={year}
+                onChangeText={setYear}
+                keyboardType="numeric"
+                maxLength={4}
+                editable={!loading}
+              />
+            </View>
+
+            {useemailclicked ? (
+              <>
+                <Text style={styles.label}>Phone number</Text>
+                <View style={styles.inputRow}>
+                  <View style={styles.countryBox}>
+                    <Text style={{ color: "#fff" }}>US</Text>
+                  </View>
+                  <TextInput
+                    style={[styles.input, { flex: 1, marginBottom: 0 }]}
+                    placeholder="Phone number"
+                    placeholderTextColor="#aaa"
+                    value={phone}
+                    onChangeText={setPhone}
+                    keyboardType="phone-pad"
+                    editable={!loading}
+                  />
+                </View>
+                <TouchableOpacity
+                  onPress={() => setUseEmailClicked(false)}
+                  style={{ width: "auto", alignSelf: "flex-start" }}
+                  disabled={loading}
+                >
+                  <Text
+                    style={[styles.emailInstead, loading && { opacity: 0.5 }]}
+                  >
+                    Use email instead
+                  </Text>
+                </TouchableOpacity>
+              </>
+            ) : (
+              <>
+                <Text style={styles.label}>E-mail</Text>
+                <View style={styles.inputRow}>
+                  <TextInput
+                    style={[styles.input, { flex: 1, marginBottom: 0 }]}
+                    placeholder="E-mail"
+                    placeholderTextColor="#aaa"
+                    keyboardType="email-address"
+                    value={email}
+                    onChangeText={setEmail}
+                    editable={!loading}
+                  />
+                </View>
+                <TouchableOpacity
+                  onPress={() => setUseEmailClicked(true)}
+                  style={{ width: "auto", alignSelf: "flex-start" }}
+                  disabled={loading}
+                >
+                  <Text
+                    style={[styles.emailInstead, loading && { opacity: 0.5 }]}
+                  >
+                    Use phone instead
+                  </Text>
+                </TouchableOpacity>
+              </>
+            )}
+
+            {/* Terms */}
+            <Text style={styles.terms}>
+              By tapping Sign Up, you are agreeing to Twitch's{" "}
+              <Text style={styles.link}>Terms of Services</Text> and are
+              acknowledging our <Text style={styles.link}>Privacy Notice</Text>{" "}
+              applies.
+            </Text>
+
+            {/* Sign up button */}
             <TouchableOpacity
-              onPress={() => setShowPass((v) => !v)}
-              style={styles.eyeBtn}
+              style={[styles.signupBtn, loading && styles.signupBtnDisabled]}
+              onPress={handleSigninAndNavigate}
               disabled={loading}
             >
-              <Icon
-                name={showPass ? "eye-off-outline" : "eye-outline"}
-                size={24}
-                color="#aaa"
-              />
+              {loading ? (
+                <ActivityIndicator color="#fff" size="small" />
+              ) : (
+                <Text style={styles.signupBtnText}>Sign up</Text>
+              )}
             </TouchableOpacity>
-          </View>
-
-          <Text style={styles.label}>Date of birth</Text>
-          <View style={styles.dobRow}>
-            <TextInput
-              style={[styles.input, styles.dobInput]}
-              placeholder="Month"
-              placeholderTextColor="#aaa"
-              value={month}
-              onChangeText={setMonth}
-              keyboardType="numeric"
-              maxLength={2}
-              editable={!loading}
-            />
-            <TextInput
-              style={[styles.input, styles.dobInput]}
-              placeholder="Day"
-              placeholderTextColor="#aaa"
-              value={day}
-              onChangeText={setDay}
-              keyboardType="numeric"
-              maxLength={2}
-              editable={!loading}
-            />
-            <TextInput
-              style={[styles.input, styles.dobInput]}
-              placeholder="Year"
-              placeholderTextColor="#aaa"
-              value={year}
-              onChangeText={setYear}
-              keyboardType="numeric"
-              maxLength={4}
-              editable={!loading}
-            />
-          </View>
-
-          {useemailclicked ? (
-            <>
-              <Text style={styles.label}>Phone number</Text>
-              <View style={styles.inputRow}>
-                <View style={styles.countryBox}>
-                  <Text style={{ color: "#fff" }}>US</Text>
-                </View>
-                <TextInput
-                  style={[styles.input, { flex: 1, marginBottom: 0 }]}
-                  placeholder="Phone number"
-                  placeholderTextColor="#aaa"
-                  value={phone}
-                  onChangeText={setPhone}
-                  keyboardType="phone-pad"
-                  editable={!loading}
-                />
-              </View>
-              <TouchableOpacity
-                onPress={() => setUseEmailClicked(false)}
-                style={{ width: "auto", alignSelf: "flex-start" }}
-                disabled={loading}
-              >
-                <Text style={[styles.emailInstead, loading && { opacity: 0.5 }]}>
-                  Use email instead
-                </Text>
-              </TouchableOpacity>
-            </>
-          ) : (
-            <>
-              <Text style={styles.label}>E-mail</Text>
-              <View style={styles.inputRow}>
-                <TextInput
-                  style={[styles.input, { flex: 1, marginBottom: 0 }]}
-                  placeholder="E-mail"
-                  placeholderTextColor="#aaa"
-                  keyboardType="email-address"
-                  value={email}
-                  onChangeText={setEmail}
-                  editable={!loading}
-                />
-              </View>
-              <TouchableOpacity
-                onPress={() => setUseEmailClicked(true)}
-                style={{ width: "auto", alignSelf: "flex-start" }}
-                disabled={loading}
-              >
-                <Text style={[styles.emailInstead, loading && { opacity: 0.5 }]}>
-                  Use phone instead
-                </Text>
-              </TouchableOpacity>
-            </>
-          )}
-
-          {/* Terms */}
-          <Text style={styles.terms}>
-            By tapping Sign Up, you are agreeing to Twitch's{" "}
-            <Text style={styles.link}>Terms of Services</Text> and are acknowledging
-            our <Text style={styles.link}>Privacy Notice</Text> applies.
-          </Text>
-
-          {/* Sign up button */}
-          <TouchableOpacity
-            style={[styles.signupBtn, loading && styles.signupBtnDisabled]}
-            onPress={handleSigninAndNavigate}
-            disabled={loading}
-          >
-            {loading ? (
-              <ActivityIndicator color="#fff" size="small" />
-            ) : (
-              <Text style={styles.signupBtnText}>Sign up</Text>
-            )}
-          </TouchableOpacity>
-        </ScrollView>
-      </KeyboardAvoidingView>
+          </ScrollView>
+        </KeyboardAvoidingView>
+      </TouchableWithoutFeedback>
     </SafeAreaView>
   );
 }

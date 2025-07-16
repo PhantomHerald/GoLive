@@ -1,16 +1,20 @@
 import ClipsScreen from "@/app/stream/clips";
 import { mockFollowedChannels, mockStreams } from "@/data/mockdata";
 import { Image } from "expo-image";
-import React, { useState, useRef } from "react";
+import React, { useState } from "react";
 import {
+  Animated,
+  Platform,
   FlatList,
+  PanResponder,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
-  ScrollView,
-  PanResponder,
 } from "react-native";
+import { useEffect } from "react";
+import { useNavigation, useFocusEffect } from "@react-navigation/native";
+import LiveStreamApp from "@/app/stream/live";
 
 type NavbarProps = {
   initialTab?: string;
@@ -26,36 +30,47 @@ const getStreamTitle = (username: string) => {
   return stream ? stream.title : "";
 };
 
-export default function Navbar({ initialTab = "Following" }: NavbarProps) {
+export default function Navbar({ initialTab = "Live" }: NavbarProps) {
   const tabs = ["Following", "Live", "Clips"];
   const [activeTab, setActiveTab] = useState(initialTab);
-  const [tabWidths, setTabWidths] = useState<{ [key: string]: number }>({});
-
   const tabIndex = tabs.indexOf(activeTab);
+  const navigation = useNavigation();
 
-  const handleTabTextLayout = (tab: string, event: any) => {
-    const width = event.nativeEvent.layout.width;
-    setTabWidths((prev) => ({ ...prev, [tab]: width }));
-  };
+  // Listen for Home tab press and reset to 'Live'
+  useFocusEffect(
+    React.useCallback(() => {
+      const unsubscribe = navigation.addListener?.("focus", () => {
+        // If already focused and Home tab is pressed again, reset to 'Live'
+        setActiveTab("Live");
+      });
+      return unsubscribe;
+    }, [navigation])
+  );
 
-  // PanResponder for swipe gestures
-  const panResponder = useRef(
-    PanResponder.create({
-      onMoveShouldSetPanResponder: (_, gestureState) => {
-        // Only respond to horizontal swipes
-        return Math.abs(gestureState.dx) > Math.abs(gestureState.dy) && Math.abs(gestureState.dx) > 20;
-      },
-      onPanResponderRelease: (_, gestureState) => {
-        if (gestureState.dx < -30 && tabIndex < tabs.length - 1) {
-          // Swipe left
-          setActiveTab(tabs[tabIndex + 1]);
-        } else if (gestureState.dx > 30 && tabIndex > 0) {
-          // Swipe right
-          setActiveTab(tabs[tabIndex - 1]);
-        }
-      },
-    })
-  ).current;
+  // Animated underline logic
+  const underlineAnim = React.useRef(new Animated.Value(tabIndex)).current;
+  React.useEffect(() => {
+    Animated.spring(underlineAnim, {
+      toValue: tabIndex,
+      useNativeDriver: false,
+      friction: 7,
+      tension: 80,
+    }).start();
+  }, [tabIndex, underlineAnim]);
+
+  // Swipe gesture logic
+  const panResponder = PanResponder.create({
+    onMoveShouldSetPanResponder: (_, gestureState) => {
+      return Math.abs(gestureState.dx) > 20;
+    },
+    onPanResponderRelease: (_, gestureState) => {
+      if (gestureState.dx < -50 && tabIndex < tabs.length - 1) {
+        setActiveTab(tabs[tabIndex + 1]);
+      } else if (gestureState.dx > 50 && tabIndex > 0) {
+        setActiveTab(tabs[tabIndex - 1]);
+      }
+    },
+  });
 
   // Render content based on active tab
   const renderTabContent = () => {
@@ -91,6 +106,7 @@ export default function Navbar({ initialTab = "Following" }: NavbarProps) {
                 </View>
               </View>
             )}
+            contentContainerStyle={{ paddingTop: 60 }}
             ListEmptyComponent={
               <View
                 style={{
@@ -108,7 +124,7 @@ export default function Navbar({ initialTab = "Following" }: NavbarProps) {
                   favorite creators
                 </Text>
                 <Text style={styles.followingSub}>
-                  when you follow creators, you'll see {"\n"} them here
+                  when you follow creators, you’ll see {"\n"} them here
                 </Text>
                 <Text style={styles.followingDiscover}>
                   Discover new channels and find more {"\n"} creators to follow
@@ -120,6 +136,11 @@ export default function Navbar({ initialTab = "Following" }: NavbarProps) {
       case "Live":
         return (
           <View style={{ flex: 1 }}>
+            <LiveStreamApp />
+          </View>
+        );
+      /*  return (
+          <View>
             <Text
               style={{
                 color: "#FFF",
@@ -137,7 +158,12 @@ export default function Navbar({ initialTab = "Following" }: NavbarProps) {
             >
               Live Now
             </Text>
-            <ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', alignItems: 'center' }}>
+            <View
+              style={{
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
               <Image
                 source={require("@/assets/images/nolivesimg.png")}
                 style={{
@@ -154,9 +180,9 @@ export default function Navbar({ initialTab = "Following" }: NavbarProps) {
                 meanwhile, explore the Live Feed for other {"\n"}content you
                 might be interested in!
               </Text>
-            </ScrollView>
+            </View>
           </View>
-        );
+        );*/
       case "Clips":
         return (
           <View style={{ flex: 1 }}>
@@ -169,8 +195,8 @@ export default function Navbar({ initialTab = "Following" }: NavbarProps) {
   };
 
   return (
-    <View style={styles.wrapper} {...panResponder.panHandlers}>
-      <View style={styles.topBar}>
+    <View style={styles.wrapper}>
+      <View style={styles.topBar} pointerEvents="box-none">
         <View style={styles.tabContainer}>
           {tabs.map((tab, index) => (
             <TouchableOpacity
@@ -179,20 +205,37 @@ export default function Navbar({ initialTab = "Following" }: NavbarProps) {
               style={styles.tab}
               activeOpacity={0.7}
             >
-              <Text
-                style={[styles.tabText, activeTab === tab && styles.activeText]}
-                onLayout={(e) => handleTabTextLayout(tab, e)}
-              >
-                {tab}
-              </Text>
-              {activeTab === tab && (
-                <View
+              <View style={{ alignItems: "center" }}>
+                <Text
                   style={[
-                    styles.underline,
-                    { width: tabWidths[tab] || undefined },
+                    styles.tabText,
+                    activeTab === tab && styles.activeText,
                   ]}
-                />
-              )}
+                >
+                  {tab}
+                </Text>
+                {/* Animated underline directly under text */}
+                {activeTab === tab && (
+                  <Animated.View
+                    style={[
+                      styles.underline,
+                      {
+                        marginTop: 2,
+                        opacity: 1,
+                        transform: [
+                          {
+                            scaleX: underlineAnim.interpolate({
+                              inputRange: [index - 1, index, index + 1],
+                              outputRange: [0.7, 1, 0.7],
+                              extrapolate: "clamp",
+                            }),
+                          },
+                        ],
+                      },
+                    ]}
+                  />
+                )}
+              </View>
             </TouchableOpacity>
           ))}
         </View>
@@ -203,23 +246,31 @@ export default function Navbar({ initialTab = "Following" }: NavbarProps) {
           <View style={[styles.circle, { right: 0 }]} />
         </View>
       </View>
-      <View style={styles.contentContainer}>{renderTabContent()}</View>
+      <View style={styles.contentContainer} {...panResponder.panHandlers}>
+        {renderTabContent()}
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   wrapper: {
-    flexDirection: "column",
-    backgroundColor: "transparent",
-    padding: 20,
     flex: 1,
+    backgroundColor: "transparent",
   },
   topBar: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 8,
-    backgroundColor: "transparent",
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 100,
+    height: 60,
+    backgroundColor: "rgba(0, 0, 0, 0)", // true transparent overlay
+    paddingTop: Platform.OS === "android" ? 20 : 10,
+    elevation: 0,
+    shadowOpacity: 0,
   },
   tabContainer: {
     flexDirection: "row",
@@ -240,14 +291,15 @@ const styles = StyleSheet.create({
     color: "#fff",
   },
   underline: {
-    marginTop: 4,
-    height: 2.5,
-    backgroundColor: "#BF94FE",
+    height: 4,
+    width: 28,
+    backgroundColor: "#fff",
     borderRadius: 2,
+    alignSelf: "center",
   },
   contentContainer: {
     flex: 1,
-    marginTop: 8,
+    // Removed marginTop so content starts at the very top, under the overlay navbar
   },
   followingTitle: {
     textAlign: "center",
@@ -277,12 +329,13 @@ const styles = StyleSheet.create({
     position: "relative",
     flexDirection: "row",
     marginLeft: 16,
+    backgroundColor: "transparent", // Make container transparent
   },
   circle: {
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: "#444",
+    backgroundColor: "rgba(68,68,68,0.3)",
     position: "absolute",
   },
   channelRow: {
