@@ -1,12 +1,19 @@
 import CategoriesScreen from "@/app/stream/categories";
 import LiveChannelsScreen from "@/app/stream/livechannels";
 import React, { useState } from "react";
-import { Keyboard, StyleSheet, Text, TouchableOpacity, TouchableWithoutFeedback, View } from "react-native";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 export default function Searchtabs() {
   const tabs = ["Categories", "Live channels"];
   const [activeTab, setActiveTab] = useState("Categories");
   const trail = true;
+  const [tabWidths, setTabWidths] = useState<{ [key: string]: number }>({});
+
+  const handleTabTextLayout = (tab: string, event: any) => {
+    const width = event.nativeEvent.layout.width;
+    setTabWidths((prev) => ({ ...prev, [tab]: width }));
+  };
+
   const renderTabContent = () => {
     switch (activeTab) {
       case "Categories":
@@ -20,30 +27,36 @@ export default function Searchtabs() {
   };
 
   return (
-    <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-      <View style={styles.wrapper}>
-        <View style={styles.topBar}>
-          <View style={styles.tabContainer}>
-            {tabs.map((tab, index) => (
-              <TouchableOpacity
-                key={index}
-                onPress={() => setActiveTab(tab)}
-                style={styles.tab}
-                activeOpacity={0.7}
+    <View style={styles.wrapper}>
+      <View style={styles.topBar}>
+        <View style={styles.tabContainer}>
+          {tabs.map((tab, index) => (
+            <TouchableOpacity
+              key={index}
+              onPress={() => setActiveTab(tab)}
+              style={styles.tab}
+              activeOpacity={0.7}
+            >
+              <Text
+                style={[styles.tabText, activeTab === tab && styles.activeText]}
+                onLayout={(e) => handleTabTextLayout(tab, e)}
               >
-                <Text
-                  style={[styles.tabText, activeTab === tab && styles.activeText]}
-                >
-                  {tab}
-                </Text>
-                {activeTab === tab && <View style={styles.underline} />}
-              </TouchableOpacity>
-            ))}
-          </View>
+                {tab}
+              </Text>
+              {activeTab === tab && (
+                <View
+                  style={[
+                    styles.underline,
+                    { width: tabWidths[tab] || undefined },
+                  ]}
+                />
+              )}
+            </TouchableOpacity>
+          ))}
         </View>
-        <View style={styles.contentContainer}>{renderTabContent()}</View>
       </View>
-    </TouchableWithoutFeedback>
+      <View style={styles.contentContainer}>{renderTabContent()}</View>
+    </View>
   );
 }
 
@@ -51,13 +64,13 @@ const styles = StyleSheet.create({
   wrapper: {
     flexDirection: "column",
     backgroundColor: "transparent",
-    padding: 20,
+    padding: 10,
     flex: 1,
   },
   topBar: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 2,
+    marginBottom: 0,
   },
   tabContainer: {
     flexDirection: "row",
@@ -77,14 +90,13 @@ const styles = StyleSheet.create({
   },
   underline: {
     marginTop: 4,
-    height: 4,
-    width: 28,
-    backgroundColor: "#fff",
+    height: 2.5,
+    backgroundColor: "#BF94FE",
     borderRadius: 2,
   },
   contentContainer: {
     flex: 1,
-    marginTop: 20,
+    marginTop: 10,
   },
   followingTitle: {
     textAlign: "center",

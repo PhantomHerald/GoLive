@@ -2,200 +2,263 @@ import Icon from "@expo/vector-icons/MaterialCommunityIcons";
 import { router } from "expo-router";
 import React, { useState } from "react";
 import {
-  Keyboard,
   Platform,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  TouchableWithoutFeedback,
   View,
+  Alert,
+  ActivityIndicator,
+  ScrollView,
+  KeyboardAvoidingView,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import authService from "../../services/authService";
+import { Button } from "@/components/ui/Button";
+import { Colors } from "@/constants/Colors";
+import Layout from "@/constants/Layout";
+import SuccessToast from "@/components/SuccessToast";
+
 export default function Signup() {
   const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPass, setShowPass] = useState(false);
   const [month, setMonth] = useState("");
   const [day, setDay] = useState("");
   const [year, setYear] = useState("");
   const [phone, setPhone] = useState("");
-  const [email, setEmail] = useState("");
   const [country, setCountry] = useState("US");
   const [useemailclicked, setUseEmailClicked] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  // const handleSigninAndNavigate = () => {
-  //  alert("Signned Up!");
-  //  router.replace("/Home");
-  // };
-  const handleback = () => {
-    router.replace("/onboarding");
-  };
   const [loading, setLoading] = useState(false);
+  const [showSuccessToast, setShowSuccessToast] = useState(false);
 
-  async function handleSigninAndNavigate() {
-    setError(null);
-    if (
-      !username ||
-      !password ||
-      !month ||
-      !day ||
-      !year ||
-      (!useemailclicked && !email) ||
-      (useemailclicked && !phone)
-    ) {
-      setError("Please fill in all required fields.");
+  const clearAllInputs = () => {
+    setUsername("");
+    setEmail("");
+    setPassword("");
+    setMonth("");
+    setDay("");
+    setYear("");
+    setPhone("");
+    setShowPass(false);
+  };
+
+  const handleSigninAndNavigate = async () => {
+    if (!username.trim() || !email.trim() || !password.trim()) {
+      Alert.alert("Error", "Please fill in all fields");
       return;
     }
+
+    // Check if all date of birth fields are filled
+    if (!month.trim() || !day.trim() || !year.trim()) {
+      Alert.alert("Error", "Please fill in all date of birth fields");
+      return;
+    }
+
     setLoading(true);
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1200));
-      // On success, navigate to Home
-      router.replace("/Home");
-    } catch (e) {
-      setError("Sign up failed. Please try again.");
+      const response = await authService.signup({
+        username: username.trim(),
+        email: email.trim(),
+        password: password,
+        birthMonth: month ? parseInt(month) : undefined,
+        birthDay: day ? parseInt(day) : undefined,
+        birthYear: year ? parseInt(year) : undefined,
+      });
+
+      if (response.token) {
+        // Show success toast
+        setShowSuccessToast(true);
+        // Auto-navigate after 2.5 seconds (toast shows for 2 seconds)
+        setTimeout(() => {
+          router.replace("/(tabs)/Home");
+        }, 2500);
+      } else {
+        Alert.alert("Error", "Signup failed. Please try again.");
+        clearAllInputs(); // Clear all inputs on failure
+      }
+    } catch (error: any) {
+      console.error("Signup error:", error);
+      Alert.alert("Error", error.message || "Signup failed. Please try again.");
+      clearAllInputs(); // Clear all inputs on error
     } finally {
       setLoading(false);
     }
-  }
+  };
+
+  const handleback = () => {
+    router.replace("/onboarding");
+  };
 
   return (
-    <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-      <SafeAreaView style={{ flex: 1, backgroundColor: "", padding: 10 }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: "", padding: 10 }}>
+      <SuccessToast
+        message="Account created successfully!"
+        visible={showSuccessToast}
+        onHide={() => setShowSuccessToast(false)}
+      />
+      <KeyboardAvoidingView 
+        style={{ flex: 1 }} 
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
+      >
         <View style={styles.topBar}>
           <TouchableOpacity style={styles.backBtn} onPress={handleback}>
             <Icon name="arrow-left" size={28} color="#fff" />
           </TouchableOpacity>
+          <Text style={styles.title}>Join Twitch today</Text>
+          <View style={styles.placeholder} />
         </View>
-
-        <Text style={styles.title}>Join Twitch today</Text>
-        {error ? <Text style={styles.errorText}>{error}</Text> : null}
-        <Text style={styles.label}>Username</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Enter username"
-          placeholderTextColor="#aaa"
-          value={username}
-          onChangeText={setUsername}
-        />
-
-        <Text style={styles.label}>Password</Text>
-        <View style={styles.inputRow}>
-          <TextInput
-            style={[styles.input, { flex: 1, marginBottom: 0 }]}
-            placeholder="Password"
-            placeholderTextColor="#aaa"
-            secureTextEntry={!showPass}
-            value={password}
-            onChangeText={setPassword}
-          />
-          <TouchableOpacity
-            onPress={() => setShowPass((v) => !v)}
-            style={styles.eyeBtn}
-          >
-            <Icon
-              name={showPass ? "eye-off-outline" : "eye-outline"}
-              size={24}
-              color="#aaa"
-            />
-          </TouchableOpacity>
-        </View>
-
-        <Text style={styles.label}>Date of birth</Text>
-        <View style={styles.dobRow}>
-          <TextInput
-            style={[styles.input, styles.dobInput]}
-            placeholder="Month"
-            placeholderTextColor="#aaa"
-            value={month}
-            onChangeText={setMonth}
-            keyboardType="numeric"
-            maxLength={2}
-          />
-          <TextInput
-            style={[styles.input, styles.dobInput]}
-            placeholder="Day"
-            placeholderTextColor="#aaa"
-            value={day}
-            onChangeText={setDay}
-            keyboardType="numeric"
-            maxLength={2}
-          />
-          <TextInput
-            style={[styles.input, styles.dobInput]}
-            placeholder="Year"
-            placeholderTextColor="#aaa"
-            value={year}
-            onChangeText={setYear}
-            keyboardType="numeric"
-            maxLength={4}
-          />
-        </View>
-
-        {useemailclicked ? (
-          <>
-            <Text style={styles.label}>Phone number</Text>
-            <View style={styles.inputRow}>
-              <View style={styles.countryBox}>
-                <Text style={{ color: "#fff" }}>US</Text>
-              </View>
-              <TextInput
-                style={[styles.input, { flex: 1, marginBottom: 0 }]}
-                placeholder="Phone number"
-                placeholderTextColor="#aaa"
-                value={phone}
-                onChangeText={setPhone}
-                keyboardType="phone-pad"
-              />
-            </View>
-            <TouchableOpacity
-              onPress={() => setUseEmailClicked(false)}
-              style={{ width: "auto", alignSelf: "flex-start" }}
-            >
-              <Text style={styles.emailInstead}>Use email instead</Text>
-            </TouchableOpacity>
-          </>
-        ) : (
-          <>
-            <Text style={styles.label}>E-mail</Text>
-            <View style={styles.inputRow}>
-              <TextInput
-                style={[styles.input, { flex: 1, marginBottom: 0 }]}
-                placeholder="E-mail"
-                placeholderTextColor="#aaa"
-                value={email}
-                onChangeText={setEmail}
-                keyboardType="email-address"
-              />
-            </View>
-            <TouchableOpacity
-              onPress={() => setUseEmailClicked(true)}
-              style={{ width: "auto", alignSelf: "flex-start" }}
-            >
-              <Text style={styles.emailInstead}>Use phone instead</Text>
-            </TouchableOpacity>
-          </>
-        )}
-
-        <Text style={styles.terms}>
-          By tapping Sign Up, you are agreeing to Twitch’s{" "}
-          <Text style={styles.link}>Terms of Services</Text> and are
-          acknowledging our <Text style={styles.link}>Privacy Notice</Text>{" "}
-          applies.
-        </Text>
-
-        <TouchableOpacity
-          style={styles.signupBtn}
-          onPress={handleSigninAndNavigate}
-          disabled={loading}
+        <ScrollView 
+          contentContainerStyle={{ flexGrow: 1 }}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
         >
-          <Text style={styles.signupBtnText}>
-            {loading ? "Signing up..." : "Sign up"}
+          <Text style={styles.label}>Username</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Enter username"
+            placeholderTextColor="#aaa"
+            value={username}
+            onChangeText={setUsername}
+            editable={!loading}
+          />
+
+          <Text style={styles.label}>Password</Text>
+          <View style={styles.inputRow}>
+            <TextInput
+              style={[styles.input, { flex: 1, marginBottom: 0 }]}
+              placeholder="Password"
+              placeholderTextColor="#aaa"
+              secureTextEntry={!showPass}
+              value={password}
+              onChangeText={setPassword}
+              editable={!loading}
+            />
+            <TouchableOpacity
+              onPress={() => setShowPass((v) => !v)}
+              style={styles.eyeBtn}
+              disabled={loading}
+            >
+              <Icon
+                name={showPass ? "eye-off-outline" : "eye-outline"}
+                size={24}
+                color="#aaa"
+              />
+            </TouchableOpacity>
+          </View>
+
+          <Text style={styles.label}>Date of birth</Text>
+          <View style={styles.dobRow}>
+            <TextInput
+              style={[styles.input, styles.dobInput]}
+              placeholder="Month"
+              placeholderTextColor="#aaa"
+              value={month}
+              onChangeText={setMonth}
+              keyboardType="numeric"
+              maxLength={2}
+              editable={!loading}
+            />
+            <TextInput
+              style={[styles.input, styles.dobInput]}
+              placeholder="Day"
+              placeholderTextColor="#aaa"
+              value={day}
+              onChangeText={setDay}
+              keyboardType="numeric"
+              maxLength={2}
+              editable={!loading}
+            />
+            <TextInput
+              style={[styles.input, styles.dobInput]}
+              placeholder="Year"
+              placeholderTextColor="#aaa"
+              value={year}
+              onChangeText={setYear}
+              keyboardType="numeric"
+              maxLength={4}
+              editable={!loading}
+            />
+          </View>
+
+          {useemailclicked ? (
+            <>
+              <Text style={styles.label}>Phone number</Text>
+              <View style={styles.inputRow}>
+                <View style={styles.countryBox}>
+                  <Text style={{ color: "#fff" }}>US</Text>
+                </View>
+                <TextInput
+                  style={[styles.input, { flex: 1, marginBottom: 0 }]}
+                  placeholder="Phone number"
+                  placeholderTextColor="#aaa"
+                  value={phone}
+                  onChangeText={setPhone}
+                  keyboardType="phone-pad"
+                  editable={!loading}
+                />
+              </View>
+              <TouchableOpacity
+                onPress={() => setUseEmailClicked(false)}
+                style={{ width: "auto", alignSelf: "flex-start" }}
+                disabled={loading}
+              >
+                <Text style={[styles.emailInstead, loading && { opacity: 0.5 }]}>
+                  Use email instead
+                </Text>
+              </TouchableOpacity>
+            </>
+          ) : (
+            <>
+              <Text style={styles.label}>E-mail</Text>
+              <View style={styles.inputRow}>
+                <TextInput
+                  style={[styles.input, { flex: 1, marginBottom: 0 }]}
+                  placeholder="E-mail"
+                  placeholderTextColor="#aaa"
+                  keyboardType="email-address"
+                  value={email}
+                  onChangeText={setEmail}
+                  editable={!loading}
+                />
+              </View>
+              <TouchableOpacity
+                onPress={() => setUseEmailClicked(true)}
+                style={{ width: "auto", alignSelf: "flex-start" }}
+                disabled={loading}
+              >
+                <Text style={[styles.emailInstead, loading && { opacity: 0.5 }]}>
+                  Use phone instead
+                </Text>
+              </TouchableOpacity>
+            </>
+          )}
+
+          {/* Terms */}
+          <Text style={styles.terms}>
+            By tapping Sign Up, you are agreeing to Twitch's{" "}
+            <Text style={styles.link}>Terms of Services</Text> and are acknowledging
+            our <Text style={styles.link}>Privacy Notice</Text> applies.
           </Text>
-        </TouchableOpacity>
-      </SafeAreaView>
-    </TouchableWithoutFeedback>
+
+          {/* Sign up button */}
+          <TouchableOpacity
+            style={[styles.signupBtn, loading && styles.signupBtnDisabled]}
+            onPress={handleSigninAndNavigate}
+            disabled={loading}
+          >
+            {loading ? (
+              <ActivityIndicator color="#fff" size="small" />
+            ) : (
+              <Text style={styles.signupBtnText}>Sign up</Text>
+            )}
+          </TouchableOpacity>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
 
@@ -211,10 +274,19 @@ const styles = StyleSheet.create({
     marginTop: 10,
     marginLeft: 10,
     marginBottom: 10,
+    justifyContent: "space-between",
   },
   backBtn: {
     padding: 4,
     borderRadius: 20,
+    width: 40,
+  },
+  title: {
+    color: "#fff",
+    fontSize: 26,
+    fontWeight: "bold",
+    textAlign: "center",
+    flex: 1,
   },
   card: {
     backgroundColor: "#18181b",
@@ -226,13 +298,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.2,
     shadowRadius: 10,
     shadowOffset: { width: 0, height: 2 },
-  },
-  title: {
-    color: "#fff",
-    fontSize: 26,
-    fontWeight: "bold",
-    marginBottom: 24,
-    textAlign: "left",
   },
   label: {
     color: "#fff",
@@ -310,11 +375,10 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     fontSize: 18,
   },
-  errorText: {
-    color: "#ff4d4f",
-    fontSize: 16,
-    marginBottom: 12,
-    textAlign: "center",
-    fontWeight: "bold",
+  signupBtnDisabled: {
+    backgroundColor: "#555",
+  },
+  placeholder: {
+    width: 40,
   },
 });

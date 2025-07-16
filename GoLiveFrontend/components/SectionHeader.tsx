@@ -34,7 +34,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     paddingHorizontal: 16,
-    marginBottom: 12,
+    marginBottom: 6,
   },
   title: {
     fontFamily: "Inter-Bold",

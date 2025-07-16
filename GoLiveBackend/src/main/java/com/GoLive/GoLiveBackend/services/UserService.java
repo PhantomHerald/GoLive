@@ -8,6 +8,11 @@ import org.springframework.stereotype.Service;
 import com.GoLive.GoLiveBackend.entities.User;
 import com.GoLive.GoLiveBackend.repositories.UserRepository;
 import com.GoLive.GoLiveBackend.dtos.AuthRequest;
+import com.GoLive.GoLiveBackend.repositories.CommentRepository;
+import com.GoLive.GoLiveBackend.repositories.LikeRepository;
+import com.GoLive.GoLiveBackend.repositories.FollowRepository;
+import com.GoLive.GoLiveBackend.repositories.NotificationRepository;
+import com.GoLive.GoLiveBackend.repositories.StreamRepository;
 
 @Service
 public class UserService {
@@ -19,6 +24,21 @@ public class UserService {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private CommentRepository commentRepository;
+
+    @Autowired
+    private LikeRepository likeRepository;
+
+    @Autowired
+    private FollowRepository followRepository;
+
+    @Autowired
+    private NotificationRepository notificationRepository;
+
+    @Autowired
+    private StreamRepository streamRepository;
 
     public User registerUser(AuthRequest request) {
         logger.info("Registering user: {}", request.getUsername());
@@ -133,5 +153,28 @@ public class UserService {
                 .orElseThrow(() -> new Exception("User not found"));
         logger.info("User found: {}", user.getUsername());
         return user;
+    }
+
+    public boolean checkPassword(User user, String password) {
+        return passwordEncoder.matches(password, user.getPassword());
+    }
+
+    public void deleteUserAndData(User user) {
+        Long userId = user.getId();
+        // Delete all comments by user
+        commentRepository.deleteByUserId(userId);
+        // Delete all likes by user
+        likeRepository.deleteByUserId(userId);
+        // Delete all follows where user is follower or followed
+        followRepository.deleteByFollowerId(userId);
+        followRepository.deleteByFollowedId(userId);
+        // Delete all notifications where user is recipient or sender
+        notificationRepository.deleteByRecipientId(userId);
+        notificationRepository.deleteBySenderId(userId);
+        // Delete all streams by user
+        streamRepository.deleteByStreamerId(userId);
+        // Finally, delete the user
+        userRepository.deleteById(userId);
+        logger.info("Deleted user and all related data for userId: {}", userId);
     }
 }

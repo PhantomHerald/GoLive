@@ -39,13 +39,13 @@ public class User {
     private String roles = "USER";
 
     @Column(name = "birth_month")
-    private int birthMonth;
+    private Integer birthMonth;
 
     @Column(name = "birth_day")
-    private int birthDay;
+    private Integer birthDay;
 
     @Column(name = "birth_year")
-    private int birthYear;
+    private Integer birthYear;
 
     // Getters and Setters
     public Long getId() {
@@ -128,27 +128,27 @@ public class User {
         this.roles = roles;
     }
 
-    public int getBirthMonth() {
+    public Integer getBirthMonth() {
         return birthMonth;
     }
 
-    public void setBirthMonth(int birthMonth) {
+    public void setBirthMonth(Integer birthMonth) {
         this.birthMonth = birthMonth;
     }
 
-    public int getBirthDay() {
+    public Integer getBirthDay() {
         return birthDay;
     }
 
-    public void setBirthDay(int birthDay) {
+    public void setBirthDay(Integer birthDay) {
         this.birthDay = birthDay;
     }
 
-    public int getBirthYear() {
+    public Integer getBirthYear() {
         return birthYear;
     }
 
-    public void setBirthYear(int birthYear) {
+    public void setBirthYear(Integer birthYear) {
         this.birthYear = birthYear;
     }
 

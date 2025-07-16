@@ -11,6 +11,7 @@ import com.GoLive.GoLiveBackend.entities.User;
 import com.GoLive.GoLiveBackend.dtos.AuthRequest;
 import com.GoLive.GoLiveBackend.dtos.AuthResponse;
 import com.GoLive.GoLiveBackend.dtos.BioUpdateRequest;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -134,6 +135,32 @@ public class AuthController {
             logger.error("Bio update failed", e);
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(new AuthResponse("Bio update failed: " + e.getMessage(), null));
+        }
+    }
+
+    @DeleteMapping("/delete-account")
+    public ResponseEntity<AuthResponse> deleteAccount(
+            @RequestHeader("Authorization") String authHeader,
+            @RequestBody Map<String, String> body) {
+        logger.info("Delete account request received");
+        try {
+            String token = authHeader.startsWith("Bearer ") ? authHeader.substring(7) : authHeader;
+            User user = userService.validateToken(token);
+            String password = body.get("password");
+            if (password == null || password.isEmpty()) {
+                return ResponseEntity.badRequest().body(new AuthResponse("Password is required", null));
+            }
+            if (!userService.checkPassword(user, password)) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(new AuthResponse("Incorrect password", null));
+            }
+            userService.deleteUserAndData(user);
+            logger.info("Account deleted successfully for user: {}", user.getUsername());
+            return ResponseEntity.ok(new AuthResponse("Account deleted successfully", null));
+        } catch (Exception e) {
+            logger.error("Account deletion failed", e);
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new AuthResponse("Account deletion failed: " + e.getMessage(), null));
         }
     }
 }

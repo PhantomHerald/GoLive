@@ -2,148 +2,168 @@ import { router } from "expo-router";
 import { Mail, Phone } from "lucide-react-native";
 import React, { useState } from "react";
 import {
-  Keyboard,
   Platform,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  TouchableWithoutFeedback,
   View,
+  ScrollView,
+  KeyboardAvoidingView,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 
 export default function Forgotpassword() {
   const contactsupport = () => {
     router.replace("/Contactsupport");
   };
+  
+  const handleback = () => {
+    router.replace("/(auth)/Login");
+  };
+  
+  const handleContinue = () => {
+    // TODO: Implement password reset logic
+    console.log("Continue button pressed");
+  };
+  
   const [useemailclicked, setUseEmailClicked] = useState(false);
   return (
-    <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-      <SafeAreaView style={{ flex: 1, backgroundColor: "black" }}>
-        <View>
-          <Text
-            style={{
-              fontWeight: "bold",
-              color: "white",
-              alignItems: "center",
-              textAlign: "center",
-              padding: 10,
-            }}
-          >
-            Trouble logging in?
-          </Text>
-        </View>
-        <View
-          style={{
-            width: "100%",
-            height: "100%",
-            padding: 20,
-          }}
+    <SafeAreaView style={{ flex: 1, backgroundColor: "black" }}>
+      <View style={styles.topBar}>
+        <TouchableOpacity style={styles.backBtn} onPress={handleback}>
+          <Icon name="arrow-left" size={28} color="#fff" />
+        </TouchableOpacity>
+        <Text style={styles.troubleText}>Trouble logging in?</Text>
+        <View style={styles.placeholder} />
+      </View>
+      <KeyboardAvoidingView 
+        style={{ flex: 1 }} 
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
+      >
+        <ScrollView 
+          contentContainerStyle={{ flexGrow: 1 }}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
         >
-          <Text
+          <View
             style={{
-              fontSize: 50,
-              color: "white",
-              fontWeight: "bold",
-              paddingLeft: 10,
+              width: "100%",
+              height: "100%",
+              padding: 20,
             }}
           >
-            Getting back {"\n"}into your {"\n"}account
-          </Text>
-          <Text
-            style={{
-              color: "white",
-              fontWeight: "bold",
-              paddingLeft: 10,
-              fontSize: 20,
-              paddingTop: 10,
-            }}
-          >
-            Tell us some information{"\n"} about your account
-          </Text>
-          {useemailclicked ? (
-            <>
-              <Text
-                style={{
-                  color: "white",
-                  fontWeight: "bold",
-                  paddingLeft: 10,
-                  fontSize: 20,
-                }}
-              >
-                {"\n"} Email
-              </Text>
-              <TextInput
-                style={[
-                  styles.input,
-                  { marginBottom: 0, marginLeft: 10, marginTop: 10 },
-                ]}
-                placeholder="Email"
-                placeholderTextColor="black"
-                keyboardType="email-address"
-              />
-              <View style={{ paddingLeft: 20, paddingTop: 30 }}>
-                <TouchableOpacity onPress={() => setUseEmailClicked(false)}>
-                  <Text style={{ color: "white", fontSize: 20 }}>
-                    <Phone size={24} color="white" /> Use phone instead
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            </>
-          ) : (
-            <>
-              <Text
-                style={{
-                  color: "white",
-                  fontWeight: "bold",
-                  paddingLeft: 10,
-                  fontSize: 20,
-                }}
-              >
-                {"\n"} Phone
-              </Text>
-              <TextInput
-                style={[
-                  styles.input,
-                  { marginBottom: 0, marginLeft: 10, marginTop: 10 },
-                ]}
-                placeholder="Phone"
-                placeholderTextColor="black"
-                keyboardType="phone-pad"
-              />
-              <View style={{ paddingLeft: 20, paddingTop: 30 }}>
-                <TouchableOpacity onPress={() => setUseEmailClicked(true)}>
-                  <Text style={{ color: "white", fontSize: 20 }}>
-                    <Mail size={24} color="white" /> Use email instead
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            </>
-          )}
-
-          <TouchableOpacity onPress={contactsupport}>
-            <Text style={{ color: "white", fontSize: 18 }}>
-              {"\n"} Having problems with your email or {"\n"} phone?
+            <Text
+              style={{
+                fontSize: 50,
+                color: "white",
+                fontWeight: "bold",
+                textAlign: "left",
+                marginTop: 20,
+                paddingLeft: 10,
+              }}
+            >
+              Getting back {"\n"}into your {"\n"}account
             </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={{
-              backgroundColor: "#2A2929",
-              borderRadius: 10,
-              padding: 10,
-              marginTop: 70,
-              alignItems: "center",
-            }}
-          >
-            <Text style={{ color: "white", fontSize: 20, fontWeight: "bold" }}>
-              Continue
+            <Text
+              style={{
+                color: "white",
+                fontWeight: "bold",
+                paddingLeft: 10,
+                fontSize: 20,
+                paddingTop: 10,
+              }}
+            >
+              Tell us some information{"\n"} about your account
             </Text>
-          </TouchableOpacity>
-        </View>
-      </SafeAreaView>
-    </TouchableWithoutFeedback>
+            {useemailclicked ? (
+              <>
+                <Text
+                  style={{
+                    color: "white",
+                    fontWeight: "bold",
+                    paddingLeft: 10,
+                    fontSize: 20,
+                  }}
+                >
+                  {"\n"} Email
+                </Text>
+                <TextInput
+                  style={[
+                    styles.input,
+                    { marginBottom: 0, marginLeft: 10, marginTop: 10 },
+                  ]}
+                  placeholder="Email"
+                  placeholderTextColor="#888"
+                  keyboardType="email-address"
+                />
+                <View style={{ paddingLeft: 20, paddingTop: 30 }}>
+                  <TouchableOpacity onPress={() => setUseEmailClicked(false)}>
+                    <View style={styles.optionContainer}>
+                      <Phone size={24} color="#888" />
+                      <Text style={styles.optionText}>Use phone instead</Text>
+                    </View>
+                  </TouchableOpacity>
+                </View>
+              </>
+            ) : (
+              <>
+                <Text
+                  style={{
+                    color: "white",
+                    fontWeight: "bold",
+                    paddingLeft: 10,
+                    fontSize: 20,
+                  }}
+                >
+                  {"\n"} Phone
+                </Text>
+                <TextInput
+                  style={[
+                    styles.input,
+                    { marginBottom: 0, marginLeft: 10, marginTop: 10 },
+                  ]}
+                  placeholder="Phone"
+                  placeholderTextColor="#888"
+                  keyboardType="phone-pad"
+                />
+                <View style={{ paddingLeft: 20, paddingTop: 30 }}>
+                  <TouchableOpacity onPress={() => setUseEmailClicked(true)}>
+                    <View style={styles.optionContainer}>
+                      <Mail size={24} color="#888" />
+                      <Text style={styles.optionText}>Use email instead</Text>
+                    </View>
+                  </TouchableOpacity>
+                </View>
+              </>
+            )}
+
+            <TouchableOpacity onPress={contactsupport}>
+              <Text style={{ color: "#888", fontSize: 18 }}>
+                {"\n"} Having problems with your email or {"\n"} phone?
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={{
+                backgroundColor: "#2A2929",
+                borderRadius: 10,
+                padding: 10,
+                marginTop: 50,
+                alignItems: "center",
+              }}
+              onPress={handleContinue}
+            >
+              <Text style={{ color: "white", fontSize: 20, fontWeight: "bold" }}>
+                Continue
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
 const styles = StyleSheet.create({
@@ -155,5 +175,37 @@ const styles = StyleSheet.create({
     paddingVertical: Platform.OS === "ios" ? 14 : 10,
     fontSize: 16,
     marginBottom: 16,
+  },
+  topBar: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 10,
+    marginLeft: 10,
+    marginBottom: 10,
+    justifyContent: "space-between",
+  },
+  backBtn: {
+    padding: 4,
+    borderRadius: 20,
+    width: 40,
+  },
+  troubleText: {
+    fontWeight: "bold",
+    color: "white",
+    textAlign: "center",
+    flex: 1,
+  },
+  placeholder: {
+    width: 40,
+  },
+  optionContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  optionText: {
+    color: "#888",
+    fontWeight: "bold",
+    fontSize: 18,
+    marginLeft: 10,
   },
 });

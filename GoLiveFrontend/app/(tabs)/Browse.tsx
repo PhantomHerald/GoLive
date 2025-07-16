@@ -16,8 +16,9 @@ const styles = StyleSheet.create({
     backgroundColor: "#28282E",
     borderRadius: 10,
     paddingHorizontal: 10,
-    paddingVertical: 8,
-    margin: 10,
+    paddingVertical: 2,
+    marginTop: 10,
+    marginHorizontal: 10,
     flex: 1, // Make the container expand to fill available width
     minWidth: 0, // Prevent overflow issues
   },
@@ -26,7 +27,7 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
-    fontSize: 16,
+    fontSize: 14,
     color: "#fff",
   },
 });
@@ -63,9 +64,8 @@ const SearchBar = ({ placeholder, onSearch }: SearchBarProps) => {
           marginHorizontal: 10,
         }}
       >
-        {/* Search icon outside the container */}
-        <Ionicons name="search" size={20} color="#888" style={styles.icon} />
         <View style={styles.container}>
+          <Ionicons name="search" size={20} color="#888" style={styles.icon} />
           <TextInput
             style={styles.input}
             placeholder={placeholder || "Search"}

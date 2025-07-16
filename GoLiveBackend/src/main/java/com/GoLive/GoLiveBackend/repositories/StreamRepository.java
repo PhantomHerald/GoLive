@@ -23,6 +23,8 @@ public interface StreamRepository extends JpaRepository<Stream, Long> {
     @Query("SELECT s FROM Stream s WHERE s.streamer.id = :streamerId AND s.isLive = true")
     Optional<Stream> findLiveStreamByStreamerId(@Param("streamerId") Long streamerId);
 
+    void deleteByStreamerId(Long streamerId);
+
     @Query("SELECT s FROM Stream s WHERE s.title LIKE %:searchTerm% OR s.description LIKE %:searchTerm%")
     List<Stream> searchStreams(@Param("searchTerm") String searchTerm);
 }

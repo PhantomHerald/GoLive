@@ -2,142 +2,185 @@ import Icon from "@expo/vector-icons/MaterialCommunityIcons";
 import { router } from "expo-router";
 import React, { useState } from "react";
 import {
-  Keyboard,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  TouchableWithoutFeedback,
   View,
+  Alert,
+  ActivityIndicator,
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import authService from "../../services/authService";
+import { Button } from "@/components/ui/Button";
+import { Colors } from "@/constants/Colors";
+import Layout from "@/constants/Layout";
+import SuccessToast from "@/components/SuccessToast";
 
 export default function Login() {
-  const [email, setEmail] = React.useState("");
-  const [password, setPassword] = React.useState("");
-  const [error, setError] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPass, setShowPass] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [showSuccessToast, setShowSuccessToast] = useState(false);
 
   const handleLoginAndNavigate = async () => {
-    setError("");
-    if (!email || !password) {
-      setError("Please enter both username/email and password.");
+    if (!email.trim() || !password.trim()) {
+      Alert.alert("Error", "Please fill in all fields");
       return;
     }
-    // Demo login for development without backend
-    if (email === "gerald" && password === "iamadmin") {
-      setError("");
-      router.replace("/Home");
-      return;
-    }
+
     setLoading(true);
     try {
-      const response = await fetch("http://localhost:8080/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: email,
-          password: password,
-        }),
+      // Try to login with email/username
+      const response = await authService.login({
+        email: email.trim(),
+        password: password,
       });
-      const data = await response.json();
-      if (data.token) {
-        setError("");
-        router.replace("/Home");
+
+      if (response.token) {
+        // Show success toast
+        setShowSuccessToast(true);
+        // Auto-navigate after 2.5 seconds (toast shows for 2 seconds)
+        setTimeout(() => {
+          router.replace("/(tabs)/Home");
+        }, 2500);
       } else {
-        setError(data.message || "Login failed. Please try again.");
+        Alert.alert("Error", "Login failed. Please try again.");
+        setPassword(""); // Clear password field on failure
       }
-    } catch (err) {
-      setError("Network error. Please try again later.");
+    } catch (error: any) {
+      console.error("Login error:", error);
+      Alert.alert("Error", error.message || "Login failed. Please try again.");
+      setPassword(""); // Clear password field on error
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
+
   const forgotpassword = () => {
     router.replace("/Forgotpassword");
   };
+
   const handleback = () => {
     router.replace("/onboarding");
   };
+
   return (
-    <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-      <SafeAreaView style={{ flex: 1 }}>
+    <SafeAreaView style={{ flex: 1 }}>
+      <SuccessToast
+        message="Login successful!"
+        visible={showSuccessToast}
+        onHide={() => setShowSuccessToast(false)}
+      />
+      <KeyboardAvoidingView 
+        style={{ flex: 1 }} 
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
+      >
         <View style={styles.topBar}>
           <TouchableOpacity style={styles.backBtn} onPress={handleback}>
             <Icon name="arrow-left" size={28} color="#fff" />
           </TouchableOpacity>
         </View>
-        <View style={styles.container}>
-          <Text style={styles.title}>Welcome Back </Text>
-          {error ? <Text style={styles.errorText}>{error}</Text> : null}
-          <Text
-            style={{
-              color: "white",
-              padding: 10,
-              textAlign: "left",
-              display: "flex",
-              flexDirection: "row",
-              width: "100%",
-            }}
-          >
-            Username
-          </Text>
-          <View style={styles.inputContainer}>
-            <Icon name="email-outline" size={25} style={styles.icon} />
-            <TextInput
-              style={styles.input}
-              placeholder="Username/Email"
-              autoCapitalize="none"
-              keyboardType="email-address"
-              value={email}
-              onChangeText={setEmail}
-            />
-          </View>
-          <Text
-            style={{
-              color: "white",
-              padding: 10,
-              textAlign: "left",
-              display: "flex",
-              flexDirection: "row",
-              width: "100%",
-            }}
-          >
-            Password
-          </Text>
-          <View style={styles.inputContainer}>
-            <Icon name="lock-outline" size={25} style={styles.icon} />
-            <TextInput
-              style={styles.input}
-              placeholder="Password"
-              secureTextEntry
-              value={password}
-              onChangeText={setPassword}
-            />
-          </View>
-          <TouchableOpacity onPress={forgotpassword}>
+        <ScrollView 
+          contentContainerStyle={{ flexGrow: 1 }}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+        >
+          <View style={styles.container}>
+            <Text style={styles.title}>Welcome Back </Text>
             <Text
               style={{
-                color: "#9147FF",
-                textAlign: "right",
+                color: "white",
+                padding: 10,
+                textAlign: "left",
+                display: "flex",
+                flexDirection: "row",
                 width: "100%",
-                marginBottom: 20,
               }}
             >
-              Forgot Password?
+              Username
             </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.button}
-            onPress={handleLoginAndNavigate}
-            disabled={loading}
-          >
-            <Text style={styles.buttonText}>
-              {loading ? "Logging in..." : "Login"}
+            <View style={styles.inputContainer}>
+              <Icon name="email-outline" size={25} style={styles.icon} />
+              <TextInput
+                style={styles.input}
+                placeholder="Username/Email"
+                placeholderTextColor="#666"
+                autoCapitalize="none"
+                keyboardType="email-address"
+                value={email}
+                onChangeText={setEmail}
+                editable={!loading}
+              />
+            </View>
+            <Text
+              style={{
+                color: "white",
+                padding: 10,
+                textAlign: "left",
+                display: "flex",
+                flexDirection: "row",
+                width: "100%",
+              }}
+            >
+              Password
             </Text>
-          </TouchableOpacity>
-        </View>
-      </SafeAreaView>
-    </TouchableWithoutFeedback>
+            <View style={styles.inputRow}>
+              <Icon name="lock-outline" size={25} style={styles.icon} />
+              <TextInput
+                style={[styles.input, { flex: 1, marginBottom: 0 }]}
+                placeholder="Password"
+                placeholderTextColor="#666"
+                secureTextEntry={!showPass}
+                value={password}
+                onChangeText={setPassword}
+                editable={!loading}
+              />
+              <TouchableOpacity
+                onPress={() => setShowPass((v) => !v)}
+                style={styles.eyeBtn}
+                disabled={loading}
+              >
+                <Icon
+                  name={showPass ? "eye-off-outline" : "eye-outline"}
+                  size={24}
+                  color="#666"
+                />
+              </TouchableOpacity>
+            </View>
+            <TouchableOpacity onPress={forgotpassword} disabled={loading}>
+              <Text
+                style={{
+                  color: "#9147FF",
+                  textAlign: "right",
+                  width: "100%",
+                  marginBottom: 20,
+                  opacity: loading ? 0.5 : 1,
+                }}
+              >
+                Forgot Password?
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.button, loading && styles.buttonDisabled]}
+              onPress={handleLoginAndNavigate}
+              disabled={loading}
+            >
+              {loading ? (
+                <ActivityIndicator color="#fff" size="small" />
+              ) : (
+                <Text style={styles.buttonText}>Login</Text>
+              )}
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
 
@@ -145,7 +188,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
-
     alignContent: "center",
     display: "flex",
   },
@@ -172,6 +214,7 @@ const styles = StyleSheet.create({
     marginBottom: 40,
     fontWeight: "bold",
     color: "white",
+    textAlign: "center",
   },
   inputContainer: {
     flexDirection: "row",
@@ -185,6 +228,7 @@ const styles = StyleSheet.create({
   },
   icon: {
     marginRight: 10,
+    color: "#666",
   },
   input: {
     flex: 1,
@@ -201,15 +245,25 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     position: "relative",
   },
+  buttonDisabled: {
+    backgroundColor: "#666",
+  },
   buttonText: {
     color: "#fff",
     fontSize: 18,
   },
-  errorText: {
-    color: "#ff4d4f",
-    fontSize: 16,
-    marginBottom: 12,
-    textAlign: "center",
-    fontWeight: "bold",
+  inputRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    width: "100%",
+    height: 50,
+    backgroundColor: "#28282E",
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    marginBottom: 20,
+  },
+  eyeBtn: {
+    padding: 4,
+    borderRadius: 20,
   },
 });

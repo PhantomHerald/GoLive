@@ -2,13 +2,20 @@ import { router } from "expo-router";
 import React from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import Icon from "@expo/vector-icons/MaterialCommunityIcons";
 
 export default function Contactsupport() {
-  const contact = () => {
+  const handleback = () => {
     router.replace("/Forgotpassword");
   };
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "black" }}>
+      <View style={styles.topBar}>
+        <TouchableOpacity style={styles.backBtn} onPress={handleback}>
+          <Icon name="arrow-left" size={28} color="#fff" />
+        </TouchableOpacity>
+      </View>
       <View style={styles.container}>
         <Text style={styles.title}>We need more {"\n"} information</Text>
         <View>
@@ -66,7 +73,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "600",
     lineHeight: 30,
-    textAlign: "center",
+    textAlign: "left",
     marginBottom: 16,
   },
   moreinfo: {
@@ -74,7 +81,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "600",
     lineHeight: 30,
-    textAlign: "center",
+    textAlign: "left",
     marginBottom: 24,
   },
   buttontext: {
@@ -82,5 +89,13 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "600",
     textAlign: "center",
+  },
+  topBar: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 10,
+  },
+  backBtn: {
+    padding: 5,
   },
 });

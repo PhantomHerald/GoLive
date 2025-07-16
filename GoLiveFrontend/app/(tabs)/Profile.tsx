@@ -4,6 +4,7 @@ import { Separator } from "@/components/ui/Separator";
 import { Colors } from "@/constants/Colors";
 import Layout from "@/constants/Layout";
 import { mockUsers } from "@/data/mockdata";
+import authService from "@/services/authService";
 import {
   ChevronRight,
   CreditCard,
@@ -25,13 +26,48 @@ import {
   Text,
   TouchableOpacity,
   View,
+  Alert,
 } from "react-native";
+import { router } from "expo-router";
+import SuccessToast from "@/components/SuccessToast";
 
 export default function ProfileScreen() {
   const [activeTab, setActiveTab] = useState<
     "Home" | "About" | "Clips" | "Videos"
   >("Home");
   const [darkMode, setDarkMode] = useState(true);
+  const [showSuccessToast, setShowSuccessToast] = useState(false);
+
+  const handleLogout = async () => {
+    Alert.alert(
+      "Logout",
+      "Are you sure you want to logout?",
+      [
+        {
+          text: "Cancel",
+          style: "cancel",
+        },
+        {
+          text: "Logout",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              await authService.logout();
+              // Show success toast
+              setShowSuccessToast(true);
+              // Redirect to login page after 2.5 seconds (toast shows for 2 seconds)
+              setTimeout(() => {
+                router.replace("/(auth)/Login");
+              }, 2500);
+            } catch (error) {
+              console.error("Logout error:", error);
+              Alert.alert("Error", "Failed to logout. Please try again.");
+            }
+          },
+        },
+      ]
+    );
+  };
 
   return (
     <SafeAreaView
@@ -44,6 +80,11 @@ export default function ProfileScreen() {
         }),
       }}
     >
+      <SuccessToast
+        message="Log out successful!"
+        visible={showSuccessToast}
+        onHide={() => setShowSuccessToast(false)}
+      />
       <ScrollView
         style={[
           styles.content,
@@ -86,7 +127,7 @@ export default function ProfileScreen() {
               style={[
                 styles.buttonContainer,
                 {
-                  backgroundColor: "purple",
+                  backgroundColor: Colors.primary.dark,
                   borderRadius: 8,
                   padding: 12,
                   marginRight: 8,
@@ -109,7 +150,7 @@ export default function ProfileScreen() {
                   textAlign: "center",
                 }}
               >
-                Edit profile
+                Edit Profile
               </Text>
             </TouchableOpacity>
           </View>
@@ -187,7 +228,7 @@ export default function ProfileScreen() {
               <Text style={styles.sectionTitle}>Settings</Text>
 
               <View style={styles.settingsList}>
-                <TouchableOpacity style={styles.settingItem}>
+                <TouchableOpacity style={styles.settingItem} onPress={() => router.push('/(tabs)/Activity?tab=Notifications')}>
                   <View style={styles.settingLeft}>
                     <View style={styles.settingIcon}>
                       <Settings size={20} />
@@ -197,7 +238,7 @@ export default function ProfileScreen() {
                   <ChevronRight size={20} />
                 </TouchableOpacity>
 
-                <TouchableOpacity style={styles.settingItem}>
+                <TouchableOpacity style={styles.settingItem} onPress={() => router.push('/Account')}>
                   <View style={styles.settingLeft}>
                     <View style={styles.settingIcon}>
                       <User size={20} />
@@ -207,7 +248,7 @@ export default function ProfileScreen() {
                   <ChevronRight size={20} />
                 </TouchableOpacity>
 
-                <TouchableOpacity style={styles.settingItem}>
+                <TouchableOpacity style={styles.settingItem} onPress={() => console.log("Subscriptions Pressed")}>
                   <View style={styles.settingLeft}>
                     <View style={styles.settingIcon}>
                       <Heart size={20} />
@@ -217,7 +258,7 @@ export default function ProfileScreen() {
                   <ChevronRight size={20} />
                 </TouchableOpacity>
 
-                <TouchableOpacity style={styles.settingItem}>
+                <TouchableOpacity style={styles.settingItem} onPress={() => console.log("Bits & Payments Pressed")}>
                   <View style={styles.settingLeft}>
                     <View style={styles.settingIcon}>
                       <CreditCard size={20} />
@@ -227,7 +268,7 @@ export default function ProfileScreen() {
                   <ChevronRight size={20} />
                 </TouchableOpacity>
 
-                <TouchableOpacity style={styles.settingItem}>
+                <TouchableOpacity style={styles.settingItem} onPress={() => console.log("Privacy Pressed")}>
                   <View style={styles.settingLeft}>
                     <View style={styles.settingIcon}>
                       <Shield size={20} />
@@ -255,7 +296,7 @@ export default function ProfileScreen() {
                   />
                 </View>
 
-                <TouchableOpacity style={styles.settingItem}>
+                <TouchableOpacity style={styles.settingItem} onPress={handleLogout}>
                   <View style={styles.settingLeft}>
                     <View style={styles.settingIcon}>
                       <LogOut size={20} />
