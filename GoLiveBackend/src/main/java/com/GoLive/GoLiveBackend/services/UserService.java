@@ -59,6 +59,9 @@ public class UserService {
         user.setBirthDay(request.getBirthDay());
         user.setBirthYear(request.getBirthYear());
 
+        // Set displayName to username by default
+        user.setDisplayName(request.getUsername());
+
         // Hash the password before saving
         String hashedPassword = passwordEncoder.encode(request.getPassword());
         user.setPassword(hashedPassword);
@@ -157,6 +160,30 @@ public class UserService {
 
     public boolean checkPassword(User user, String password) {
         return passwordEncoder.matches(password, user.getPassword());
+    }
+
+    public boolean changePassword(User user, String currentPassword, String newPassword) {
+        if (!passwordEncoder.matches(currentPassword, user.getPassword())) {
+            return false;
+        }
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+        return true;
+    }
+
+    public boolean changeEmail(String token, String newEmail, String password) throws Exception {
+        User user = validateToken(token);
+        if (!passwordEncoder.matches(password, user.getPassword())) {
+            return false;
+        }
+        // Check if new email is already in use
+        if (userRepository.findByEmail(newEmail).isPresent()) {
+            return false;
+        }
+        user.setEmail(newEmail);
+        userRepository.save(user);
+        // TODO: Send verification email here if needed
+        return true;
     }
 
     public void deleteUserAndData(User user) {

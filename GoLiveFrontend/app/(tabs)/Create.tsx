@@ -97,6 +97,7 @@ export default function App() {
         message={toastMessage}
         visible={showSuccessToast}
         onHide={() => setShowSuccessToast(false)}
+        top={70}
       />
       <View style={styles.container}>
         {isFocused && permission.granted && (

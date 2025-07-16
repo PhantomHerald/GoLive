@@ -82,7 +82,6 @@ const styles = StyleSheet.create({
   toast: {
     backgroundColor: "#ae44fe",
     paddingHorizontal: 20,
-    paddingVertical: 12,
     borderRadius: 8,
     shadowColor: '#000',
     shadowOffset: {
@@ -92,6 +91,9 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
     elevation: 5,
+    height: 48,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   message: {
     color: 'white',

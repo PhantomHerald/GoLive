@@ -17,7 +17,7 @@ export default function Account() {
   };
 
   const handleDeleteAccount = () => {
-    router.push("ConfirmDeleteAccount");
+    router.push("/ConfirmDeleteAccount");
   };
 
   return (
@@ -43,21 +43,27 @@ export default function Account() {
           <View style={{ width: 40 }} />
         </View>
         <View style={styles.container}>
-          <TouchableOpacity style={styles.button} onPress={() => {}}>
+          <TouchableOpacity style={styles.button} onPress={() => router.replace({ pathname: "/EditProfile", params: { from: "/Account" } }) }>
             <Text style={styles.buttonText}>Edit Profile</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.button} onPress={() => {}}>
+          <TouchableOpacity style={styles.button} onPress={() => router.replace("/ChangeEmail") }>
+            <Text style={styles.buttonText}>Change Email</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.button} onPress={() => router.replace("/ChangePassword") }>
+            <Text style={styles.buttonText}>Change Password</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.button} onPress={() => router.replace("/Subscriptions") }>
             <Text style={styles.buttonText}>My Subscriptions</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.button} onPress={() => {}}>
+          <TouchableOpacity style={styles.button} onPress={() => router.replace("/PrimeLogout") }>
             <Text style={styles.buttonText}>Log out of Amazon Prime</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.button} onPress={() => {}}>
+          <TouchableOpacity style={styles.button} onPress={() => router.replace("/DisableAccount") }>
             <Text style={styles.buttonText}>Disable Account</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={[styles.button, styles.deleteButton]}
-            onPress={handleDeleteAccount}
+            onPress={() => router.replace({ pathname: "/ConfirmDeleteAccount", params: { from: "/Account" } })}
             disabled={loading}
           >
             <Text style={[styles.buttonText, { color: '#ff4d4f' }]}>Permanently Delete Account</Text>
@@ -80,22 +86,21 @@ const styles = StyleSheet.create({
   },
   button: {
     width: '100%',
-    backgroundColor: "#2A2929",
-    borderRadius: 10,
-    paddingVertical: 10,
+    backgroundColor: '#1F1F23', // Matches Profile settings
+    borderRadius: 8,
+    paddingVertical: 15,
     paddingHorizontal: 25,
-    marginBottom: 10,
-    alignItems: "flex-start",
+    marginBottom: 5,
+    alignItems: 'flex-start',
   },
   buttonText: {
-    color: "white",
-    fontSize: 17,
-    fontWeight: "600",
+    paddingLeft: 10,
+    color: '#EFEFF1', // Matches Profile settings
+    fontSize: 15,
+    fontWeight: '500',
   },
   deleteButton: {
-    backgroundColor: "#1a1a1a",
-    borderWidth: 1,
-    borderColor: '#ff4d4f',
+    backgroundColor: "#2F1F23",
   },
   topBar: {
     flexDirection: "row",

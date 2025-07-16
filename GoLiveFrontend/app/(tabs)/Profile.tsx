@@ -5,6 +5,8 @@ import { Colors } from "@/constants/Colors";
 import Layout from "@/constants/Layout";
 import { mockUsers } from "@/data/mockdata";
 import authService from "@/services/authService";
+import { useEffect } from "react";
+import userService from "@/services/userService";
 import {
   ChevronRight,
   CreditCard,
@@ -30,6 +32,7 @@ import {
 } from "react-native";
 import { router } from "expo-router";
 import SuccessToast from "@/components/SuccessToast";
+import { useFocusEffect } from "@react-navigation/native";
 
 export default function ProfileScreen() {
   const [activeTab, setActiveTab] = useState<
@@ -37,6 +40,32 @@ export default function ProfileScreen() {
   >("Home");
   const [darkMode, setDarkMode] = useState(true);
   const [showSuccessToast, setShowSuccessToast] = useState(false);
+  const [user, setUser] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  const fetchProfile = async () => {
+    setLoading(true);
+    setError("");
+    try {
+      const profile = await userService.getCurrentUser();
+      setUser(profile);
+    } catch (err: any) {
+      setError(err.message || "Failed to load profile");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchProfile();
+  }, []);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      fetchProfile();
+    }, [])
+  );
 
   const handleLogout = async () => {
     Alert.alert(
@@ -80,11 +109,12 @@ export default function ProfileScreen() {
         }),
       }}
     >
-      <SuccessToast
-        message="Log out successful!"
-        visible={showSuccessToast}
-        onHide={() => setShowSuccessToast(false)}
-      />
+      {error ? (
+        <Text style={{ color: "#ff4d4f", textAlign: "center", marginTop: 10 }}>{error}</Text>
+      ) : null}
+      {loading ? (
+        <Text style={{ color: "#fff", textAlign: "center", marginTop: 40 }}>Loading...</Text>
+      ) : (
       <ScrollView
         style={[
           styles.content,
@@ -102,23 +132,23 @@ export default function ProfileScreen() {
         <View style={styles.profilesection}>
           <View style={styles.avatarcontainer}>
             <Avatar
-              source={mockUsers[1] ? { uri: mockUsers[1].avatar } : {}}
+                source={user?.avatar ? { uri: user.avatar } : {}}
               size="xl"
               borderColor="primary"
             />
           </View>
           <Text style={styles.displayname}>
-            {mockUsers[0] ? mockUsers[0].displayName : ""}
+              {user?.displayName || user?.username || ""}
           </Text>
-          <Text style={styles.username}>{mockUsers[0].username}</Text>
+            <Text style={styles.username}>{user?.username || ""}</Text>
           <View style={styles.statscontainer}>
             <View style={styles.statitem}>
-              <Text style={styles.statNumber}>{mockUsers[0].followers}</Text>
+                <Text style={styles.statNumber}>{user?.followers ?? 0}</Text>
               <Text style={styles.statLabel}>Following</Text>
             </View>
             <View style={styles.statDivider} />
             <View style={styles.statitem}>
-              <Text style={styles.statNumber}>{mockUsers[0].following}</Text>
+                <Text style={styles.statNumber}>{user?.following ?? 0}</Text>
               <Text style={styles.statLabel}>Followers</Text>
             </View>
           </View>
@@ -129,7 +159,7 @@ export default function ProfileScreen() {
                 {
                   backgroundColor: Colors.primary.dark,
                   borderRadius: 8,
-                  padding: 12,
+                  padding: 10,
                   marginRight: 8,
                   justifyContent: "center",
                   alignContent: "center",
@@ -137,7 +167,7 @@ export default function ProfileScreen() {
                 },
               ]}
               onPress={() => {
-                console.log("Edit Profile Pressed");
+                  router.push("/EditProfile");
               }}
             >
               <Text
@@ -155,7 +185,7 @@ export default function ProfileScreen() {
             </TouchableOpacity>
           </View>
           <View style={styles.bioContainer}>
-            <Text style={styles.bioText}>{mockUsers[0].bio}</Text>
+              <Text style={styles.bioText}>{user?.bio || ""}</Text>
           </View>
         </View>
         <Separator horizontal color={Colors.neutral[800]} />
@@ -228,60 +258,60 @@ export default function ProfileScreen() {
               <Text style={styles.sectionTitle}>Settings</Text>
 
               <View style={styles.settingsList}>
-                <TouchableOpacity style={styles.settingItem} onPress={() => router.push('/(tabs)/Activity?tab=Notifications')}>
+                <TouchableOpacity style={styles.settingItem} onPress={() => console.log("Notifications Pressed")}>
                   <View style={styles.settingLeft}>
                     <View style={styles.settingIcon}>
-                      <Settings size={20} />
+                      <Settings size={20} color={Colors.neutral[600]} />
                     </View>
                     <Text style={styles.settingText}>Notifications</Text>
                   </View>
-                  <ChevronRight size={20} />
+                  <ChevronRight size={20} color={Colors.neutral[600]} />
                 </TouchableOpacity>
 
                 <TouchableOpacity style={styles.settingItem} onPress={() => router.push('/Account')}>
                   <View style={styles.settingLeft}>
                     <View style={styles.settingIcon}>
-                      <User size={20} />
+                      <User size={20} color={Colors.neutral[600]} />
                     </View>
                     <Text style={styles.settingText}>Account</Text>
                   </View>
-                  <ChevronRight size={20} />
+                  <ChevronRight size={20} color={Colors.neutral[600]} />
                 </TouchableOpacity>
 
                 <TouchableOpacity style={styles.settingItem} onPress={() => console.log("Subscriptions Pressed")}>
                   <View style={styles.settingLeft}>
                     <View style={styles.settingIcon}>
-                      <Heart size={20} />
+                      <Heart size={20} color={Colors.neutral[600]} />
                     </View>
                     <Text style={styles.settingText}>Subscriptions</Text>
                   </View>
-                  <ChevronRight size={20} />
+                  <ChevronRight size={20} color={Colors.neutral[600]} />
                 </TouchableOpacity>
 
                 <TouchableOpacity style={styles.settingItem} onPress={() => console.log("Bits & Payments Pressed")}>
                   <View style={styles.settingLeft}>
                     <View style={styles.settingIcon}>
-                      <CreditCard size={20} />
+                      <CreditCard size={20} color={Colors.neutral[600]} />
                     </View>
                     <Text style={styles.settingText}>Bits & Payments</Text>
                   </View>
-                  <ChevronRight size={20} />
+                  <ChevronRight size={20} color={Colors.neutral[600]} />
                 </TouchableOpacity>
 
                 <TouchableOpacity style={styles.settingItem} onPress={() => console.log("Privacy Pressed")}>
                   <View style={styles.settingLeft}>
                     <View style={styles.settingIcon}>
-                      <Shield size={20} />
+                      <Shield size={20} color={Colors.neutral[600]} />
                     </View>
                     <Text style={styles.settingText}>Privacy</Text>
                   </View>
-                  <ChevronRight size={20} />
+                  <ChevronRight size={20} color={Colors.neutral[600]} />
                 </TouchableOpacity>
 
                 <View style={styles.settingItem}>
                   <View style={styles.settingLeft}>
                     <View style={styles.settingIcon}>
-                      <Moon size={20} />
+                      <Moon size={20} color={Colors.neutral[600]} />
                     </View>
                     <Text style={styles.settingText}>Dark Mode</Text>
                   </View>
@@ -299,7 +329,7 @@ export default function ProfileScreen() {
                 <TouchableOpacity style={styles.settingItem} onPress={handleLogout}>
                   <View style={styles.settingLeft}>
                     <View style={styles.settingIcon}>
-                      <LogOut size={20} />
+                      <LogOut size={20} color={Colors.error.light} />
                     </View>
                     <Text
                       style={[styles.settingText, { color: Colors.error.main }]}
@@ -313,6 +343,13 @@ export default function ProfileScreen() {
           </>
         ) : null}
       </ScrollView>
+      )}
+      <SuccessToast
+        message="Log out successful!"
+        visible={showSuccessToast}
+        onHide={() => setShowSuccessToast(false)}
+        top={70}
+      />
     </SafeAreaView>
   );
 }
@@ -461,7 +498,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    paddingVertical: Layout.spacing.md,
+    height: 57,
     paddingHorizontal: Layout.spacing.md,
     borderBottomWidth: 1,
     borderBottomColor: Colors.neutral[800],

@@ -235,8 +235,7 @@ export default function Onboarding() {
             },
           ]}
         >
-          <Text style={styles.games}>n</Text>
-          <Text style={styles.have}>othing</Text>
+          <Text style={styles.have}>nothing</Text>
           <Text style={styles.games}>{` Just Chatting `}</Text>
           <Text style={styles.have}>News Movies and more</Text>
         </Text>
@@ -252,7 +251,7 @@ export default function Onboarding() {
         >
           <Text style={styles.have}>{`nothing `}</Text>
           <Text style={styles.games}>{`Food & Drink `}</Text>
-          <Text style={styles.have}>Social Entertainment</Text>
+          <Text style={styles.have}>Social Entertain..</Text>
         </Text>
         <Text
           style={[
@@ -286,12 +285,12 @@ export default function Onboarding() {
             color: "white",
             position: "absolute",
             fontFamily: "Inter-SemiBold",
-            paddingTop: isShort ? 90 : 10,
+            paddingTop: isShort ? 150 : 10,
             fontSize: !isShort ? 36 : 32,
             fontWeight: !isShort ? 900 : 600,
           }}
         >
-          There’s something for you on GoLive
+          There’s always something for you on GoLive
         </Text>
       </View>
       <View style={styles.buttonContainer}>

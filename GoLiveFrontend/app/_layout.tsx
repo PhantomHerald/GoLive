@@ -29,6 +29,13 @@ export default function RootLayout() {
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="Account" options={{ headerShown: false }} />
         <Stack.Screen name="ConfirmDeleteAccount" options={{ headerShown: false }} />
+        <Stack.Screen name="EditProfile" options={{ headerShown: false }} />
+        <Stack.Screen name="ConfirmEditProfile" options={{ headerShown: false }} />
+        <Stack.Screen name="ChangePassword" options={{ headerShown: false }} />
+        <Stack.Screen name="Subscriptions" options={{ headerShown: false }} />
+        <Stack.Screen name="PrimeLogout" options={{ headerShown: false }} />
+        <Stack.Screen name="DisableAccount" options={{ headerShown: false }} />
+        <Stack.Screen name="ChangeEmail" options={{ headerShown: false }} />
         <Stack.Screen name="+not-found" />
       </Stack>
       <StatusBar style="auto" />

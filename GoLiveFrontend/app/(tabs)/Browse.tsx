@@ -50,7 +50,7 @@ const SearchBar = ({ placeholder, onSearch }: SearchBarProps) => {
   return (
     <SafeAreaView
       style={[
-        { paddingTop: 20 },
+        { paddingTop: 15 },
         Platform.select({
           android: { marginTop: 30 },
           default: {},

@@ -75,6 +75,7 @@ export default function Login() {
         message="Login successful!"
         visible={showSuccessToast}
         onHide={() => setShowSuccessToast(false)}
+        top={70}
       />
       <KeyboardAvoidingView 
         style={{ flex: 1 }} 
@@ -153,19 +154,19 @@ export default function Login() {
                 />
               </TouchableOpacity>
             </View>
-            <TouchableOpacity onPress={forgotpassword} disabled={loading}>
-              <Text
-                style={{
-                  color: "#9147FF",
-                  textAlign: "right",
-                  width: "100%",
-                  marginBottom: 20,
-                  opacity: loading ? 0.5 : 1,
-                }}
-              >
-                Forgot Password?
-              </Text>
-            </TouchableOpacity>
+            <View style={{ width: '100%', alignItems: 'flex-end' }}>
+              <TouchableOpacity onPress={forgotpassword} disabled={loading}>
+                <Text
+                  style={{
+                    color: "#9147FF",
+                    marginBottom: 20,
+                    opacity: loading ? 0.5 : 1,
+                  }}
+                >
+                  Forgot Password?
+                </Text>
+              </TouchableOpacity>
+            </View>
             <TouchableOpacity
               style={[styles.button, loading && styles.buttonDisabled]}
               onPress={handleLoginAndNavigate}
@@ -238,7 +239,7 @@ const styles = StyleSheet.create({
   button: {
     width: "100%",
     height: 50,
-    backgroundColor: "#9147FF",
+    backgroundColor: "#8e36d1",
     borderRadius: 8,
     justifyContent: "center",
     alignItems: "center",

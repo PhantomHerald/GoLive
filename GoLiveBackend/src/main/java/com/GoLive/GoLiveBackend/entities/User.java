@@ -47,6 +47,9 @@ public class User {
     @Column(name = "birth_year")
     private Integer birthYear;
 
+    @Column(name = "display_name", nullable = false)
+    private String displayName;
+
     // Getters and Setters
     public Long getId() {
         return id;
@@ -150,6 +153,19 @@ public class User {
 
     public void setBirthYear(Integer birthYear) {
         this.birthYear = birthYear;
+    }
+
+    public String getDisplayName() {
+        return displayName;
+    }
+
+    public void setDisplayName(String displayName) {
+        if (displayName == null || displayName.trim().isEmpty()) {
+            // Fallback to username if displayName is empty or null
+            this.displayName = this.username;
+        } else {
+            this.displayName = displayName;
+        }
     }
 
     @Override

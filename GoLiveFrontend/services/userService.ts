@@ -16,6 +16,7 @@ export interface UserProfile {
 
 export interface UpdateProfileRequest {
   displayName?: string;
+  username?: string;
   bio?: string;
   avatar?: string;
 }
@@ -172,6 +173,24 @@ class UserService {
       await api.delete('/api/auth/delete-account', { data: { password } });
     } catch (error: any) {
       throw new Error(error.response?.data?.message || 'Failed to delete account');
+    }
+  }
+
+  // Change user password
+  async changePassword(currentPassword: string, newPassword: string): Promise<void> {
+    try {
+      await api.put('/api/auth/change-password', { currentPassword, newPassword });
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || 'Failed to change password');
+    }
+  }
+
+  // Change user email
+  async changeEmail(newEmail: string, password: string): Promise<void> {
+    try {
+      await api.post('/api/users/change-email', { newEmail, password });
+    } catch (error: any) {
+      throw new Error(error.response?.data || 'Failed to change email');
     }
   }
 }

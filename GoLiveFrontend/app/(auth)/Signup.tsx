@@ -98,6 +98,7 @@ export default function Signup() {
         message="Account created successfully!"
         visible={showSuccessToast}
         onHide={() => setShowSuccessToast(false)}
+        top={70}
       />
       <KeyboardAvoidingView 
         style={{ flex: 1 }} 
@@ -253,7 +254,7 @@ export default function Signup() {
             {loading ? (
               <ActivityIndicator color="#fff" size="small" />
             ) : (
-              <Text style={styles.signupBtnText}>Sign up</Text>
+              <Text style={[styles.signupBtnText, { fontWeight: "600", textAlign: "center", textAlignVertical: "center" }]}>Sign up</Text>
             )}
           </TouchableOpacity>
         </ScrollView>
@@ -312,8 +313,9 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     color: "#fff",
     paddingHorizontal: 12,
-    paddingVertical: Platform.OS === "ios" ? 16 : 14,
+    paddingVertical: Platform.OS === "ios" ? 14 : 10,
     fontSize: 16,
+    height: 50,
     marginBottom: 16,
   },
   inputRow: {

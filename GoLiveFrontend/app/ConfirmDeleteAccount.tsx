@@ -5,15 +5,21 @@ import { router } from "expo-router";
 import userService from "../services/userService";
 import Icon from "@expo/vector-icons/MaterialCommunityIcons";
 import SuccessToast from "@/components/SuccessToast";
+import { useLocalSearchParams } from "expo-router";
 
 export default function ConfirmDeleteAccount() {
+  const params = useLocalSearchParams();
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [deleted, setDeleted] = useState(false);
 
   const handleBack = () => {
-    router.back();
+    if (params.from) {
+      router.replace(params.from);
+    } else {
+      router.back();
+    }
   };
 
   const handleDelete = async () => {
@@ -73,7 +79,7 @@ export default function ConfirmDeleteAccount() {
           <View style={{ width: 40 }} />
         </View>
         <View style={styles.container}>
-          <Text style={styles.label}>Enter password to permanently delete this account:</Text>
+          <Text style={styles.label}>Enter your account password to permanently delete this account</Text>
           <TextInput
             style={styles.input}
             placeholder="Password"
@@ -134,8 +140,7 @@ const styles = StyleSheet.create({
   },
   deleteButtonText: {
     color: "white",
-    fontSize: 17,
-    fontWeight: "700",
+    fontSize: 18,
   },
   topBar: {
     flexDirection: "row",

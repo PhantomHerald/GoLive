@@ -13,14 +13,20 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
+import { useLocalSearchParams } from "expo-router";
 
 export default function Forgotpassword() {
+  const params = useLocalSearchParams();
   const contactsupport = () => {
     router.replace("/Contactsupport");
   };
   
   const handleback = () => {
-    router.replace("/(auth)/Login");
+    if (typeof params.from === 'string') {
+      router.replace(params.from);
+    } else {
+      router.replace("/(auth)/Login");
+    }
   };
   
   const handleContinue = () => {
@@ -28,7 +34,7 @@ export default function Forgotpassword() {
     console.log("Continue button pressed");
   };
   
-  const [useemailclicked, setUseEmailClicked] = useState(false);
+  const [useemailclicked, setUseEmailClicked] = useState(true);
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "black" }}>
       <View style={styles.topBar}>
@@ -103,7 +109,7 @@ export default function Forgotpassword() {
                   <TouchableOpacity onPress={() => setUseEmailClicked(false)}>
                     <View style={styles.optionContainer}>
                       <Phone size={24} color="#888" />
-                      <Text style={styles.optionText}>Use phone instead</Text>
+                      <Text style={[styles.optionText, { color: "#9147FF" }]}>Use phone instead</Text>
                     </View>
                   </TouchableOpacity>
                 </View>
@@ -133,7 +139,7 @@ export default function Forgotpassword() {
                   <TouchableOpacity onPress={() => setUseEmailClicked(true)}>
                     <View style={styles.optionContainer}>
                       <Mail size={24} color="#888" />
-                      <Text style={styles.optionText}>Use email instead</Text>
+                      <Text style={[styles.optionText, { color: "#9147FF" }]}>Use email instead</Text>
                     </View>
                   </TouchableOpacity>
                 </View>
@@ -141,7 +147,7 @@ export default function Forgotpassword() {
             )}
 
             <TouchableOpacity onPress={contactsupport}>
-              <Text style={{ color: "#888", fontSize: 18 }}>
+              <Text style={{ color: "#9147FF", fontSize: 18 }}>
                 {"\n"} Having problems with your email or {"\n"} phone?
               </Text>
             </TouchableOpacity>

@@ -157,8 +157,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: Layout.spacing.md,
   },
   mdButton: {
-    paddingVertical: Layout.spacing.sm,
+    paddingVertical: 14,
     paddingHorizontal: Layout.spacing.lg,
+    height: 50,
   },
   lgButton: {
     paddingVertical: Layout.spacing.md,
@@ -168,7 +169,8 @@ const styles = StyleSheet.create({
     fontSize: Layout.fontSize.xs,
   },
   mdText: {
-    fontSize: Layout.fontSize.sm,
+    fontSize: 18,
+    fontWeight: 'bold',
   },
   lgText: {
     fontSize: Layout.fontSize.md,

@@ -11,6 +11,7 @@ import com.GoLive.GoLiveBackend.entities.User;
 import com.GoLive.GoLiveBackend.dtos.AuthRequest;
 import com.GoLive.GoLiveBackend.dtos.AuthResponse;
 import com.GoLive.GoLiveBackend.dtos.BioUpdateRequest;
+import com.GoLive.GoLiveBackend.dtos.ChangePasswordRequest;
 import java.util.Map;
 
 @RestController
@@ -135,6 +136,28 @@ public class AuthController {
             logger.error("Bio update failed", e);
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(new AuthResponse("Bio update failed: " + e.getMessage(), null));
+        }
+    }
+
+    @PutMapping("/change-password")
+    public ResponseEntity<AuthResponse> changePassword(
+            @RequestHeader("Authorization") String authHeader,
+            @RequestBody ChangePasswordRequest request) {
+        logger.info("Change password request received");
+        try {
+            String token = authHeader.startsWith("Bearer ") ? authHeader.substring(7) : authHeader;
+            User user = userService.validateToken(token);
+            boolean success = userService.changePassword(user, request.getCurrentPassword(), request.getNewPassword());
+            if (!success) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(new AuthResponse("Current password is incorrect", null));
+            }
+            logger.info("Password changed successfully for user: {}", user.getUsername());
+            return ResponseEntity.ok(new AuthResponse("Password changed successfully", null));
+        } catch (Exception e) {
+            logger.error("Password change failed", e);
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new AuthResponse("Password change failed: " + e.getMessage(), null));
         }
     }
 

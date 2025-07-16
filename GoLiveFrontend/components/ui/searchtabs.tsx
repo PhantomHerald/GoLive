@@ -90,7 +90,7 @@ const styles = StyleSheet.create({
   },
   underline: {
     marginTop: 4,
-    height: 2.5,
+    height: 3,
     backgroundColor: "#BF94FE",
     borderRadius: 2,
   },
