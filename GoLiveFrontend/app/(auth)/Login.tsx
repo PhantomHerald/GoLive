@@ -12,6 +12,8 @@ import {
   ScrollView,
   KeyboardAvoidingView,
   Platform,
+  TouchableWithoutFeedback,
+  Keyboard,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import authService from "../../services/authService";
@@ -70,118 +72,120 @@ export default function Login() {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1 }}>
-      <SuccessToast
-        message="Login successful!"
-        visible={showSuccessToast}
-        onHide={() => setShowSuccessToast(false)}
-        top={70}
-      />
-      <KeyboardAvoidingView 
-        style={{ flex: 1 }} 
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
-      >
-        <View style={styles.topBar}>
-          <TouchableOpacity style={styles.backBtn} onPress={handleback}>
-            <Icon name="arrow-left" size={28} color="#fff" />
-          </TouchableOpacity>
-        </View>
-        <ScrollView 
-          contentContainerStyle={{ flexGrow: 1 }}
-          showsVerticalScrollIndicator={false}
-          keyboardShouldPersistTaps="handled"
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+      <SafeAreaView style={{ flex: 1 }}>
+        <SuccessToast
+          message="Login successful!"
+          visible={showSuccessToast}
+          onHide={() => setShowSuccessToast(false)}
+          top={70}
+        />
+        <KeyboardAvoidingView 
+          style={{ flex: 1 }} 
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
         >
-          <View style={styles.container}>
-            <Text style={styles.title}>Welcome Back </Text>
-            <Text
-              style={{
-                color: "white",
-                padding: 10,
-                textAlign: "left",
-                display: "flex",
-                flexDirection: "row",
-                width: "100%",
-              }}
-            >
-              Username
-            </Text>
-            <View style={styles.inputContainer}>
-              <Icon name="email-outline" size={25} style={styles.icon} />
-              <TextInput
-                style={styles.input}
-                placeholder="Username/Email"
-                placeholderTextColor="#666"
-                autoCapitalize="none"
-                keyboardType="email-address"
-                value={email}
-                onChangeText={setEmail}
-                editable={!loading}
-              />
-            </View>
-            <Text
-              style={{
-                color: "white",
-                padding: 10,
-                textAlign: "left",
-                display: "flex",
-                flexDirection: "row",
-                width: "100%",
-              }}
-            >
-              Password
-            </Text>
-            <View style={styles.inputRow}>
-              <Icon name="lock-outline" size={25} style={styles.icon} />
-              <TextInput
-                style={[styles.input, { flex: 1, marginBottom: 0 }]}
-                placeholder="Password"
-                placeholderTextColor="#666"
-                secureTextEntry={!showPass}
-                value={password}
-                onChangeText={setPassword}
-                editable={!loading}
-              />
-              <TouchableOpacity
-                onPress={() => setShowPass((v) => !v)}
-                style={styles.eyeBtn}
-                disabled={loading}
-              >
-                <Icon
-                  name={showPass ? "eye-off-outline" : "eye-outline"}
-                  size={24}
-                  color="#666"
-                />
-              </TouchableOpacity>
-            </View>
-            <View style={{ width: '100%', alignItems: 'flex-end' }}>
-              <TouchableOpacity onPress={forgotpassword} disabled={loading}>
-                <Text
-                  style={{
-                    color: "#9147FF",
-                    marginBottom: 20,
-                    opacity: loading ? 0.5 : 1,
-                  }}
-                >
-                  Forgot Password?
-                </Text>
-              </TouchableOpacity>
-            </View>
-            <TouchableOpacity
-              style={[styles.button, loading && styles.buttonDisabled]}
-              onPress={handleLoginAndNavigate}
-              disabled={loading}
-            >
-              {loading ? (
-                <ActivityIndicator color="#fff" size="small" />
-              ) : (
-                <Text style={styles.buttonText}>Login</Text>
-              )}
+          <View style={styles.topBar}>
+            <TouchableOpacity style={styles.backBtn} onPress={handleback}>
+              <Icon name="arrow-left" size={28} color="#fff" />
             </TouchableOpacity>
           </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
+          <ScrollView 
+            contentContainerStyle={{ flexGrow: 1 }}
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+          >
+            <View style={styles.container}>
+              <Text style={styles.title}>Welcome Back </Text>
+              <Text
+                style={{
+                  color: "white",
+                  padding: 10,
+                  textAlign: "left",
+                  display: "flex",
+                  flexDirection: "row",
+                  width: "100%",
+                }}
+              >
+                Username
+              </Text>
+              <View style={styles.inputContainer}>
+                <Icon name="email-outline" size={25} style={styles.icon} />
+                <TextInput
+                  style={styles.input}
+                  placeholder="Username/Email"
+                  placeholderTextColor="#666"
+                  autoCapitalize="none"
+                  keyboardType="email-address"
+                  value={email}
+                  onChangeText={setEmail}
+                  editable={!loading}
+                />
+              </View>
+              <Text
+                style={{
+                  color: "white",
+                  padding: 10,
+                  textAlign: "left",
+                  display: "flex",
+                  flexDirection: "row",
+                  width: "100%",
+                }}
+              >
+                Password
+              </Text>
+              <View style={styles.inputRow}>
+                <Icon name="lock-outline" size={25} style={styles.icon} />
+                <TextInput
+                  style={[styles.input, { flex: 1, marginBottom: 0 }]}
+                  placeholder="Password"
+                  placeholderTextColor="#666"
+                  secureTextEntry={!showPass}
+                  value={password}
+                  onChangeText={setPassword}
+                  editable={!loading}
+                />
+                <TouchableOpacity
+                  onPress={() => setShowPass((v) => !v)}
+                  style={styles.eyeBtn}
+                  disabled={loading}
+                >
+                  <Icon
+                    name={showPass ? "eye-off-outline" : "eye-outline"}
+                    size={24}
+                    color="#666"
+                  />
+                </TouchableOpacity>
+              </View>
+              <View style={{ width: '100%', alignItems: 'flex-end' }}>
+                <TouchableOpacity onPress={forgotpassword} disabled={loading}>
+                  <Text
+                    style={{
+                      color: "#9147FF",
+                      marginBottom: 20,
+                      opacity: loading ? 0.5 : 1,
+                    }}
+                  >
+                    Forgot Password?
+                  </Text>
+                </TouchableOpacity>
+              </View>
+              <TouchableOpacity
+                style={[styles.button, loading && styles.buttonDisabled]}
+                onPress={handleLoginAndNavigate}
+                disabled={loading}
+              >
+                {loading ? (
+                  <ActivityIndicator color="#fff" size="small" />
+                ) : (
+                  <Text style={styles.buttonText}>Login</Text>
+                )}
+              </TouchableOpacity>
+            </View>
+          </ScrollView>
+        </KeyboardAvoidingView>
+      </SafeAreaView>
+    </TouchableWithoutFeedback>
   );
 }
 

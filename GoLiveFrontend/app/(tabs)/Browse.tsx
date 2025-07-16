@@ -7,6 +7,8 @@ import {
   StyleSheet,
   TextInput,
   View,
+  TouchableWithoutFeedback,
+  Keyboard,
 } from "react-native";
 
 const styles = StyleSheet.create({
@@ -50,7 +52,7 @@ const SearchBar = ({ placeholder, onSearch }: SearchBarProps) => {
   return (
     <SafeAreaView
       style={[
-        { paddingTop: 15 },
+        { paddingTop: 20 },
         Platform.select({
           android: { marginTop: 30 },
           default: {},
@@ -81,10 +83,11 @@ const SearchBar = ({ placeholder, onSearch }: SearchBarProps) => {
 
 export default function Browsescreen() {
   return (
-    <>
-      {/* searchbar */}
-      <SearchBar />
-      <Searchtabs />
-    </>
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+      <View style={{ flex: 1 }}>
+        <SearchBar />
+        <Searchtabs />
+      </View>
+    </TouchableWithoutFeedback>
   );
 }
