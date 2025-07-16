@@ -32,8 +32,8 @@ export default function Forgotpassword() {
 
   const [useemailclicked, setUseEmailClicked] = useState(false);
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "black" }}>
-      <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+      <SafeAreaView style={{ flex: 1, backgroundColor: "black" }}>
         <View style={styles.topBar}>
           <TouchableOpacity style={styles.backBtn} onPress={handleback}>
             <Icon name="arrow-left" size={28} color="#fff" />
@@ -168,8 +168,8 @@ export default function Forgotpassword() {
             </View>
           </ScrollView>
         </KeyboardAvoidingView>
-      </TouchableWithoutFeedback>
-    </SafeAreaView>
+      </SafeAreaView>
+    </TouchableWithoutFeedback>
   );
 }
 const styles = StyleSheet.create({

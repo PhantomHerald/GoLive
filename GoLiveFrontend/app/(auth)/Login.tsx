@@ -72,8 +72,8 @@ export default function Login() {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1 }}>
-      <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+      <SafeAreaView style={{ flex: 1 }}>
         <SuccessToast
           message="Login successful!"
           visible={showSuccessToast}
@@ -183,8 +183,8 @@ export default function Login() {
             </View>
           </ScrollView>
         </KeyboardAvoidingView>
-      </TouchableWithoutFeedback>
-    </SafeAreaView>
+      </SafeAreaView>
+    </TouchableWithoutFeedback>
   );
 }
 

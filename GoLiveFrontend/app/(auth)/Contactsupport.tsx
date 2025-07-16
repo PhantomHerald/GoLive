@@ -17,8 +17,8 @@ export default function Contactsupport() {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "black" }}>
-      <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+      <SafeAreaView style={{ flex: 1, backgroundColor: "black" }}>
         <View style={{ flex: 1 }}>
           <View style={styles.topBar}>
             <TouchableOpacity style={styles.backBtn} onPress={handleback}>
@@ -58,8 +58,8 @@ export default function Contactsupport() {
             </TouchableOpacity>
           </View>
         </View>
-      </TouchableWithoutFeedback>
-    </SafeAreaView>
+      </SafeAreaView>
+    </TouchableWithoutFeedback>
   );
 }
 

@@ -95,8 +95,8 @@ export default function Signup() {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "", padding: 10 }}>
-      <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+      <SafeAreaView style={{ flex: 1, backgroundColor: "", padding: 10 }}>
         <SuccessToast
           message="Account created successfully!"
           visible={showSuccessToast}
@@ -266,8 +266,8 @@ export default function Signup() {
             </TouchableOpacity>
           </ScrollView>
         </KeyboardAvoidingView>
-      </TouchableWithoutFeedback>
-    </SafeAreaView>
+      </SafeAreaView>
+    </TouchableWithoutFeedback>
   );
 }
 
