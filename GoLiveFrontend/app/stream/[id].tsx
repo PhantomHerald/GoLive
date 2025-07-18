@@ -12,6 +12,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { MoreHorizontal } from "lucide-react-native";
 
 // Minimal ChatMessage component definition
 type ChatMessageProps = {
@@ -113,17 +114,24 @@ export default function StreamScreen() {
 
       <View style={styles.infocontainer}>
         <View style={styles.streamInfo}>
-          <Image
-            source={{ uri: stream.streamer.avatar }}
-            style={styles.avatar}
-          />
+          <TouchableOpacity onPress={() => router.push({ pathname: "/user/[username]", params: { username: stream.streamer.displayName } })}>
+            <Image
+              source={{ uri: stream.streamer.avatar }}
+              style={styles.avatar}
+            />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => router.push({ pathname: "/ReportBlock", params: { target: stream.streamer.displayName } })} style={{ marginLeft: 12 }}>
+            <MoreHorizontal size={24} color="#fff" />
+          </TouchableOpacity>
           <View style={styles.streamInfo}>
-            <Text style={[styles.streamTitle, { color: "white" }]}>
-              {stream.title}
-            </Text>
-            <Text style={[styles.streamerName, { color: "white" }]}>
-              {stream.streamer.displayName}
-            </Text>
+            <TouchableOpacity onPress={() => router.push({ pathname: "/user/[username]", params: { username: stream.streamer.displayName } })}>
+              <Text style={[styles.streamTitle, { color: "white" }]}>
+                {stream.title}
+              </Text>
+              <Text style={[styles.streamerName, { color: "white" }]}>
+                {stream.streamer.displayName}
+              </Text>
+            </TouchableOpacity>
             <Text style={[styles.gameText, { color: "white" }]}>
               {stream.game}
             </Text>

@@ -1,6 +1,6 @@
 import CategoriesScreen from "@/app/stream/categories";
 import LiveChannelsScreen from "@/app/stream/livechannels";
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import {
   Keyboard,
   StyleSheet,
@@ -8,19 +8,35 @@ import {
   TouchableOpacity,
   TouchableWithoutFeedback,
   View,
+  Animated,
 } from "react-native";
 
 export default function Searchtabs() {
   const tabs = ["Categories", "Live channels"];
   const [activeTab, setActiveTab] = useState("Categories");
-  const trail = true;
+  const [tabWidths, setTabWidths] = useState<{ [key: string]: number }>({});
+  const underlineAnim = useRef(new Animated.Value(tabs.indexOf(activeTab))).current;
+
+  React.useEffect(() => {
+    Animated.spring(underlineAnim, {
+      toValue: tabs.indexOf(activeTab),
+      useNativeDriver: false,
+      friction: 7,
+      tension: 80,
+    }).start();
+  }, [activeTab]);
+
+  const handleTabTextLayout = (tab: string, event: any) => {
+    const width = event.nativeEvent.layout.width;
+    setTabWidths((prev) => ({ ...prev, [tab]: width }));
+  };
+
   const renderTabContent = () => {
     switch (activeTab) {
       case "Categories":
         return <CategoriesScreen />;
       case "Live channels":
         return <LiveChannelsScreen />;
-
       default:
         return null;
     }
@@ -38,15 +54,39 @@ export default function Searchtabs() {
                 style={styles.tab}
                 activeOpacity={0.7}
               >
-                <Text
-                  style={[
-                    styles.tabText,
-                    activeTab === tab && styles.activeText,
-                  ]}
-                >
-                  {tab}
-                </Text>
-                {activeTab === tab && <View style={styles.underline} />}
+                <View style={{ alignItems: "center" }}>
+                  <Text
+                    style={[
+                      styles.tabText,
+                      activeTab === tab && styles.activeText,
+                    ]}
+                    onLayout={(e) => handleTabTextLayout(tab, e)}
+                  >
+                    {tab}
+                  </Text>
+                  {/* Animated underline directly under text */}
+                  {activeTab === tab && tabWidths[tab] && (
+                    <Animated.View
+                      style={[
+                        styles.underline,
+                        {
+                          width: tabWidths[tab],
+                          backgroundColor: "#BF94FE",
+                          height: 3,
+                          transform: [
+                            {
+                              scaleX: underlineAnim.interpolate({
+                                inputRange: [index - 1, index, index + 1],
+                                outputRange: [0.7, 1, 0.7],
+                                extrapolate: "clamp",
+                              }),
+                            },
+                          ],
+                        },
+                      ]}
+                    />
+                  )}
+                </View>
               </TouchableOpacity>
             ))}
           </View>
@@ -87,9 +127,6 @@ const styles = StyleSheet.create({
   },
   underline: {
     marginTop: 4,
-    height: 4,
-    width: 28,
-    backgroundColor: "#fff",
     borderRadius: 2,
   },
   contentContainer: {

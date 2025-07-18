@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "twitch_clone2",
-    "slug": "twitch_clone2",
+    "name": "GoLive",
+    "slug": "GoLive",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/Twitch1.png",
-    "scheme": "twitchclone2",
+    "scheme": "GoLive",
     "userInterfaceStyle": "dark",
     "newArchEnabled": true,
     "ios": {

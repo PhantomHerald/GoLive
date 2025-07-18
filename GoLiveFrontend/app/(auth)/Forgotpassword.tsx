@@ -14,18 +14,21 @@ import {
   Keyboard,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import Icon from "react-native-vector-icons/MaterialCommunityIcons";
+import Icon from "@expo/vector-icons/MaterialCommunityIcons";
 import { useLocalSearchParams } from "expo-router";
 
+type ForgotPasswordParams = { from?: string };
+
 export default function Forgotpassword() {
-  const params = useLocalSearchParams();
+  const params = useLocalSearchParams<ForgotPasswordParams>();
+
   const contactsupport = () => {
     router.replace("/Contactsupport");
   };
 
   const handleback = () => {
     if (typeof params.from === 'string') {
-      router.replace(params.from);
+      router.replace(params.from as any); // Type assertion to bypass the type error for dynamic routes
     } else {
       router.replace("/(auth)/Login");
     }

@@ -12,7 +12,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import LiveStreamApp from "@/app/stream/live";
 
@@ -35,20 +35,24 @@ export default function Navbar({ initialTab = "Live" }: NavbarProps) {
   const [activeTab, setActiveTab] = useState(initialTab);
   const tabIndex = tabs.indexOf(activeTab);
   const navigation = useNavigation();
+  const [tabWidths, setTabWidths] = useState<{ [key: string]: number }>({});
+  const underlineAnim = React.useRef(new Animated.Value(tabIndex)).current;
+  const [isHomeFocused, setIsHomeFocused] = useState(true);
 
   // Listen for Home tab press and reset to 'Live'
   useFocusEffect(
     React.useCallback(() => {
-      const unsubscribe = navigation.addListener?.("focus", () => {
-        // If already focused and Home tab is pressed again, reset to 'Live'
-        setActiveTab("Live");
+      setIsHomeFocused(true);
+      const unsubscribe = navigation.addListener?.("blur", () => {
+        setIsHomeFocused(false);
       });
-      return unsubscribe;
+      return () => {
+        setIsHomeFocused(false);
+        if (unsubscribe) unsubscribe();
+      };
     }, [navigation])
   );
 
-  // Animated underline logic
-  const underlineAnim = React.useRef(new Animated.Value(tabIndex)).current;
   React.useEffect(() => {
     Animated.spring(underlineAnim, {
       toValue: tabIndex,
@@ -57,6 +61,11 @@ export default function Navbar({ initialTab = "Live" }: NavbarProps) {
       tension: 80,
     }).start();
   }, [tabIndex, underlineAnim]);
+
+  const handleTabTextLayout = (tab: string, event: any) => {
+    const width = event.nativeEvent.layout.width;
+    setTabWidths((prev) => ({ ...prev, [tab]: width }));
+  };
 
   // Swipe gesture logic
   const panResponder = PanResponder.create({
@@ -186,7 +195,7 @@ export default function Navbar({ initialTab = "Live" }: NavbarProps) {
       case "Clips":
         return (
           <View style={{ flex: 1 }}>
-            <ClipsScreen />
+            <ClipsScreen paused={!isHomeFocused || activeTab !== "Clips"} />
           </View>
         );
       default:
@@ -211,15 +220,19 @@ export default function Navbar({ initialTab = "Live" }: NavbarProps) {
                     styles.tabText,
                     activeTab === tab && styles.activeText,
                   ]}
+                  onLayout={(e) => handleTabTextLayout(tab, e)}
                 >
                   {tab}
                 </Text>
                 {/* Animated underline directly under text */}
-                {activeTab === tab && (
+                {activeTab === tab && tabWidths[tab] && (
                   <Animated.View
                     style={[
                       styles.underline,
                       {
+                        width: tabWidths[tab],
+                        backgroundColor: "#BF94FE",
+                        height: 3,
                         marginTop: 2,
                         opacity: 1,
                         transform: [
@@ -291,11 +304,7 @@ const styles = StyleSheet.create({
     color: "#fff",
   },
   underline: {
-    height: 4,
-    width: 28,
-    backgroundColor: "#fff",
     borderRadius: 2,
-    alignSelf: "center",
   },
   contentContainer: {
     flex: 1,

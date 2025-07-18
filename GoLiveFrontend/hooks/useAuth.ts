@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import authService, { AuthRequest, AuthResponse, User } from '../services/authService';
+import userService from '../services/userService';
 
 interface AuthState {
   isAuthenticated: boolean;
@@ -22,18 +23,37 @@ export const useAuth = () => {
     checkAuthStatus();
   }, []);
 
+  const fetchUserProfile = async () => {
+    try {
+      const profile = await userService.getCurrentUser();
+      setAuthState(prev => ({ ...prev, user: profile }));
+    } catch (error) {
+      // Optionally handle error
+    }
+  };
+
   const checkAuthStatus = async () => {
     try {
       const token = await authService.getAuthToken();
       if (token) {
         // Validate token with backend
         const isValid = await authService.isAuthenticated();
-        setAuthState({
-          isAuthenticated: isValid,
-          user: null, // You can fetch user data here if needed
-          loading: false,
-          token: isValid ? token : null,
-        });
+        if (isValid) {
+          const profile = await userService.getCurrentUser();
+          setAuthState({
+            isAuthenticated: true,
+            user: profile,
+            loading: false,
+            token,
+          });
+        } else {
+          setAuthState({
+            isAuthenticated: false,
+            user: null,
+            loading: false,
+            token: null,
+          });
+        }
       } else {
         setAuthState({
           isAuthenticated: false,
@@ -57,16 +77,15 @@ export const useAuth = () => {
     try {
       setAuthState(prev => ({ ...prev, loading: true }));
       const response = await authService.login(credentials);
-      
       if (response.token) {
+        const profile = await userService.getCurrentUser();
         setAuthState({
           isAuthenticated: true,
-          user: null, // You can fetch user data here
+          user: profile,
           loading: false,
           token: response.token,
         });
       }
-      
       return response;
     } catch (error) {
       setAuthState(prev => ({ ...prev, loading: false }));
@@ -78,16 +97,15 @@ export const useAuth = () => {
     try {
       setAuthState(prev => ({ ...prev, loading: true }));
       const response = await authService.signup(credentials);
-      
       if (response.token) {
+        const profile = await userService.getCurrentUser();
         setAuthState({
           isAuthenticated: true,
-          user: null, // You can fetch user data here
+          user: profile,
           loading: false,
           token: response.token,
         });
       }
-      
       return response;
     } catch (error) {
       setAuthState(prev => ({ ...prev, loading: false }));
@@ -125,5 +143,6 @@ export const useAuth = () => {
     logout,
     updateBio,
     checkAuthStatus,
+    refetchUser: fetchUserProfile,
   };
 }; 

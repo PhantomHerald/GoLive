@@ -1,6 +1,7 @@
 import Navbar from "@/components/ui/navbar";
 import React from "react";
-import { Platform, SafeAreaView, StyleSheet } from "react-native";
+import { Platform, SafeAreaView, StyleSheet, Button, View } from "react-native";
+import { router } from "expo-router";
 
 export default function HomeScreen() {
   return (

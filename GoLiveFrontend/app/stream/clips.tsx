@@ -1,5 +1,5 @@
 import { ResizeMode, Video } from "expo-av";
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import {
   Dimensions,
   FlatList,
@@ -12,8 +12,11 @@ import {
   Easing,
   Image,
   TextInput,
+  Share,
 } from "react-native";
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
+import { MoreHorizontal } from "lucide-react-native";
 
 const CLIPS = [
   {
@@ -47,7 +50,7 @@ const TAB_BAR_HEIGHT = 80; // Adjust to your actual tab bar height
 const { height: SCREEN_HEIGHT } = Dimensions.get("window");
 const CLIP_HEIGHT = SCREEN_HEIGHT - TAB_BAR_HEIGHT;
 
-export default function ClipsScreen() {
+export default function ClipsScreen({ paused = false }: { paused?: boolean }) {
   const videoRefs = useRef<any[]>([]);
   const [modalVisible, setModalVisible] = useState(false);
   const [modalAnim] = useState(new Animated.Value(0));
@@ -61,6 +64,65 @@ export default function ClipsScreen() {
     CLIPS.map((clip) => clip.comments)
   );
   const [commentInput, setCommentInput] = useState("");
+  const [viewableIndex, setViewableIndex] = useState(0);
+  const [isMuted, setIsMuted] = useState(false); // Initial state: unmuted
+  const [resizeMode, setResizeMode] = useState<ResizeMode>(ResizeMode.COVER);
+  const router = useRouter();
+
+  // Pause all videos when paused prop is true
+  useEffect(() => {
+    videoRefs.current.forEach((ref, idx) => {
+      if (ref && ref.pauseAsync) {
+        ref.pauseAsync();
+      }
+    });
+  }, [paused]);
+
+  // Play/pause videos based on viewable index
+  useEffect(() => {
+    videoRefs.current.forEach((ref, idx) => {
+      if (ref && ref.pauseAsync && ref.playAsync) {
+        if (!paused && idx === viewableIndex) {
+          ref.playAsync();
+        } else {
+          ref.pauseAsync();
+        }
+      }
+    });
+  }, [viewableIndex, paused]);
+
+  // Sync mute state to all videos as you scroll
+  useEffect(() => {
+    videoRefs.current.forEach((ref) => {
+      if (ref && ref.setIsMutedAsync) {
+        ref.setIsMutedAsync(isMuted);
+      }
+    });
+  }, [isMuted, viewableIndex]);
+
+  const onViewableItemsChanged = useRef(({ viewableItems }: any) => {
+    if (viewableItems && viewableItems.length > 0) {
+      setViewableIndex(viewableItems[0].index);
+    }
+  }).current;
+
+  const viewabilityConfig = useRef({
+    itemVisiblePercentThreshold: 80,
+  }).current;
+
+  const handleShare = (clip: typeof CLIPS[0]) => {
+    Share.share({
+      message: `Check out this clip: ${clip.uri}`,
+      url: clip.uri,
+      title: clip.title,
+    });
+  };
+
+  const toggleResizeMode = () => {
+    setResizeMode((prev) =>
+      prev === ResizeMode.COVER ? ResizeMode.CONTAIN : ResizeMode.COVER
+    );
+  };
 
   const openComments = (comments: any[], clipId: string, index: number) => {
     setActiveComments(commentsData[index]);
@@ -127,11 +189,34 @@ export default function ClipsScreen() {
         }}
         source={{ uri: item.uri }}
         style={styles.video}
-        resizeMode={ResizeMode.COVER}
-        shouldPlay
+        resizeMode={resizeMode}
+        shouldPlay={!paused && index === viewableIndex}
+        isMuted={isMuted}
       />
       {/* Vertical button stack on left */}
       <View style={styles.leftButtons}>
+        {/* Mute button */}
+        <TouchableOpacity
+          style={styles.iconButton}
+          onPress={() => setIsMuted((m) => !m)}
+        >
+          {isMuted ? (
+            <Feather name="volume-x" size={32} color="#fff" />
+          ) : (
+            <Feather name="volume-2" size={32} color="#fff" />
+          )}
+        </TouchableOpacity>
+        {/* Resize button */}
+        <TouchableOpacity
+          style={styles.iconButton}
+          onPress={toggleResizeMode}
+        >
+          {resizeMode === ResizeMode.COVER ? (
+            <MaterialCommunityIcons name="arrow-expand" size={32} color="#fff" />
+          ) : (
+            <MaterialCommunityIcons name="arrow-collapse" size={32} color="#fff" />
+          )}
+        </TouchableOpacity>
         <TouchableOpacity
           style={styles.iconButton}
           onPress={() => openComments(commentsData[index], item.id, index)}
@@ -151,14 +236,22 @@ export default function ClipsScreen() {
           )}
           <Text style={styles.iconCount}>{likes[index]}</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.iconButton}>
+        <TouchableOpacity
+          style={styles.iconButton}
+          onPress={() => handleShare(item)}
+        >
           <Feather name="share-2" size={32} color="#fff" />
         </TouchableOpacity>
       </View>
       {/* Streamer info on right */}
       <View style={styles.rightInfo}>
-        <Image source={{ uri: item.streamer.avatar }} style={styles.avatar} />
-        <Text style={styles.streamerName}>{item.streamer.name}</Text>
+        <TouchableOpacity onPress={() => router.push(`/user/${item.streamer.name}`)}>
+          <Image source={{ uri: item.streamer.avatar }} style={styles.avatar} />
+          <Text style={styles.streamerName}>{item.streamer.name}</Text>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={() => router.push({ pathname: "/ReportBlock", params: { target: item.streamer.name } })} style={{ marginTop: 12 }}>
+          <MoreHorizontal size={28} color="#fff" />
+        </TouchableOpacity>
       </View>
       {/* Overlay title */}
       <View style={styles.overlay}>
@@ -186,6 +279,8 @@ export default function ClipsScreen() {
         })}
         style={{ flex: 1 }}
         contentContainerStyle={{ flexGrow: 1 }}
+        onViewableItemsChanged={onViewableItemsChanged}
+        viewabilityConfig={viewabilityConfig}
       />
       {/* Animated Comments Modal */}
       <Modal visible={modalVisible} transparent animationType="none">

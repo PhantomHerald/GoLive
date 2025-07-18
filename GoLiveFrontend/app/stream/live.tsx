@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Dimensions,
   FlatList,
@@ -12,6 +12,8 @@ import { Video, ResizeMode } from "expo-av";
 import { LinearGradient } from "expo-linear-gradient";
 import { MaterialCommunityIcons, Feather } from "@expo/vector-icons";
 import { Stream, mockStreams } from "@/data/mockdata";
+import { router } from "expo-router";
+import { MoreHorizontal } from "lucide-react-native";
 
 const { width, height } = Dimensions.get("window");
 const TAB_BAR_HEIGHT = 80;
@@ -21,53 +23,74 @@ export default function LiveStreamApp() {
   // Get all live streams
   const liveStreams = mockStreams.filter((s) => s.isLive);
 
-  const renderStream = ({ item }: { item: Stream }) => (
-    <View style={[styles.streamContainer, { height: VISIBLE_HEIGHT }]}>
-      <Image
-        source={{ uri: item.thumbnail }}
-        style={[styles.video, { height: VISIBLE_HEIGHT }]}
-        resizeMode="cover"
-      />
+  // Track following state per stream id
+  const [following, setFollowing] = useState<{ [id: string]: boolean }>({});
 
-      {/* Bottom overlay */}
-      <LinearGradient
-        colors={["rgba(0,0,0,0.7)", "rgba(0,0,0,0.2)", "transparent"]}
-        style={[styles.bottomOverlay, { bottom: TAB_BAR_HEIGHT }]}
-      >
-        <View style={styles.row}>
-          <View style={styles.liveBadge}>
-            <Text style={styles.liveText}>LIVE</Text>
-          </View>
-          <Text style={styles.streamerName}>{item.streamer.displayName}</Text>
-          <MaterialCommunityIcons
-            name="check-decagram"
-            size={18}
-            color="#9147FF"
-            style={{ marginLeft: 4 }}
-          />
-          <TouchableOpacity style={styles.followBtn}>
-            <Feather name="heart" size={16} color="#fff" />
-            <Text style={styles.followText}>Follow</Text>
-          </TouchableOpacity>
-          <View style={styles.viewerBox}>
-            <Image
-              source={{ uri: item.streamer.avatar }}
-              style={styles.viewerAvatar}
+  const handleToggleFollow = (id: string) => {
+    setFollowing((prev) => ({ ...prev, [id]: !prev[id] }));
+  };
+
+  const renderStream = ({ item }: { item: Stream }) => {
+    const isFollowing = !!following[item.id];
+    return (
+      <View style={[styles.streamContainer, { height: VISIBLE_HEIGHT }]}>
+        <Image
+          source={{ uri: item.thumbnail }}
+          style={[styles.video, { height: VISIBLE_HEIGHT }]}
+          resizeMode="cover"
+        />
+        {/* Bottom overlay */}
+        <LinearGradient
+          colors={["rgba(0,0,0,0.7)", "rgba(0,0,0,0.2)", "transparent"]}
+          style={[styles.bottomOverlay, { bottom: TAB_BAR_HEIGHT }]}
+        >
+          <View style={styles.row}>
+            <View style={styles.liveBadge}>
+              <Text style={styles.liveText}>LIVE</Text>
+            </View>
+            <TouchableOpacity onPress={() => router.push({ pathname: "/user/[username]", params: { username: item.streamer.displayName } })}>
+              <Text style={styles.streamerName}>{item.streamer.displayName}</Text>
+            </TouchableOpacity>
+            <MaterialCommunityIcons
+              name="check-decagram"
+              size={18}
+              color="#9147FF"
+              style={{ marginLeft: 4 }}
             />
-            <Text style={styles.viewerCount}>{item.viewers}</Text>
+            <TouchableOpacity
+              style={[styles.followBtn, isFollowing && { borderColor: "#9147FF", backgroundColor: "#9147FF22" }, styles.followBtnFixed]}
+              onPress={() => handleToggleFollow(item.id)}
+            >
+              <Feather name="heart" size={16} color={isFollowing ? "#9147FF" : "#fff"} />
+              <Text style={[styles.followText, isFollowing && { color: "#9147FF" }]}>
+                {isFollowing ? "Following" : "Follow"}
+              </Text>
+            </TouchableOpacity>
+            <View style={styles.viewerBox}>
+              <TouchableOpacity onPress={() => router.push({ pathname: "/user/[username]", params: { username: item.streamer.displayName } })}>
+                <Image
+                  source={{ uri: item.streamer.avatar }}
+                  style={styles.viewerAvatar}
+                />
+              </TouchableOpacity>
+              <Text style={styles.viewerCount}>{item.viewers}</Text>
+            </View>
+            <TouchableOpacity onPress={() => router.push({ pathname: "/ReportBlock", params: { target: item.streamer.displayName } })} style={{ marginLeft: 12 }}>
+              <MoreHorizontal size={24} color="#fff" />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.shareBtn}>
+              <Feather name="share-2" size={20} color="#fff" />
+            </TouchableOpacity>
           </View>
-          <TouchableOpacity style={styles.shareBtn}>
-            <Feather name="share-2" size={20} color="#fff" />
-          </TouchableOpacity>
-        </View>
-        <Text style={styles.streamTitle}>{item.title}</Text>
-        <View style={styles.categoryRow}>
-          <MaterialCommunityIcons name="sword-cross" size={16} color="#fff" />
-          <Text style={styles.categoryText}>{item.game}</Text>
-        </View>
-      </LinearGradient>
-    </View>
-  );
+          <Text style={styles.streamTitle}>{item.title}</Text>
+          <View style={styles.categoryRow}>
+            <MaterialCommunityIcons name="sword-cross" size={16} color="#fff" />
+            <Text style={styles.categoryText}>{item.game}</Text>
+          </View>
+        </LinearGradient>
+      </View>
+    );
+  };
 
   return (
     <FlatList
@@ -167,6 +190,10 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     marginLeft: 12,
     marginRight: 12,
+  },
+  followBtnFixed: {
+    width: 98,
+    justifyContent: "center",
   },
   followText: {
     color: "#fff",

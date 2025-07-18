@@ -1,37 +1,26 @@
 import React from "react";
-import { Platform, ScrollView, StyleSheet, View } from "react-native";
-
+import { FlatList, Platform, StyleSheet, View } from "react-native";
 import { CategoryCard } from "@/components/CategoryCard";
 import SectionHeader from "@/components/SectionHeader";
 import { mockCategories } from "@/data/mockdata";
 
 export default function CategoriesScreen() {
   return (
-    <View style={[styles.container, { backgroundColor: "" }]}>
-      <ScrollView
-        style={[
-          styles.scrollView,
-          {
-            ...Platform.select({
-              android: { marginBottom: -40 },
-              ios: { marginBottom: 0 },
-            }),
-          },
-        ]}
-        showsVerticalScrollIndicator={false}
-      >
-        <View style={styles.section}>
-          <SectionHeader title="Popular Categories" />
-          <View style={styles.categoriesGridContainer}>
-            {mockCategories.map((category, index) => (
-              <View key={category.id} style={styles.categoryItem}>
-                <CategoryCard category={category} index={index} />
-              </View>
-            ))}
+    <View style={[styles.container, { backgroundColor: "" }]}> 
+      <FlatList
+        data={mockCategories}
+        keyExtractor={(item) => item.id}
+        numColumns={2}
+        ListHeaderComponent={<SectionHeader title="Popular" />}
+        renderItem={({ item, index }) => (
+          <View style={styles.categoryItem}>
+            <CategoryCard category={item} index={index} />
           </View>
-        </View>
-        <View style={styles.bottomSpacing} />
-      </ScrollView>
+        )}
+        columnWrapperStyle={styles.row}
+        contentContainerStyle={{ paddingBottom: 30, paddingTop: 8 }}
+        showsVerticalScrollIndicator={false}
+      />
     </View>
   );
 }
@@ -40,23 +29,15 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  scrollView: {
+  row: {
     flex: 1,
-  },
-  section: {
-    marginBottom: 24,
-  },
-  categoriesGridContainer: {
-    flexDirection: "row",
-    flexWrap: "wrap",
     justifyContent: "space-between",
-    paddingHorizontal: 16,
+    marginBottom: 16,
+    marginHorizontal: 0,
   },
   categoryItem: {
-    width: "48%",
-    marginBottom: 16,
-  },
-  bottomSpacing: {
-    height: 30,
+    flex: 1,
+    marginHorizontal: 0,
+    // Ensures two per row with space between
   },
 });

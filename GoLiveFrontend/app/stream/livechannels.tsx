@@ -9,19 +9,19 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { router } from "expo-router";
 
 export default function LiveChannelsScreen() {
   // Get all live streams
   const liveStreams = mockStreams.filter((s) => s.isLive);
 
   return (
-    <SafeAreaView>
-      <Text style={styles.header}>Live Channels</Text>
+    <SafeAreaView style={{ flex: 1 }}>
       <FlatList
         data={liveStreams}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
-          <TouchableOpacity style={styles.channelRow}>
+          <TouchableOpacity style={styles.channelRow} onPress={() => router.push({ pathname: "/user/[username]", params: { username: item.streamer.displayName } })}>
             <Image
               source={{ uri: item.streamer.avatar }}
               style={styles.avatar}
@@ -42,6 +42,8 @@ export default function LiveChannelsScreen() {
             <Text style={styles.followingSub}>Come back later!</Text>
           </View>
         }
+        style={{ flex: 1 }}
+        contentContainerStyle={{ paddingTop: 0 }}
       />
     </SafeAreaView>
   );
