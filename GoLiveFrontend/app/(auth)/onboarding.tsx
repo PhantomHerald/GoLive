@@ -308,19 +308,19 @@ export default function Onboarding() {
 const styles = StyleSheet.create({
   onboarding: {
     flex: 1,
-    backgroundColor: "#ae44fe",
+    backgroundColor: "#007fff",
   },
   buttonContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
     paddingHorizontal: 24,
     paddingBottom: 30,
-    backgroundColor: "#ae44fe",
+    backgroundColor: "#007fff",
   },
   loginButton: {
     flex: 1,
     marginRight: 8,
-    backgroundColor: "#8e36d1",
+    backgroundColor: "#21609fff",
     borderRadius: 8,
     padding: 14,
     alignItems: "center",
@@ -444,7 +444,7 @@ const styles = StyleSheet.create({
     fontFamily: "Poppins-Regular",
   },
   rrnt: {
-    color: "#500589",
+    color: "#21609fff",
   },
   games: {
     color: "#fff",
@@ -453,7 +453,7 @@ const styles = StyleSheet.create({
     fontFamily: "Poppins-Regular",
   },
   callOfDuty: {
-    color: "#550096",
+    color: "#21609fff",
   },
   grrntGamesCallContainer: {
     top: 129,
@@ -465,10 +465,10 @@ const styles = StyleSheet.create({
     fontFamily: "Inter-Regular",
   },
   have: {
-    color: "#550096",
+    color: "#21609fff",
   },
   electronicPunk: {
-    color: "#550096",
+    color: "#21609fff",
   },
   haveMusicElectronicContainer: {
     top: 178,
@@ -549,7 +549,7 @@ const styles = StyleSheet.create({
     width: 136,
     borderRadius: 8,
     top: 735,
-    backgroundColor: "#ae44fe",
+    backgroundColor: "#007fff",
   },
   button3: {
     color: "#303030",
@@ -559,11 +559,11 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
   },
   view: {
-    backgroundColor: "#ae44fe",
+    backgroundColor: "#007fff",
     flex: 1,
   },
   viewBg: {
-    backgroundColor: "#ae44fe",
+    backgroundColor: "#007fff",
     flex: 1,
     alignContent: "center",
     justifyContent: "center",

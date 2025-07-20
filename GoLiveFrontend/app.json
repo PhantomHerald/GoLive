@@ -4,7 +4,7 @@
     "slug": "GoLive",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/Twitch1.png",
+    "icon": "./assets/GoLive.png",
     "scheme": "GoLive",
     "userInterfaceStyle": "dark",
     "newArchEnabled": true,
@@ -13,7 +13,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/Twitch1.png",
+        "foregroundImage": "./assets/GoLive.png",
         "backgroundColor": "#9246ff"
       },
       "edgeToEdgeEnabled": true
@@ -21,14 +21,14 @@
     "web": {
       "bundler": "metro",
       "output": "static",
-      "favicon": "./assets/Twitch1.png"
+      "favicon": "./assets/GoLive.png"
     },
     "plugins": [
       "expo-router",
       [
         "expo-splash-screen",
         {
-          "image": "./assets/Twitch1.png",
+          "image": "./assets/GoLive.png",
           "imageWidth": 200,
           "resizeMode": "contain",
           "backgroundColor": "#9246ff"
