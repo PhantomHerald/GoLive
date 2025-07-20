@@ -110,7 +110,7 @@ export default function ClipsScreen({ paused = false }: { paused?: boolean }) {
     itemVisiblePercentThreshold: 80,
   }).current;
 
-  const handleShare = (clip: typeof CLIPS[0]) => {
+  const handleShare = (clip: (typeof CLIPS)[0]) => {
     Share.share({
       message: `Check out this clip: ${clip.uri}`,
       url: clip.uri,
@@ -193,8 +193,28 @@ export default function ClipsScreen({ paused = false }: { paused?: boolean }) {
         shouldPlay={!paused && index === viewableIndex}
         isMuted={isMuted}
       />
-      {/* Vertical button stack on left */}
+      {/* Streamer info on left */}
       <View style={styles.leftButtons}>
+        <TouchableOpacity
+          onPress={() => router.push(`/user/${item.streamer.name}`)}
+        >
+          <Image source={{ uri: item.streamer.avatar }} style={styles.avatar} />
+          <Text style={styles.streamerName}>{item.streamer.name}</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={() =>
+            router.push({
+              pathname: "/ReportBlock",
+              params: { target: item.streamer.name },
+            })
+          }
+          style={{ marginTop: 12 }}
+        >
+          <MoreHorizontal size={28} color="#fff" />
+        </TouchableOpacity>
+      </View>
+      {/* Vertical button stack on right */}
+      <View style={styles.rightInfo}>
         {/* Mute button */}
         <TouchableOpacity
           style={styles.iconButton}
@@ -207,14 +227,19 @@ export default function ClipsScreen({ paused = false }: { paused?: boolean }) {
           )}
         </TouchableOpacity>
         {/* Resize button */}
-        <TouchableOpacity
-          style={styles.iconButton}
-          onPress={toggleResizeMode}
-        >
+        <TouchableOpacity style={styles.iconButton} onPress={toggleResizeMode}>
           {resizeMode === ResizeMode.COVER ? (
-            <MaterialCommunityIcons name="arrow-expand" size={32} color="#fff" />
+            <MaterialCommunityIcons
+              name="arrow-expand"
+              size={32}
+              color="#fff"
+            />
           ) : (
-            <MaterialCommunityIcons name="arrow-collapse" size={32} color="#fff" />
+            <MaterialCommunityIcons
+              name="arrow-collapse"
+              size={32}
+              color="#fff"
+            />
           )}
         </TouchableOpacity>
         <TouchableOpacity
@@ -228,7 +253,6 @@ export default function ClipsScreen({ paused = false }: { paused?: boolean }) {
           style={styles.iconButton}
           onPress={() => handleLike(index)}
         >
-          {/* Use MaterialCommunityIcons for filled heart, Feather for outline */}
           {liked[index] ? (
             <MaterialCommunityIcons name="heart" size={32} color="#E91916" />
           ) : (
@@ -241,16 +265,6 @@ export default function ClipsScreen({ paused = false }: { paused?: boolean }) {
           onPress={() => handleShare(item)}
         >
           <Feather name="share-2" size={32} color="#fff" />
-        </TouchableOpacity>
-      </View>
-      {/* Streamer info on right */}
-      <View style={styles.rightInfo}>
-        <TouchableOpacity onPress={() => router.push(`/user/${item.streamer.name}`)}>
-          <Image source={{ uri: item.streamer.avatar }} style={styles.avatar} />
-          <Text style={styles.streamerName}>{item.streamer.name}</Text>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={() => router.push({ pathname: "/ReportBlock", params: { target: item.streamer.name } })} style={{ marginTop: 12 }}>
-          <MoreHorizontal size={28} color="#fff" />
         </TouchableOpacity>
       </View>
       {/* Overlay title */}
@@ -385,6 +399,14 @@ const styles = StyleSheet.create({
     alignItems: "center",
     zIndex: 2,
   },
+  rightInfo: {
+    position: "absolute",
+    right: 16,
+    bottom: 24,
+    flexDirection: "column",
+    alignItems: "center",
+    zIndex: 2,
+  },
   iconButton: {
     marginBottom: 24,
     alignItems: "center",
@@ -394,13 +416,6 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     fontSize: 16,
     marginTop: 4,
-  },
-  rightInfo: {
-    position: "absolute",
-    right: 16,
-    bottom: 24,
-    alignItems: "center",
-    zIndex: 2,
   },
   avatar: {
     width: 48,

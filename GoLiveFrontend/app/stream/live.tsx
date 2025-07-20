@@ -8,6 +8,7 @@ import {
   View,
   TouchableOpacity,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { Video, ResizeMode } from "expo-av";
 import { LinearGradient } from "expo-linear-gradient";
 import { MaterialCommunityIcons, Feather } from "@expo/vector-icons";
@@ -39,17 +40,33 @@ export default function LiveStreamApp() {
           style={[styles.video, { height: VISIBLE_HEIGHT }]}
           resizeMode="cover"
         />
-        {/* Bottom overlay */}
-        <LinearGradient
-          colors={["rgba(0,0,0,0.7)", "rgba(0,0,0,0.2)", "transparent"]}
-          style={[styles.bottomOverlay, { bottom: TAB_BAR_HEIGHT }]}
+        {/* Bottom overlay - now transparent and safe area padded */}
+        <SafeAreaView
+          edges={["left", "right", "bottom"]}
+          style={[
+            styles.bottomOverlay,
+            {
+              bottom: TAB_BAR_HEIGHT,
+              backgroundColor: "transparent",
+              paddingHorizontal: 20,
+            },
+          ]}
         >
           <View style={styles.row}>
             <View style={styles.liveBadge}>
               <Text style={styles.liveText}>LIVE</Text>
             </View>
-            <TouchableOpacity onPress={() => router.push({ pathname: "/user/[username]", params: { username: item.streamer.displayName } })}>
-              <Text style={styles.streamerName}>{item.streamer.displayName}</Text>
+            <TouchableOpacity
+              onPress={() =>
+                router.push({
+                  pathname: "/user/[username]",
+                  params: { username: item.streamer.displayName },
+                })
+              }
+            >
+              <Text style={styles.streamerName}>
+                {item.streamer.displayName}
+              </Text>
             </TouchableOpacity>
             <MaterialCommunityIcons
               name="check-decagram"
@@ -58,16 +75,36 @@ export default function LiveStreamApp() {
               style={{ marginLeft: 4 }}
             />
             <TouchableOpacity
-              style={[styles.followBtn, isFollowing && { borderColor: "#9147FF", backgroundColor: "#9147FF22" }, styles.followBtnFixed]}
+              style={[
+                styles.followBtn,
+                isFollowing && {
+                  borderColor: "#9147FF",
+                  backgroundColor: "#9147FF22",
+                },
+                styles.followBtnFixed,
+              ]}
               onPress={() => handleToggleFollow(item.id)}
             >
-              <Feather name="heart" size={16} color={isFollowing ? "#9147FF" : "#fff"} />
-              <Text style={[styles.followText, isFollowing && { color: "#9147FF" }]}>
+              <Feather
+                name="heart"
+                size={16}
+                color={isFollowing ? "#9147FF" : "#fff"}
+              />
+              <Text
+                style={[styles.followText, isFollowing && { color: "#9147FF" }]}
+              >
                 {isFollowing ? "Following" : "Follow"}
               </Text>
             </TouchableOpacity>
             <View style={styles.viewerBox}>
-              <TouchableOpacity onPress={() => router.push({ pathname: "/user/[username]", params: { username: item.streamer.displayName } })}>
+              <TouchableOpacity
+                onPress={() =>
+                  router.push({
+                    pathname: "/user/[username]",
+                    params: { username: item.streamer.displayName },
+                  })
+                }
+              >
                 <Image
                   source={{ uri: item.streamer.avatar }}
                   style={styles.viewerAvatar}
@@ -75,7 +112,15 @@ export default function LiveStreamApp() {
               </TouchableOpacity>
               <Text style={styles.viewerCount}>{item.viewers}</Text>
             </View>
-            <TouchableOpacity onPress={() => router.push({ pathname: "/ReportBlock", params: { target: item.streamer.displayName } })} style={{ marginLeft: 12 }}>
+            <TouchableOpacity
+              onPress={() =>
+                router.push({
+                  pathname: "/ReportBlock",
+                  params: { target: item.streamer.displayName },
+                })
+              }
+              style={{ marginLeft: 12 }}
+            >
               <MoreHorizontal size={24} color="#fff" />
             </TouchableOpacity>
             <TouchableOpacity style={styles.shareBtn}>
@@ -87,7 +132,7 @@ export default function LiveStreamApp() {
             <MaterialCommunityIcons name="sword-cross" size={16} color="#fff" />
             <Text style={styles.categoryText}>{item.game}</Text>
           </View>
-        </LinearGradient>
+        </SafeAreaView>
       </View>
     );
   };
@@ -155,6 +200,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingBottom: 24,
     paddingTop: 16,
+    backgroundColor: "transparent",
+    shadowColor: undefined,
+    shadowOpacity: undefined,
+    shadowRadius: undefined,
+    elevation: undefined,
   },
   row: {
     flexDirection: "row",
