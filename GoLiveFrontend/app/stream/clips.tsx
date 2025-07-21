@@ -113,7 +113,7 @@ export default function ClipsScreen({ paused = false }: { paused?: boolean }) {
     itemVisiblePercentThreshold: 80,
   }).current;
 
-  const handleShare = (clip: typeof CLIPS[0]) => {
+  const handleShare = (clip: (typeof CLIPS)[0]) => {
     Share.share({
       message: `Check out this clip: ${clip.uri}`,
       url: clip.uri,

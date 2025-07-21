@@ -179,6 +179,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingBottom: 0,
     paddingTop: 16,
+    backgroundColor: "transparent",
+    shadowColor: undefined,
+    shadowOpacity: undefined,
+    shadowRadius: undefined,
+    elevation: undefined,
   },
   liveTagOnAvatar: {
     position: "absolute",

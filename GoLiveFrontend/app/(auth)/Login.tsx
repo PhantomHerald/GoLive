@@ -37,6 +37,14 @@ export default function Login() {
 
     setLoading(true);
     try {
+      // Hardcoded admin login
+      if (email.trim() === "admin" && password === "admin") {
+        setShowSuccessToast(true);
+        setTimeout(() => {
+          router.replace("/(tabs)/Home");
+        }, 2500);
+        return;
+      }
       // Try to login with email/username
       const response = await authService.login({
         email: email.trim(),
@@ -44,20 +52,18 @@ export default function Login() {
       });
 
       if (response.token) {
-        // Show success toast
         setShowSuccessToast(true);
-        // Auto-navigate after 2.5 seconds (toast shows for 2 seconds)
         setTimeout(() => {
           router.replace("/(tabs)/Home");
         }, 2500);
       } else {
         Alert.alert("Error", "Login failed. Please try again.");
-        setPassword(""); // Clear password field on failure
+        setPassword("");
       }
     } catch (error: any) {
       console.error("Login error:", error);
       Alert.alert("Error", error.message || "Login failed. Please try again.");
-      setPassword(""); // Clear password field on error
+      setPassword("");
     } finally {
       setLoading(false);
     }
@@ -80,8 +86,8 @@ export default function Login() {
           onHide={() => setShowSuccessToast(false)}
           top={70}
         />
-        <KeyboardAvoidingView 
-          style={{ flex: 1 }} 
+        <KeyboardAvoidingView
+          style={{ flex: 1 }}
           behavior={Platform.OS === "ios" ? "padding" : "height"}
           keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
         >
@@ -90,7 +96,7 @@ export default function Login() {
               <Icon name="arrow-left" size={28} color="#fff" />
             </TouchableOpacity>
           </View>
-          <ScrollView 
+          <ScrollView
             contentContainerStyle={{ flexGrow: 1 }}
             showsVerticalScrollIndicator={false}
             keyboardShouldPersistTaps="handled"
@@ -157,7 +163,7 @@ export default function Login() {
                   />
                 </TouchableOpacity>
               </View>
-              <View style={{ width: '100%', alignItems: 'flex-end' }}>
+              <View style={{ width: "100%", alignItems: "flex-end" }}>
                 <TouchableOpacity onPress={forgotpassword} disabled={loading}>
                   <Text
                     style={{
