@@ -61,7 +61,7 @@ const getMobileEnvironment = (): Environment => {
     return {
       ...env,
       // Using your computer's IP address for hotspot connection
-      API_BASE_URL: 'http://100.66.120.190:8080',
+      API_BASE_URL: 'http://10.61.251.105:8080',
     };
   }
   

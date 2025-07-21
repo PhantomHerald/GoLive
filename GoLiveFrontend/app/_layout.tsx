@@ -42,6 +42,7 @@ export default function RootLayout() {
         <Stack.Screen name="TestOffline" options={{ headerShown: false }} />
         <Stack.Screen name="TestError" options={{ headerShown: false }} />
         <Stack.Screen name="BitsPayments" options={{ headerShown: false }} />
+        <Stack.Screen name="stream/[id]" options={{ headerShown: false }} />
         <Stack.Screen name="PrivacySettings" options={{ headerShown: false }} />
         <Stack.Screen name="+not-found" />
       </Stack>

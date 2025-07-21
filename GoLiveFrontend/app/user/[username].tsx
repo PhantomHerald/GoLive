@@ -4,14 +4,9 @@ import React, { useState } from "react";
 import { mockUsers, mockStreams } from "@/data/mockdata";
 import { Avatar } from "@/components/ui/Avatar";
 import Icon from "@expo/vector-icons/MaterialCommunityIcons";
+import { formatFollowers } from "@/utils/formatFollowers";
 
 const TABS = ["Home", "About", "Clips", "Chats"];
-
-function formatFollowers(num: number) {
-  if (num >= 1000000) return (num / 1000000).toFixed(1).replace(/\.0$/, "") + "M";
-  if (num >= 1000) return (num / 1000).toFixed(1).replace(/\.0$/, "") + "K";
-  return num;
-}
 
 const MOCK_HOME_ITEMS = Array.from({ length: 20 }, (_, i) => ({
   id: i + 1,

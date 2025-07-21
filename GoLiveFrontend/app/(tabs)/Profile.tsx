@@ -250,10 +250,18 @@ export default function ProfileScreen() {
   const [error, setError] = useState("");
   const [settingsExpanded, setSettingsExpanded] = useState(false);
 
+  useEffect(() => {
+    setSettingsExpanded(false);
+  }, [activeTab]);
+
   useFocusEffect(
     React.useCallback(() => {
-      refetchUser(); // Refresh in background, but show cached data instantly
-    }, [refetchUser])
+      // On focus: do nothing
+      return () => {
+        // On blur (navigating away from Profile tab):
+        setSettingsExpanded(false);
+      };
+    }, [])
   );
 
   const handleLogout = async () => {

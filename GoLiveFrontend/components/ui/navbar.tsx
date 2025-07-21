@@ -87,34 +87,36 @@ export default function Navbar({ initialTab = "Live" }: NavbarProps) {
       case "Following":
         return (
           <FlatList
-            data={mockFollowedChannels}
-            keyExtractor={(item) => item.id}
-            renderItem={({ item }) => (
-              <View style={styles.channelRow}>
-                <View style={{ position: "relative" }}>
-                  <Image source={{ uri: item.avatar }} style={styles.avatar} />
-                  {item.isLive && (
-                    <View
-                      style={{
-                        position: "absolute",
-                        bottom: 4,
-                        right: 4,
-                        width: 12,
-                        height: 12,
-                        borderRadius: 6,
-                        backgroundColor: "red",
-                        borderWidth: 2,
-                        borderColor: "#18181b",
-                      }}
-                    />
-                  )}
+            data={mockFollowedChannels || []}
+            keyExtractor={(item) => item?.id || Math.random().toString()}
+            renderItem={({ item }) =>
+              item && item.displayName && item.avatar ? (
+                <View style={styles.channelRow}>
+                  <View style={{ position: "relative" }}>
+                    <Image source={{ uri: item.avatar }} style={styles.avatar} />
+                    {item.isLive && (
+                      <View
+                        style={{
+                          position: "absolute",
+                          bottom: 4,
+                          right: 4,
+                          width: 12,
+                          height: 12,
+                          borderRadius: 6,
+                          backgroundColor: "red",
+                          borderWidth: 2,
+                          borderColor: "#18181b",
+                        }}
+                      />
+                    )}
+                  </View>
+                  <View style={styles.info}>
+                    <Text style={styles.displayName}>{item.displayName}</Text>
+                    <Text style={styles.username}>@{item.username}</Text>
+                  </View>
                 </View>
-                <View style={styles.info}>
-                  <Text style={styles.displayName}>{item.displayName}</Text>
-                  <Text style={styles.username}>@{item.username}</Text>
-                </View>
-              </View>
-            )}
+              ) : null
+            }
             contentContainerStyle={{ paddingTop: 60 }}
             ListEmptyComponent={
               <View

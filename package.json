@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "@react-native-community/netinfo": "^11.4.1",
     "react-native-video": "^6.16.1"
   }
 }

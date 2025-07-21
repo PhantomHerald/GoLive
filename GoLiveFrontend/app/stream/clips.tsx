@@ -16,39 +16,19 @@ import {
 } from "react-native";
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { MoreHorizontal } from "lucide-react-native";
-
-const CLIPS = [
-  {
-    id: "1",
-    uri: "https://www.w3schools.com/html/mov_bbb.mp4",
-    title: "Clip 1",
-    streamer: {
-      avatar: "https://randomuser.me/api/portraits/men/1.jpg",
-      name: "StreamerOne",
-    },
-    likes: 12,
-    comments: [
-      { id: "c1", user: "Alice", text: "Nice clip!" },
-      { id: "c2", user: "Bob", text: "Awesome!" },
-    ],
-  },
-  {
-    id: "2",
-    uri: "https://www.w3schools.com/html/movie.mp4",
-    title: "Clip 2",
-    streamer: {
-      avatar: "https://randomuser.me/api/portraits/women/2.jpg",
-      name: "StreamerTwo",
-    },
-    likes: 5,
-    comments: [{ id: "c3", user: "Charlie", text: "Great moment!" }],
-  },
-];
+import { MoreVertical } from "lucide-react-native";
+import { CLIPS } from "@/data/mockdata";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const TAB_BAR_HEIGHT = 80; // Adjust to your actual tab bar height
 const { height: SCREEN_HEIGHT } = Dimensions.get("window");
 const CLIP_HEIGHT = SCREEN_HEIGHT - TAB_BAR_HEIGHT;
+
+// Utility to capitalize first letter
+function capitalizeFirst(str: string) {
+  if (!str) return str;
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
 
 export default function ClipsScreen({ paused = false }: { paused?: boolean }) {
   const videoRefs = useRef<any[]>([]);
@@ -68,6 +48,29 @@ export default function ClipsScreen({ paused = false }: { paused?: boolean }) {
   const [isMuted, setIsMuted] = useState(false); // Initial state: unmuted
   const [resizeMode, setResizeMode] = useState<ResizeMode>(ResizeMode.COVER);
   const router = useRouter();
+  const [isPlaying, setIsPlaying] = useState(true); // For tap-to-pause/play
+  const [initialIndex, setInitialIndex] = useState<number | null>(null);
+
+  // Persist mute state across tabs and restore last index
+  useEffect(() => {
+    (async () => {
+      const stored = await AsyncStorage.getItem("CLIPS_MUTED");
+      if (stored !== null) setIsMuted(stored === "true");
+      const lastIndex = await AsyncStorage.getItem("CLIPS_LAST_INDEX");
+      if (lastIndex !== null && !isNaN(Number(lastIndex))) {
+        setViewableIndex(Number(lastIndex));
+        setInitialIndex(Number(lastIndex));
+      } else {
+        setInitialIndex(0);
+      }
+    })();
+  }, []);
+  useEffect(() => {
+    AsyncStorage.setItem("CLIPS_MUTED", isMuted ? "true" : "false");
+  }, [isMuted]);
+  useEffect(() => {
+    AsyncStorage.setItem("CLIPS_LAST_INDEX", String(viewableIndex));
+  }, [viewableIndex]);
 
   // Pause all videos when paused prop is true
   useEffect(() => {
@@ -175,91 +178,105 @@ export default function ClipsScreen({ paused = false }: { paused?: boolean }) {
     setCommentInput("");
   };
 
-  const renderItem = ({
-    item,
-    index,
-  }: {
-    item: (typeof CLIPS)[0];
-    index: number;
-  }) => (
-    <View style={styles.clipContainer}>
-      <Video
-        ref={(ref) => {
-          videoRefs.current[index] = ref;
-        }}
-        source={{ uri: item.uri }}
-        style={styles.video}
-        resizeMode={resizeMode}
-        shouldPlay={!paused && index === viewableIndex}
-        isMuted={isMuted}
-      />
-      {/* Vertical button stack on left */}
-      <View style={styles.leftButtons}>
-        {/* Mute button */}
-        <TouchableOpacity
-          style={styles.iconButton}
-          onPress={() => setIsMuted((m) => !m)}
-        >
-          {isMuted ? (
-            <Feather name="volume-x" size={32} color="#fff" />
-          ) : (
-            <Feather name="volume-2" size={32} color="#fff" />
-          )}
+  const handleVideoPress = () => {
+    setIsPlaying((prev) => !prev);
+    const ref = videoRefs.current[viewableIndex];
+    if (ref) {
+      if (isPlaying) {
+        ref.pauseAsync && ref.pauseAsync();
+      } else {
+        ref.playAsync && ref.playAsync();
+      }
+    }
+  };
+
+  const renderItem = ({ item, index }: { item: typeof CLIPS[0]; index: number; }) => {
+    const isVerified = typeof item.streamer.verified === 'boolean' ? item.streamer.verified : false;
+    const postedAgo = item.id === "1" ? "posted 2 days ago" : "posted 1 week ago";
+    // Only show tags (not game) in the extra info
+    const extraInfoArr = (item.tags || []).filter(Boolean);
+    const extraInfo = extraInfoArr.join(", ");
+    return (
+      <View style={styles.clipContainer}>
+        <TouchableOpacity style={{ flex: 1, position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 0 }} activeOpacity={1} onPress={handleVideoPress}>
+          <Video
+            ref={(ref) => {
+              videoRefs.current[index] = ref;
+            }}
+            source={{ uri: item.uri }}
+            style={resizeMode === ResizeMode.CONTAIN ? styles.videoFullScreen : styles.video}
+            resizeMode={resizeMode}
+            shouldPlay={isPlaying && !paused && index === viewableIndex}
+            isMuted={isMuted}
+            isLooping={true}
+          />
         </TouchableOpacity>
-        {/* Resize button */}
-        <TouchableOpacity
-          style={styles.iconButton}
-          onPress={toggleResizeMode}
-        >
-          {resizeMode === ResizeMode.COVER ? (
-            <MaterialCommunityIcons name="arrow-expand" size={32} color="#fff" />
-          ) : (
-            <MaterialCommunityIcons name="arrow-collapse" size={32} color="#fff" />
-          )}
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.iconButton}
-          onPress={() => openComments(commentsData[index], item.id, index)}
-        >
-          <Feather name="message-circle" size={32} color="#fff" />
-          <Text style={styles.iconCount}>{commentsData[index].length}</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.iconButton}
-          onPress={() => handleLike(index)}
-        >
-          {/* Use MaterialCommunityIcons for filled heart, Feather for outline */}
-          {liked[index] ? (
-            <MaterialCommunityIcons name="heart" size={32} color="#E91916" />
-          ) : (
-            <Feather name="heart" size={32} color="#fff" />
-          )}
-          <Text style={styles.iconCount}>{likes[index]}</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.iconButton}
-          onPress={() => handleShare(item)}
-        >
-          <Feather name="share-2" size={32} color="#fff" />
-        </TouchableOpacity>
+        {/* Left info group, bottom-aligned, fills left side */}
+        <View style={styles.leftInfoGroup}>
+          <View style={styles.streamerNameRow}>
+            <TouchableOpacity onPress={() => router.push(`/user/${item.streamer.name}`)} style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <Text style={styles.streamerNameText}>{capitalizeFirst(item.streamer.name)}</Text>
+              {isVerified && (
+                <MaterialCommunityIcons name="check-decagram" size={18} color="#9147FF" style={{ marginLeft: 2, marginTop: 1 }} />
+              )}
+            </TouchableOpacity>
+          </View>
+          <Text style={styles.titleText}>{capitalizeFirst(item.title)}</Text>
+          <View style={styles.postedAgoContainer}>
+            <Text style={styles.postedAgoText}>{capitalizeFirst(postedAgo)}</Text>
+          </View>
+          <Text
+            style={styles.extraInfoText}
+            numberOfLines={2}
+            ellipsizeMode="tail"
+          >
+            {capitalizeFirst(extraInfo)}
+          </Text>
+        </View>
+        {/* Right icon group, bottom-aligned, with profile pic and more */}
+        <View style={styles.rightIconGroup}>
+          <TouchableOpacity onPress={() => router.push(`/user/${item.streamer.name}`)} style={styles.avatarBtn}>
+            <Image source={{ uri: item.streamer.avatar }} style={[styles.avatar, { width: 60, height: 60 }]} />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.iconButton} onPress={() => handleLike(index)}>
+            {liked[index] ? (
+              <MaterialCommunityIcons name="heart" size={26} color="#9147FF" />
+            ) : (
+              <Feather name="heart" size={26} color="#fff" />
+            )}
+            <Text style={styles.iconCount}>{likes[index]}</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.iconButton} onPress={() => openComments(commentsData[index], item.id, index)}>
+            <Feather name="message-circle" size={26} color="#fff" />
+            <Text style={styles.iconCount}>{commentsData[index].length}</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.iconButton} onPress={toggleResizeMode}>
+            {resizeMode === ResizeMode.COVER ? (
+              <MaterialCommunityIcons name="arrow-expand" size={26} color="#fff" />
+            ) : (
+              <MaterialCommunityIcons name="arrow-collapse" size={26} color="#fff" />
+            )}
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.iconButton} onPress={() => setIsMuted((m) => !m)}>
+            {isMuted ? (
+              <Feather name="volume-x" size={26} color="#fff" />
+            ) : (
+              <Feather name="volume-2" size={26} color="#fff" />
+            )}
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.iconButton} onPress={() => handleShare(item)}>
+            <Feather name="share-2" size={26} color="#fff" />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => router.push({ pathname: "/ReportBlock", params: { target: item.streamer.name } })} style={[styles.iconButton, { marginTop: 0 }]}>
+            <MoreVertical size={24} color="#fff" />
+          </TouchableOpacity>
+        </View>
       </View>
-      {/* Streamer info on right */}
-      <View style={styles.rightInfo}>
-        <TouchableOpacity onPress={() => router.push(`/user/${item.streamer.name}`)}>
-          <Image source={{ uri: item.streamer.avatar }} style={styles.avatar} />
-          <Text style={styles.streamerName}>{item.streamer.name}</Text>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={() => router.push({ pathname: "/ReportBlock", params: { target: item.streamer.name } })} style={{ marginTop: 12 }}>
-          <MoreHorizontal size={28} color="#fff" />
-        </TouchableOpacity>
-      </View>
-      {/* Overlay title */}
-      <View style={styles.overlay}>
-        <Text style={styles.title}>{item.title}</Text>
-        <Text style={{ color: "white" }}>just chatting. first test</Text>
-      </View>
-    </View>
-  );
+    );
+  };
+
+  // Only render FlatList after initialIndex is loaded
+  if (initialIndex === null) return null;
 
   return (
     <View style={{ flex: 1, backgroundColor: "#000" }}>
@@ -281,6 +298,7 @@ export default function ClipsScreen({ paused = false }: { paused?: boolean }) {
         contentContainerStyle={{ flexGrow: 1 }}
         onViewableItemsChanged={onViewableItemsChanged}
         viewabilityConfig={viewabilityConfig}
+        initialScrollIndex={initialIndex}
       />
       {/* Animated Comments Modal */}
       <Modal visible={modalVisible} transparent animationType="none">
@@ -385,16 +403,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     zIndex: 2,
   },
-  iconButton: {
-    marginBottom: 24,
-    alignItems: "center",
-  },
-  iconCount: {
-    color: "#fff",
-    fontWeight: "bold",
-    fontSize: 16,
-    marginTop: 4,
-  },
   rightInfo: {
     position: "absolute",
     right: 16,
@@ -403,9 +411,7 @@ const styles = StyleSheet.create({
     zIndex: 2,
   },
   avatar: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    borderRadius: 50,
     marginBottom: 8,
     borderWidth: 2,
     borderColor: "#fff",
@@ -483,5 +489,136 @@ const styles = StyleSheet.create({
   sendBtn: {
     marginLeft: 8,
     padding: 8,
+  },
+  leftButtonsFull: {
+    position: "absolute",
+    left: 16,
+    bottom: 24,
+    flexDirection: "column",
+    alignItems: "center",
+    zIndex: 2,
+    justifyContent: "flex-end",
+    height: "60%",
+  },
+  rightInfoFull: {
+    position: "absolute",
+    right: 16,
+    bottom: 24,
+    flexDirection: "column",
+    alignItems: "center",
+    zIndex: 2,
+    justifyContent: "flex-end",
+    height: "60%",
+  },
+  avatarBtn: {
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  overlayFull: {
+    position: "absolute",
+    bottom: 24,
+    left: 120,
+    right: 120,
+    width: undefined,
+    paddingHorizontal: 24,
+    paddingBottom: 0,
+    zIndex: 1,
+    alignItems: "center",
+  },
+  titleFull: {
+    color: "#fff",
+    fontWeight: "bold",
+    fontSize: 18,
+    textAlign: "center",
+    textShadowColor: "#000",
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 4,
+  },
+  rightIconGroup: {
+    position: "absolute",
+    right: 16,
+    bottom: 24,
+    flexDirection: "column",
+    alignItems: "center",
+    zIndex: 2,
+    justifyContent: "flex-end",
+    gap: 6,
+    paddingVertical: 8,
+    minHeight: 180,
+    maxHeight: '50%',
+  },
+  iconButton: {
+    marginBottom: 0,
+    alignItems: "center",
+    paddingVertical: 2,
+  },
+  iconCount: {
+    color: "#fff",
+    fontWeight: "bold",
+    fontSize: 13,
+    marginTop: 2,
+  },
+  leftInfoGroup: {
+    position: "absolute",
+    left: 16,
+    bottom: 34,
+    flexDirection: "column",
+    alignItems: "flex-start",
+    zIndex: 2,
+    justifyContent: "flex-end",
+    maxWidth: 200,
+    gap: 5,
+  },
+  streamerRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 2,
+  },
+  streamerNameText: {
+    color: "#fff",
+    fontWeight: "bold",
+    fontSize: 22,
+  },
+  postedAgoText: {
+    color: "#9147FF",
+    fontSize: 18,
+    marginBottom: 2,
+    fontWeight: "600",
+  },
+  extraInfoText: {
+    color: "#fff",
+    fontSize: 20,
+    opacity: 0.85,
+    fontWeight: "500",
+    width: 250,
+  },
+  titleText: {
+    color: "#fff",
+    fontWeight: "bold",
+    fontSize: 24,
+    marginBottom: 2,
+  },
+  postedAgoContainer: {
+    width: '100%',
+    borderWidth: 2,
+    borderColor: "#9147FF",
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 2,
+    alignSelf: "flex-start",
+    marginBottom: 4,
+  },
+  videoFullScreen: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    width: "100%",
+    height: SCREEN_HEIGHT - TAB_BAR_HEIGHT,
+    zIndex: 0,
+  },
+  streamerNameRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 2,
   },
 });

@@ -1,336 +1,492 @@
-import { mockChatMessages, mockStreams } from "@/data/mockdata";
-import { HeaderBackButton } from "@react-navigation/elements";
-import { router, useLocalSearchParams } from "expo-router";
-import React, { useState } from "react";
-import {
-  Image,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
-import { MoreHorizontal } from "lucide-react-native";
+import React, { useState, useRef, useEffect } from "react";
+import { View, Text, TouchableOpacity, StyleSheet, Image, Dimensions, TextInput, ScrollView, KeyboardAvoidingView, Platform, Share, TouchableWithoutFeedback, Animated } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import Icon from "@expo/vector-icons/MaterialCommunityIcons";
+import { useLocalSearchParams, router } from "expo-router";
+import { mockStreams, mockUsers, mockChatMessages } from "@/data/mockdata";
+import { Volume2, VolumeX, Share2, MoreVertical } from "lucide-react-native";
+import { formatFollowers } from "@/utils/formatFollowers";
+import { Video, ResizeMode } from "expo-av";
+import { Feather } from "@expo/vector-icons";
 
-// Minimal ChatMessage component definition
-type ChatMessageProps = {
-  username: string;
-  message: string;
-  badges?: string[];
-  time?: string;
-};
-
-const ChatMessage: React.FC<ChatMessageProps> = ({
-  username,
-  message,
-  badges,
-  time,
-}) => (
-  <View
-    style={{ flexDirection: "row", marginVertical: 4, alignItems: "center" }}
-  >
-    <Text style={{ color: "#fff", fontWeight: "bold", marginRight: 6 }}>
-      {username}
-    </Text>
-    <Text style={{ color: "#fff" }}>{message}</Text>
-    {time && (
-      <Text style={{ color: "#aaa", marginLeft: 8, fontSize: 10 }}>{time}</Text>
-    )}
-  </View>
-);
+const { width } = Dimensions.get("window");
 
 export default function StreamScreen() {
-  //get stream id
   const { id } = useLocalSearchParams<{ id: string }>();
-  const stream = mockStreams.find((s) => s.id === "stream-1");
+  const stream = mockStreams.find((s) => s.id === id);
+  const videoRef = useRef<Video>(null);
+  const [muted, setMuted] = useState(false);
+  const streamerUser = stream ? mockUsers.find(u => u.username === stream.streamer.username) : null;
+  const [chatInput, setChatInput] = useState("");
+  const [messages, setMessages] = useState(stream ? mockChatMessages(stream.id) : []);
+  const scrollViewRef = useRef<ScrollView>(null);
+  const [following, setFollowing] = useState(false);
+  const handleToggleFollow = () => setFollowing(f => !f);
+  const [infoVisible, setInfoVisible] = useState(true);
+  const hideInfoTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const infoAnim = useRef(new Animated.Value(0)).current; // 0: visible, 1: hidden
+  const infoRowHeight = 120; // px, must match outputRange in infoAnim
 
-  // State for follow functionality
-  const [isFollowing, setIsFollowing] = useState(false);
+  // Animate info row in/out
+  useEffect(() => {
+    Animated.timing(infoAnim, {
+      toValue: infoVisible ? 1 : 0,
+      duration: 350,
+      useNativeDriver: true,
+    }).start();
+  }, [infoVisible]);
 
-  //get chat messages
-  const ChatMessages = mockChatMessages(id);
+  // Auto-hide info after 5 seconds
+  useEffect(() => {
+    if (infoVisible) {
+      if (hideInfoTimeout.current !== null) clearTimeout(hideInfoTimeout.current);
+      hideInfoTimeout.current = window.setTimeout(() => setInfoVisible(false), 5000);
+    }
+    return () => {
+      if (hideInfoTimeout.current !== null) clearTimeout(hideInfoTimeout.current);
+    };
+  }, [infoVisible]);
 
-  // this is to handle goiing back
-  const handleBack = () => {
-    router.back();
+  const handleStreamTap = () => {
+    setInfoVisible(true);
   };
-  // handle follow functionality
-  const handleFollow = () => {
-    setIsFollowing(!isFollowing);
-    console.log("Follow functionality is not implemented yet.");
+
+  const handleMuteToggle = () => {
+    setMuted((prev) => !prev);
   };
 
-  // this is used to hnddle the share functionality at the moment it isset to console.log
-  const handleShare = () => {
-    console.log("Share functionality is not implemented yet.");
+  const handleShare = async () => {
+    if (stream) {
+      try {
+        await Share.share({
+          message: `Check out this stream: ${stream.title}\nhttps://yourapp.com/stream/${stream.id}`,
+          url: `https://yourapp.com/stream/${stream.id}`,
+          title: stream.title,
+        });
+      } catch (error) {
+        alert("Could not share the stream.");
+      }
+    }
   };
 
-  // handling send messages
-  const handleSendMessage = (message: string) => {
-    console.log("Send message functionality is not implemented yet.", message);
+  const handleSend = () => {
+    if (chatInput.trim()) {
+      setMessages(prev => [
+        ...prev,
+        {
+          id: String(Date.now()),
+          username: "You",
+          message: chatInput,
+          badges: [],
+          time: new Date(),
+        },
+      ]);
+      setChatInput("");
+      setTimeout(() => {
+        scrollViewRef.current?.scrollToEnd({ animated: true });
+      }, 100);
+    }
   };
 
-  if (!stream) {
-    // Show the Navbar with the "Following" tab active
     return (
-      <View style={[styles.container, { backgroundColor: "#000" }]}>
-        <View style={styles.header}>
-          <HeaderBackButton onPress={handleBack} tintColor="#fff" />
-          <Text style={[styles.header, { color: "#fff", marginTop: 50 }]}>
-            Stream not found
-          </Text>
+    <SafeAreaView style={styles.container}>
+      <View style={styles.topBar}>
+        <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
+          <Icon name="arrow-left" size={28} color="#fff" />
+          </TouchableOpacity>
+        <Text style={styles.heading}>Live Stream</Text>
+        <View style={{ width: 40 }} />
+      </View>
+      <View style={styles.content}>
+        {stream ? (
+          <View style={{ position: 'relative' }}>
+            <TouchableWithoutFeedback onPress={handleStreamTap}>
+              <View style={{ position: 'relative' }}>
+                <Video
+                  ref={videoRef}
+                  source={{ uri: stream.videoUrl }}
+                  style={[styles.thumbnail, { zIndex: 30 }]}
+                  resizeMode={ResizeMode.COVER}
+                  shouldPlay
+                  isMuted={muted}
+                  isLooping
+                />
+                <View style={styles.verticalActionIcons}>
+                  <TouchableOpacity style={styles.iconBtn} onPress={handleMuteToggle}>
+                    {muted ? (
+                      <VolumeX size={22} color="#fff" />
+                    ) : (
+                      <Volume2 size={22} color="#fff" />
+                    )}
+                  </TouchableOpacity>
+                  <TouchableOpacity style={styles.iconBtn} onPress={handleShare}>
+                    <Share2 size={22} color="#fff" />
+                  </TouchableOpacity>
+                  <TouchableOpacity style={styles.iconBtn} onPress={() => {}}>
+                    <MoreVertical size={22} color="#fff" />
+                  </TouchableOpacity>
+                </View>
+                {/* Animated info row absolutely positioned at bottom of video */}
+                <Animated.View
+                  style={[
+                    styles.infoRowAbsolute,
+                    {
+                      transform: [
+                        {
+                          translateY: infoAnim.interpolate({
+                            inputRange: [1, 1],
+                            outputRange: [infoRowHeight, 0],
+                          }),
+                        },
+                      ],
+                      opacity: infoAnim.interpolate({ inputRange: [0, 1], outputRange: [0, 1] }),
+                      zIndex: 20,
+                    },
+                  ]}
+                  pointerEvents={infoVisible ? 'auto' : 'none'}
+                >
+                  <View style={styles.infoRow}>
+                    <View style={styles.profileGroupSmall}>
+                      <View style={styles.avatarColumn}>
+                        <View style={styles.avatarContainer}>
+                          <Image source={{ uri: stream.streamer.avatar }} style={styles.avatar} />
+                          <View style={styles.liveTag}>
+                            <Text style={styles.liveText}>LIVE</Text>
         </View>
       </View>
-    );
-  } else {
-    <KeyboardAvoidingView
-      style={[styles.container, { backgroundColor: "" }]}
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
-      keyboardVerticalOffset={Platform.OS === "ios" ? 80 : 0}
-    >
-      <View style={styles.header}>
-        <HeaderBackButton onPress={handleBack} tintColor="#fff" />
-        <Text style={{ color: "white" }}> {stream.streamer.displayName}</Text>
-        <View style={styles.headerRight}>
-          <TouchableOpacity style={styles.sharebutton} onPress={handleShare}>
-            <Text> share</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-
-      <View style={styles.streamcontainer}>
-        <Image
-          source={{ uri: stream.thumbnail }}
-          style={styles.streamthumbnail}
-          resizeMode="cover"
-        />
-        <View style={styles.viewerscount}>
-          <Text style={styles.viewerIcon}>viwericon</Text>
-          <Text style={styles.viewertext}>{stream.viewers}</Text>
-        </View>
-      </View>
-
-      <View style={styles.infocontainer}>
-        <View style={styles.streamInfo}>
-          <TouchableOpacity onPress={() => router.push({ pathname: "/user/[username]", params: { username: stream.streamer.displayName } })}>
-            <Image
-              source={{ uri: stream.streamer.avatar }}
-              style={styles.avatar}
-            />
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => router.push({ pathname: "/ReportBlock", params: { target: stream.streamer.displayName } })} style={{ marginLeft: 12 }}>
-            <MoreHorizontal size={24} color="#fff" />
-          </TouchableOpacity>
-          <View style={styles.streamInfo}>
-            <TouchableOpacity onPress={() => router.push({ pathname: "/user/[username]", params: { username: stream.streamer.displayName } })}>
-              <Text style={[styles.streamTitle, { color: "white" }]}>
-                {stream.title}
-              </Text>
-              <Text style={[styles.streamerName, { color: "white" }]}>
+                        <View style={styles.profileInfoColumn}>
+                          <Text style={styles.streamerGroup}>
                 {stream.streamer.displayName}
+                            {streamerUser ? (
+                              <Text style={styles.followersInline}>
+                                {` · ${formatFollowers(streamerUser.followers)}`}
               </Text>
-            </TouchableOpacity>
-            <Text style={[styles.gameText, { color: "white" }]}>
-              {stream.game}
+                            ) : null}
             </Text>
           </View>
         </View>
-        <TouchableOpacity style={styles.followButton} onPress={handleFollow}>
-          <Text style={[{ color: "white" }, styles.followText]}>
-            {isFollowing ? "following" : "follow"}
-          </Text>
+                    </View>
+                    <View style={styles.titleGroup}>
+                      <Text style={styles.title}>{stream.title}</Text>
+                      <TouchableOpacity
+                        style={[styles.followBtn, following && { borderColor: "#9147FF", backgroundColor: "#9147FF22" }, styles.followBtnFixed]}
+                        onPress={handleToggleFollow}
+                      >
+                        <Feather name="heart" size={16} color={following ? "#9147FF" : "#fff"} />
+                        <Text style={[styles.followText, following && { color: "#9147FF" }]}> {following ? "Following" : "Follow"}</Text>
         </TouchableOpacity>
       </View>
-      <View style={styles.chatContainer}>
-        <View style={styles.chatHeader}>
-          <Text style={[styles.chatTitle, { color: "white" }]}>
-            stream chat
-          </Text>
+                  </View>
+                </Animated.View>
         </View>
-        <ScrollView
-          style={styles.messagesContainer}
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={styles.messagesContent}
-        >
-          {ChatMessages.map((message, index) => (
-            <ChatMessage
-              key={message.id}
-              username={message.username}
-              message={message.message}
-              badges={message.badges}
-              time={message.time ? message.time.toString() : undefined}
-            />
-          ))}
-        </ScrollView>
+            </TouchableWithoutFeedback>
+            {/* Chat area (messages) */}
+            <Animated.View
+              style={{
+                transform: [
+                  {
+                    translateY: infoAnim.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: [0, infoRowHeight],
+                    }),
+                  },
+                ],
+                zIndex: 10,
+                flex: 1,
+              }}
+            >
+              {/* Chat Scroll View */}
+              <ScrollView
+                ref={scrollViewRef}
+                style={styles.chatScroll}
+                contentContainerStyle={{ paddingBottom: 60 }}
+                onContentSizeChange={() => scrollViewRef.current?.scrollToEnd({ animated: true })}
+              >
+                {messages.map((msg) => (
+                  <View key={msg.id} style={styles.chatMsgRow}>
+                    <Text style={styles.chatUsername}>{msg.username}:</Text>
+                    <Text style={styles.chatMsg}>{msg.message}</Text>
+                  </View>
+                ))}
+              </ScrollView>
+            </Animated.View>
+            {/* Chat input always at bottom or above keyboard */}
+            <KeyboardAvoidingView
+              behavior={Platform.OS === "ios" ? "padding" : undefined}
+              style={styles.chatInputAvoid}
+              keyboardVerticalOffset={80}
+            >
+              <View style={styles.chatInputRow}>
+                <TextInput
+                  style={styles.chatInput}
+                  value={chatInput}
+                  onChangeText={setChatInput}
+                  placeholder="Type a message..."
+                  placeholderTextColor="#888"
+                  onSubmitEditing={handleSend}
+                  returnKeyType="send"
+                />
+                <TouchableOpacity style={styles.chatMoreBtn}>
+                  <MoreVertical size={22} color="#fff" />
+                </TouchableOpacity>
+              </View>
+            </KeyboardAvoidingView>
+          </View>
+        ) : (
+          <Text style={styles.text}>Stream not found.</Text>
+        )}
       </View>
-    </KeyboardAvoidingView>; // remember to use react nat
-    // ive navigation to finish off and also use the sharebutton rom reactnative and also use lucide icons
-  }
+    </SafeAreaView>
+  );
 }
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: "#0e0e10",
   },
-  header: {
-    height: 100,
-    backgroundColor: "#9147ff",
-    borderBottomLeftRadius: 30,
-    borderBottomRightRadius: 30,
-  },
-  headerRight: {
-    position: "absolute",
-    right: 10,
-    top: 50,
+  topBar: {
     flexDirection: "row",
     alignItems: "center",
+    marginTop: 10,
+    marginLeft: 10,
+    marginBottom: 10,
+    justifyContent: "space-between",
   },
-  sharebutton: {
-    backgroundColor: "#d5ff00",
-    padding: 10,
+  backBtn: {
+    padding: 4,
     borderRadius: 20,
-    marginLeft: 16,
+    width: 40,
   },
-  streamcontainer: {
-    position: "relative",
-    aspectRatio: 16 / 9,
-  },
-  streamthumbnail: {
-    width: "100%",
-    height: "100%",
-  },
-  viewerscount: {
-    position: "absolute",
-    left: 16,
-    top: 16,
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 4,
-  },
-  viewerIcon: {
-    marginRight: 4,
-  },
-  viewertext: {
-    color: "#FFFFFF",
-    fontFamily: "Inter-SemiBold",
-    fontSize: 12,
-  },
-  infocontainer: {
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-  },
-  streamerInfo: {
-    flexDirection: "row",
-    marginBottom: 12,
-  },
-  avatar: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    marginRight: 12,
-  },
-  streamInfo: {
+  heading: {
+    fontWeight: "bold",
+    color: "white",
+    fontSize: 22,
+    textAlign: "center",
     flex: 1,
   },
-  streamTitle: {
-    fontFamily: "Inter-SemiBold",
-    fontSize: 16,
-    marginBottom: 4,
+  content: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "flex-start",
+    width: "100%",
   },
-  streamerName: {
-    fontFamily: "Inter-Medium",
-    fontSize: 14,
+  thumbnail: {
+    width: width,
+    height: Math.round((width * 9) / 16),
+    borderRadius: 0,
+    backgroundColor: "#222",
+    alignSelf: "center",
+  },
+  profileGroup: {
+    width: "100%",
+    alignItems: "center",
+    marginBottom: 18,
+  },
+  avatarLiveRow: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  avatarContainer: {
+    position: "relative",
+  },
+  avatar: {
+    width: 60,
+    height: 60,
+    borderRadius: 50,
+    backgroundColor: "#333",
+  },
+  liveTag: {
+    position: "absolute",
+    bottom: 0,
+    right: -5,
+    backgroundColor: "#E91916",
+    borderRadius: 6,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    zIndex: 2,
+    borderWidth: 1,
+    borderColor: "#fff",
+  },
+  liveText: {
+    color: "#ccc",
+    fontWeight: "bold",
+    fontSize: 10,
+    letterSpacing: 1,
+  },
+  profileInfo: {
+    justifyContent: "center",
+  },
+  streamer: {
+    color: "#fff",
+    fontSize: 18,
+    fontWeight: "bold",
     marginBottom: 2,
   },
-  gameText: {
-    fontFamily: "Inter-Regular",
+  followers: {
+    color: "#aaa",
     fontSize: 14,
   },
-  followButton: {
+  title: {
+    color: "#fff",
+    fontSize: 20,
+    fontWeight: "bold",
+    textAlign: "left",
+  },
+  text: {
+    color: "#fff",
+    fontSize: 18,
+    textAlign: "center",
+  },
+  iconBtn: {
+    backgroundColor: "rgba(0,0,0,0.5)",
+    borderRadius: 24,
+    padding: 10,
+    marginBottom: 8,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  videoContainer: {
+    width: "100%",
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    paddingVertical: 10,
-    borderRadius: 8,
-    marginTop: 8,
+    position: "relative",
   },
-  followIcon: {
-    marginRight: 6,
+  verticalActionIcons: {
+    position: "absolute",
+    right: 16,
+    bottom: 0,
+    zIndex: 100,
+    flexDirection: "column",
+    alignItems: "center",
+    gap: 14,
   },
-  followText: {
-    fontFamily: "Inter-SemiBold",
-    fontSize: 14,
+  infoRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    width: "100%",
+    paddingVertical: 8,
+    paddingHorizontal: 8,
+    gap: 16,
+  },
+  profileGroupSmall: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    flexShrink: 0,
+    maxWidth: 90,
+    justifyContent: "center",
+    alignSelf: "center",
+  },
+  titleGroup: {
+    flex: 1,
+    justifyContent: "flex-start",
+    alignItems: "flex-start",
   },
   chatContainer: {
     flex: 1,
-    borderTopLeftRadius: 16,
-    borderTopRightRadius: 16,
+    width: "100%",
+    justifyContent: "flex-end",
+    backgroundColor: "#18181b",
+    borderTopWidth: 1,
+    borderTopColor: "#222",
   },
-  chatHeader: {
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: "#2A2A2D",
-  },
-  chatTitle: {
-    fontFamily: "Inter-SemiBold",
-    fontSize: 16,
-  },
-  messagesContainer: {
+  chatScroll: {
     flex: 1,
+    paddingHorizontal: 12,
+    paddingTop: 8,
   },
-  messagesContent: {
-    paddingBottom: 16,
+  chatMsgRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    marginBottom: 6,
   },
-  chatInputContainer: {
+  chatUsername: {
+    color: "#9147FF",
+    fontWeight: "bold",
+    marginRight: 4,
+    fontSize: 15,
+  },
+  chatMsg: {
+    color: "#fff",
+    fontSize: 15,
+    flexShrink: 1,
+  },
+  chatInputRow: {
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingHorizontal: 10,
+    paddingVertical: 10,
+    backgroundColor: "#23232a",
     borderTopWidth: 1,
-    borderTopColor: "#2A2A2D",
+    borderTopColor: "#222",
   },
   chatInput: {
     flex: 1,
-    fontFamily: "Inter-Regular",
-    fontSize: 14,
+    backgroundColor: "#333",
+    color: "#fff",
+    borderRadius: 16,
+    paddingHorizontal: 16,
     paddingVertical: 8,
-    paddingHorizontal: 12,
-    backgroundColor: "#1F1F23",
-    borderRadius: 8,
+    fontSize: 16,
     marginRight: 8,
   },
-  sendButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+  chatMoreBtn: {
+    padding: 6,
+    marginLeft: 2,
+  },
+  avatarColumn: {
+    flexDirection: "column",
     alignItems: "center",
+    justifyContent: "flex-start",
+    alignSelf: "center",
+  },
+  profileInfoColumn: {
+    alignItems: "center",
+    marginTop: 4,
+  },
+  streamerGroup: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "bold",
+    textAlign: "center",
+  },
+  followersInline: {
+    color: "#aaa",
+    fontWeight: "normal",
+  },
+  followBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "#fff",
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    marginTop: 8,
+  },
+  followBtnFixed: {
+    width: 98,
     justifyContent: "center",
   },
-  chatLoginPrompt: {
-    paddingHorizontal: 16,
-    paddingVertical: 16,
-    alignItems: "center",
-    borderTopWidth: 1,
-    borderTopColor: "#2A2A2D",
-  },
-  chatLoginText: {
-    fontFamily: "Inter-Regular",
+  followText: {
+    color: "#fff",
+    fontWeight: "600",
     fontSize: 14,
-    marginBottom: 12,
+    marginLeft: 4,
   },
-  chatLoginButton: {
-    paddingHorizontal: 24,
-    paddingVertical: 8,
-    borderRadius: 8,
+  infoRowAbsolute: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 20,
   },
-  chatLoginButtonText: {
-    color: "#FFFFFF",
-    fontFamily: "Inter-SemiBold",
-    fontSize: 14,
+  chatInputAvoid: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 50,
   },
 });
