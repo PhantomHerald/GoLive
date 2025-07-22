@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   useWindowDimensions,
   View,
+  StatusBar,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -22,6 +23,7 @@ export default function Onboarding() {
   const isShort = height < 850;
   return (
     <SafeAreaView style={styles.viewBg}>
+      <StatusBar barStyle="light-content" />
       <View
         style={[
           styles.view,
@@ -320,7 +322,7 @@ const styles = StyleSheet.create({
   loginButton: {
     flex: 1,
     marginRight: 8,
-    backgroundColor: "#21609fff",
+    backgroundColor: "#1E3A8A",
     borderRadius: 8,
     padding: 14,
     alignItems: "center",

@@ -91,7 +91,7 @@ const styles = StyleSheet.create({
     left: 10,
   },
   sectionTitle: {
-    color: "#BF94FE",
+    color: "#006eff",
     fontSize: 18,
     fontWeight: "bold",
   },

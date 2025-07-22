@@ -189,7 +189,7 @@ function Create() {
       quality: 1,
     });
     if (!result.canceled && result.assets && result.assets.length > 0) {
-      setToastMessage("Upload selected: " + (result.assets[0].fileName || "Media"));
+      setToastMessage("Media Uploaded Successfully");
       setShowSuccessToast(true);
     }
   };
@@ -232,7 +232,7 @@ function Create() {
             </Text>
             <TouchableOpacity
               style={{
-                backgroundColor: "#9147FF",
+                backgroundColor: "#006eff",
                 borderRadius: 10,
                 paddingVertical: 14,
                 paddingHorizontal: 32,

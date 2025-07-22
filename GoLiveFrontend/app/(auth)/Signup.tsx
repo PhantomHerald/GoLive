@@ -357,7 +357,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   emailInstead: {
-    color: "#9147FF",
+    color: "#006eff",
     fontWeight: "600",
     marginBottom: 16,
     marginTop: 4,
@@ -371,11 +371,11 @@ const styles = StyleSheet.create({
     textAlign: "left",
   },
   link: {
-    color: "#9147FF",
+    color: "#006eff",
     textDecorationLine: "underline",
   },
   signupBtn: {
-    backgroundColor: "#9147FF",
+    backgroundColor: "#006eff",
     borderRadius: 10,
     paddingVertical: 14,
     alignItems: "center",

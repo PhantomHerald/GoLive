@@ -167,7 +167,7 @@ export default function Login() {
                 <TouchableOpacity onPress={forgotpassword} disabled={loading}>
                   <Text
                     style={{
-                      color: "#9147FF",
+                      color: "#006eff",
                       marginBottom: 20,
                       opacity: loading ? 0.5 : 1,
                     }}
@@ -249,7 +249,7 @@ const styles = StyleSheet.create({
   button: {
     width: "100%",
     height: 50,
-    backgroundColor: "#8e36d1",
+    backgroundColor: "#006eff",
     borderRadius: 8,
     justifyContent: "center",
     alignItems: "center",

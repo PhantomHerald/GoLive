@@ -87,7 +87,7 @@ export default function ChangePassword() {
               </TouchableOpacity>
             </View>
             <TouchableOpacity onPress={() => router.push({ pathname: '/(auth)/Forgotpassword', params: { from: '/ChangePassword' } }) } style={{ alignSelf: 'flex-start', marginTop: 2 }}>
-              <Text style={{ color: "#9147FF", marginBottom: 15, fontSize: 15, fontWeight: "500" }}>Forgot Password?</Text>
+              <Text style={{ color: "#006eff", marginBottom: 15, fontSize: 15, fontWeight: "500" }}>Forgot Password?</Text>
             </TouchableOpacity>
             <View style={{ height: 8 }} />
             <Text style={styles.label}>New Password</Text>
@@ -198,7 +198,7 @@ const styles = StyleSheet.create({
     height: 50,
   },
   button: {
-    backgroundColor: "#9147FF",
+    backgroundColor: "#006eff",
     borderRadius: 8,
     paddingVertical: 12,
     alignItems: "center",

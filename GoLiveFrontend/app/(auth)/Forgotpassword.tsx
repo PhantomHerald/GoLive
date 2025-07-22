@@ -146,7 +146,7 @@ export default function Forgotpassword() {
                 </>
               )}
               <TouchableOpacity onPress={contactsupport}>
-                <Text style={{ color: "#9147FF", fontSize: 18 }}>
+                <Text style={{ color: "#006eff", fontSize: 18 }}>
                   {"\n"} Having problems with your email or {"\n"} phone?
                 </Text>
               </TouchableOpacity>

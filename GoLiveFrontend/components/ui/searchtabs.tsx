@@ -71,7 +71,7 @@ export default function Searchtabs() {
                         styles.underline,
                         {
                           width: tabWidths[tab],
-                          backgroundColor: "#BF94FE",
+                          backgroundColor: "#006eff",
                           height: 3,
                           transform: [
                             {

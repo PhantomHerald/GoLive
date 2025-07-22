@@ -13,6 +13,7 @@ import {
   Image,
   TextInput,
   Share,
+  ScrollView,
 } from "react-native";
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
@@ -50,6 +51,8 @@ export default function ClipsScreen({ paused = false }: { paused?: boolean }) {
   const router = useRouter();
   const [isPlaying, setIsPlaying] = useState(true); // For tap-to-pause/play
   const [initialIndex, setInitialIndex] = useState<number | null>(null);
+  const commentInputRef = useRef<TextInput>(null);
+  const commentsScrollRef = useRef<ScrollView>(null);
 
   // Persist mute state across tabs and restore last index
   useEffect(() => {
@@ -103,6 +106,12 @@ export default function ClipsScreen({ paused = false }: { paused?: boolean }) {
     });
   }, [isMuted, viewableIndex]);
 
+  useEffect(() => {
+    if (modalVisible && commentsScrollRef.current) {
+      commentsScrollRef.current.scrollToEnd({ animated: true });
+    }
+  }, [activeComments, modalVisible]);
+
   const onViewableItemsChanged = useRef(({ viewableItems }: any) => {
     if (viewableItems && viewableItems.length > 0) {
       setViewableIndex(viewableItems[0].index);
@@ -127,7 +136,7 @@ export default function ClipsScreen({ paused = false }: { paused?: boolean }) {
     );
   };
 
-  const openComments = (comments: any[], clipId: string, index: number) => {
+  const openComments = (comments: any[], clipId: string, index: number, focusInput = false) => {
     setActiveComments(commentsData[index]);
     setActiveClip(clipId);
     setModalVisible(true);
@@ -136,7 +145,11 @@ export default function ClipsScreen({ paused = false }: { paused?: boolean }) {
       duration: 300,
       easing: Easing.out(Easing.ease),
       useNativeDriver: true,
-    }).start();
+    }).start(() => {
+      if (focusInput && commentInputRef.current) {
+        commentInputRef.current.focus();
+      }
+    });
   };
 
   const closeComments = () => {
@@ -197,17 +210,17 @@ export default function ClipsScreen({ paused = false }: { paused?: boolean }) {
     const extraInfoArr = (item.tags || []).filter(Boolean);
     const extraInfo = extraInfoArr.join(", ");
     return (
-      <View style={styles.clipContainer}>
+    <View style={styles.clipContainer}>
         <TouchableOpacity style={{ flex: 1, position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 0 }} activeOpacity={1} onPress={handleVideoPress}>
-          <Video
-            ref={(ref) => {
-              videoRefs.current[index] = ref;
-            }}
-            source={{ uri: item.uri }}
+      <Video
+        ref={(ref) => {
+          videoRefs.current[index] = ref;
+        }}
+        source={{ uri: item.uri }}
             style={resizeMode === ResizeMode.CONTAIN ? styles.videoFullScreen : styles.video}
-            resizeMode={resizeMode}
+        resizeMode={resizeMode}
             shouldPlay={isPlaying && !paused && index === viewableIndex}
-            isMuted={isMuted}
+        isMuted={isMuted}
             isLooping={true}
           />
         </TouchableOpacity>
@@ -217,9 +230,9 @@ export default function ClipsScreen({ paused = false }: { paused?: boolean }) {
             <TouchableOpacity onPress={() => router.push(`/user/${item.streamer.name}`)} style={{ flexDirection: 'row', alignItems: 'center' }}>
               <Text style={styles.streamerNameText}>{capitalizeFirst(item.streamer.name)}</Text>
               {isVerified && (
-                <MaterialCommunityIcons name="check-decagram" size={18} color="#9147FF" style={{ marginLeft: 2, marginTop: 1 }} />
-              )}
-            </TouchableOpacity>
+                <MaterialCommunityIcons name="check-decagram" size={18} color="#006eff" style={{ marginLeft: 2, marginTop: 1 }} />
+          )}
+        </TouchableOpacity>
           </View>
           <Text style={styles.titleText}>{capitalizeFirst(item.title)}</Text>
           <View style={styles.postedAgoContainer}>
@@ -237,16 +250,16 @@ export default function ClipsScreen({ paused = false }: { paused?: boolean }) {
         <View style={styles.rightIconGroup}>
           <TouchableOpacity onPress={() => router.push(`/user/${item.streamer.name}`)} style={styles.avatarBtn}>
             <Image source={{ uri: item.streamer.avatar }} style={[styles.avatar, { width: 60, height: 60 }]} />
-          </TouchableOpacity>
+        </TouchableOpacity>
           <TouchableOpacity style={styles.iconButton} onPress={() => handleLike(index)}>
-            {liked[index] ? (
-              <MaterialCommunityIcons name="heart" size={26} color="#9147FF" />
-            ) : (
+          {liked[index] ? (
+              <MaterialCommunityIcons name="heart" size={26} color="#006eff" />
+          ) : (
               <Feather name="heart" size={26} color="#fff" />
-            )}
-            <Text style={styles.iconCount}>{likes[index]}</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.iconButton} onPress={() => openComments(commentsData[index], item.id, index)}>
+          )}
+          <Text style={styles.iconCount}>{likes[index]}</Text>
+        </TouchableOpacity>
+          <TouchableOpacity style={styles.iconButton} onPress={() => openComments(commentsData[index], item.id, index, true)}>
             <Feather name="message-circle" size={26} color="#fff" />
             <Text style={styles.iconCount}>{commentsData[index].length}</Text>
           </TouchableOpacity>
@@ -263,16 +276,16 @@ export default function ClipsScreen({ paused = false }: { paused?: boolean }) {
             ) : (
               <Feather name="volume-2" size={26} color="#fff" />
             )}
-          </TouchableOpacity>
+        </TouchableOpacity>
           <TouchableOpacity style={styles.iconButton} onPress={() => handleShare(item)}>
             <Feather name="share-2" size={26} color="#fff" />
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => router.push({ pathname: "/ReportBlock", params: { target: item.streamer.name } })} style={[styles.iconButton, { marginTop: 0 }]}>
+        </TouchableOpacity>
+          <TouchableOpacity onPress={() => router.push({ pathname: "/ReportBlock", params: { target: item.streamer.name } })} style={styles.iconButton}>
             <MoreVertical size={24} color="#fff" />
-          </TouchableOpacity>
-        </View>
+        </TouchableOpacity>
       </View>
-    );
+    </View>
+  );
   };
 
   // Only render FlatList after initialIndex is loaded
@@ -320,7 +333,15 @@ export default function ClipsScreen({ paused = false }: { paused?: boolean }) {
         >
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>Comments</Text>
-            <View style={{ maxHeight: 220, width: "100%" }}>
+            <TouchableOpacity style={styles.closeBtn} onPress={closeComments}>
+              <Feather name="x" size={28} color="#fff" />
+            </TouchableOpacity>
+            <ScrollView
+              ref={commentsScrollRef}
+              style={{ maxHeight: 220, width: "100%" }}
+              contentContainerStyle={{ paddingBottom: 8 }}
+              showsVerticalScrollIndicator={true}
+            >
               {activeComments.length === 0 ? (
                 <Text style={{ color: "#fff", textAlign: "center" }}>
                   No comments yet.
@@ -333,7 +354,7 @@ export default function ClipsScreen({ paused = false }: { paused?: boolean }) {
                   </View>
                 ))
               )}
-            </View>
+            </ScrollView>
             {/* Comment input */}
             <View style={styles.inputRow}>
               <Text
@@ -343,6 +364,7 @@ export default function ClipsScreen({ paused = false }: { paused?: boolean }) {
               </Text>
               <View style={{ flex: 1 }}>
                 <TextInput
+                  ref={commentInputRef}
                   style={styles.input}
                   value={commentInput}
                   onChangeText={setCommentInput}
@@ -359,9 +381,6 @@ export default function ClipsScreen({ paused = false }: { paused?: boolean }) {
                 <Feather name="send" size={22} color="#fff" />
               </TouchableOpacity>
             </View>
-            <TouchableOpacity style={styles.closeBtn} onPress={closeComments}>
-              <Feather name="x" size={28} color="#fff" />
-            </TouchableOpacity>
           </View>
         </Animated.View>
       </Modal>
@@ -372,11 +391,16 @@ export default function ClipsScreen({ paused = false }: { paused?: boolean }) {
 const styles = StyleSheet.create({
   clipContainer: {
     height: CLIP_HEIGHT,
-    width: "100%",
-    backgroundColor: "#000",
-    overflow: "hidden",
-    position: "relative",
-    justifyContent: "flex-end",
+    width: '100%',
+    bottom: 60,
+    backgroundColor: '#000',
+    overflow: 'hidden',
+    position: 'relative',
+    justifyContent: 'flex-end',
+    marginTop: 0, // ensure no vertical margin
+    marginBottom: 0, // ensure no vertical margin
+    paddingTop: 0, // ensure no vertical padding
+    paddingBottom: 0, // ensure no vertical padding
   },
   video: {
     position: "absolute",
@@ -384,16 +408,6 @@ const styles = StyleSheet.create({
     left: 0,
     width: "100%",
     height: CLIP_HEIGHT,
-  },
-  overlay: {
-    position: "absolute",
-    bottom: 24,
-    left: 80,
-    right: 80,
-    width: undefined,
-    paddingHorizontal: 24,
-    paddingBottom: 0,
-    zIndex: 1,
   },
   leftButtons: {
     position: "absolute",
@@ -414,7 +428,7 @@ const styles = StyleSheet.create({
     borderRadius: 50,
     marginBottom: 8,
     borderWidth: 2,
-    borderColor: "#fff",
+    borderColor: "#006eff",
   },
   streamerName: {
     color: "#fff",
@@ -439,7 +453,6 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     padding: 24,
-    minHeight: 320,
     maxHeight: 400,
     alignItems: "center",
     width: "100%",
@@ -548,7 +561,7 @@ const styles = StyleSheet.create({
     maxHeight: '50%',
   },
   iconButton: {
-    marginBottom: 0,
+    marginTop: 5,
     alignItems: "center",
     paddingVertical: 2,
   },
@@ -566,7 +579,7 @@ const styles = StyleSheet.create({
     alignItems: "flex-start",
     zIndex: 2,
     justifyContent: "flex-end",
-    maxWidth: 200,
+    maxWidth: 230,
     gap: 5,
   },
   streamerRow: {
@@ -580,10 +593,9 @@ const styles = StyleSheet.create({
     fontSize: 22,
   },
   postedAgoText: {
-    color: "#9147FF",
+    color: "#006eff",
     fontSize: 18,
     marginBottom: 2,
-    fontWeight: "600",
   },
   extraInfoText: {
     color: "#fff",
@@ -599,10 +611,10 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
   postedAgoContainer: {
-    width: '100%',
-    borderWidth: 2,
-    borderColor: "#9147FF",
-    borderRadius: 8,
+    width: '90%',
+    borderWidth: 1,
+    borderColor: "#006eff",
+    borderRadius: 10,
     paddingHorizontal: 10,
     paddingVertical: 2,
     alignSelf: "flex-start",
@@ -613,7 +625,7 @@ const styles = StyleSheet.create({
     top: 0,
     left: 0,
     width: "100%",
-    height: SCREEN_HEIGHT - TAB_BAR_HEIGHT,
+    height: CLIP_HEIGHT,
     zIndex: 0,
   },
   streamerNameRow: {

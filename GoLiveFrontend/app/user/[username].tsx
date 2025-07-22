@@ -74,7 +74,7 @@ export default function OtherUserProfile() {
             <Icon
               name={isFollowing ? "heart" : "heart-outline"}
               size={20}
-              color={isFollowing ? "#9147FF" : "#fff"}
+              color={isFollowing ? "#006eff" : "#fff"}
               style={styles.iconLeft}
             />
             <Text style={[styles.actionBtnText, isFollowing && styles.actionBtnTextActive]}>
@@ -194,7 +194,7 @@ const styles = StyleSheet.create({
     letterSpacing: 1,
   },
   username: {
-    color: "#BF94FE",
+    color: "#006eff",
     fontSize: 16,
     marginTop: 2,
   },
@@ -243,7 +243,7 @@ const styles = StyleSheet.create({
     flex: 1,
     minWidth: 120,
     maxWidth: 180,
-    backgroundColor: "#9147FF",
+    backgroundColor: "#006eff",
     borderRadius: 8,
     paddingVertical: 10,
     paddingHorizontal: 0,
@@ -253,7 +253,7 @@ const styles = StyleSheet.create({
   actionBtnActive: {
     backgroundColor: "#2A2929",
     borderWidth: 1.5,
-    borderColor: "#9147FF",
+    borderColor: "#006eff",
   },
   actionBtnText: {
     color: "#fff",
@@ -261,7 +261,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   actionBtnTextActive: {
-    color: "#9147FF",
+    color: "#006eff",
   },
   subscribeBtn: {
     backgroundColor: "#F43D5C",
@@ -295,7 +295,7 @@ const styles = StyleSheet.create({
     borderBottomColor: "transparent",
   },
   activeTab: {
-    borderBottomColor: "#9147FF",
+    borderBottomColor: "#006eff",
   },
   tabText: {
     color: "#aaa",

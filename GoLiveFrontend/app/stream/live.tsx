@@ -21,6 +21,7 @@ export default function LiveStreamApp() {
   const [following, setFollowing] = useState<{ [id: string]: boolean }>({});
   const [muted, setMuted] = useState<{ [id: string]: boolean }>({});
   const [paused, setPaused] = useState(false);
+  const [resizeModes, setResizeModes] = useState<{ [id: string]: ResizeMode }>({});
 
   useFocusEffect(
     React.useCallback(() => {
@@ -37,6 +38,13 @@ export default function LiveStreamApp() {
 
   const handleToggleMute = (id: string) => {
     setMuted((prev) => ({ ...prev, [id]: !prev[id] }));
+  };
+
+  const handleToggleResize = (id: string) => {
+    setResizeModes((prev) => ({
+      ...prev,
+      [id]: prev[id] === ResizeMode.CONTAIN ? ResizeMode.COVER : ResizeMode.CONTAIN,
+    }));
   };
 
   const [viewableIndex, setViewableIndex] = useState(0);
@@ -56,18 +64,45 @@ export default function LiveStreamApp() {
     const followerCount = streamerUser ? formatFollowers(streamerUser.followers) : "";
     const isVerified = !!(streamerUser && "verified" in streamerUser && streamerUser.verified);
     const viewersCount = item.viewers ? formatFollowers(item.viewers) : "0";
-    // Use a sample video URL for demonstration
     const videoUrl = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4";
+    const resizeMode = resizeModes[item.id] || ResizeMode.COVER;
     return (
     <View style={[styles.streamContainer, { height: VISIBLE_HEIGHT }]}>
         <Video
           source={{ uri: videoUrl }}
         style={[styles.video, { height: VISIBLE_HEIGHT }]}
-        resizeMode={ResizeMode.COVER}
+        resizeMode={resizeMode}
           shouldPlay={index === viewableIndex && !paused}
           isMuted={isMuted}
           isLooping
       />
+        {/* Right icon group, vertical stack, with profile pic and live tag, OUTSIDE gradient */}
+        <View style={[styles.rightActionStackLive, { position: 'absolute', right: 16, bottom: TAB_BAR_HEIGHT + 10, zIndex: 10 }]}>
+          <TouchableOpacity onPress={() => router.push(`/stream/${item.id}`)} style={styles.avatarContainerLarge}>
+            <Image source={{ uri: item.streamer.avatar }} style={styles.viewerAvatarLarge} />
+            {item.isLive && (
+              <View style={styles.liveTagOnAvatar}>
+                <Text style={styles.liveText}>LIVE</Text>
+              </View>
+            )}
+          </TouchableOpacity>
+          <TouchableOpacity style={{ alignItems: "center", marginHorizontal: 18 }} onPress={() => handleToggleMute(item.id)}>
+            <Feather name={isMuted ? "volume-x" : "volume-2"} size={22} color="#fff" />
+          </TouchableOpacity>
+          <TouchableOpacity style={{ alignItems: "center", marginHorizontal: 18 }} onPress={() => handleToggleResize(item.id)}>
+            {resizeMode === ResizeMode.COVER ? (
+              <MaterialCommunityIcons name="arrow-expand" size={22} color="#fff" />
+            ) : (
+              <MaterialCommunityIcons name="arrow-collapse" size={22} color="#fff" />
+            )}
+          </TouchableOpacity>
+          <TouchableOpacity style={{ alignItems: "center", marginHorizontal: 18 }} onPress={() => {}}>
+            <Feather name="share-2" size={22} color="#fff" />
+          </TouchableOpacity>
+          <TouchableOpacity style={{ alignItems: "center", marginHorizontal: 18 }} onPress={() => {}}>
+            <MoreVertical size={22} color="#fff" />
+          </TouchableOpacity>
+        </View>
         {/* Overlay for info and actions, styled like clips */}
       <LinearGradient
         colors={["rgba(0,0,0,0.7)", "rgba(0,0,0,0.2)", "transparent"]}
@@ -76,24 +111,24 @@ export default function LiveStreamApp() {
           <View style={styles.infoRowFull}>
             <View style={styles.leftInfoGroupFull}>
               <View style={styles.nameAndFollowRow}>
-                <View style={styles.streamerNameRowLive}>
+                <View style={{ flexDirection: "row", alignItems: "center" }}>
                   <TouchableOpacity onPress={() => router.push(`/user/${item.streamer.username}`)} style={{ flexDirection: 'row', alignItems: 'center' }}>
                     <Text style={styles.streamerNameLive}>{item.streamer.displayName}</Text>
                     {isVerified && (
-                      <MaterialCommunityIcons name="check-decagram" size={18} color="#9147FF" style={{ marginLeft: 2, marginTop: 1 }} />
+                      <MaterialCommunityIcons name="check-decagram" size={18} color="#006eff" style={{ marginLeft: 2, marginTop: 1 }} />
                     )}
                   </TouchableOpacity>
                 </View>
                 <TouchableOpacity
                   style={[
                     styles.followBtn,
-                    isFollowing && { borderColor: "#9147FF", backgroundColor: "#9147FF22" },
+                    isFollowing && { borderColor: "#006eff", backgroundColor: "#006eff22" },
                     styles.followBtnFixed,
                   ]}
                   onPress={() => handleToggleFollow(item.id)}
                 >
-                  <Feather name="heart" size={16} color={isFollowing ? "#9147FF" : "#fff"} />
-                  <Text style={[styles.followText, isFollowing && { color: "#9147FF" }]}>
+                  <Feather name="heart" size={16} color={isFollowing ? "#006eff" : "#fff"} />
+                  <Text style={[styles.followText, isFollowing && { color: "#006eff" }]}>
                     {isFollowing ? "Following" : "Follow"}
                   </Text>
                 </TouchableOpacity>
@@ -110,27 +145,9 @@ export default function LiveStreamApp() {
               </View>
             </View>
             {/* Right icon group, vertical stack, with profile pic and live tag */}
-            <View style={styles.rightActionStackLive}>
-              <TouchableOpacity onPress={() => router.push(`/stream/${item.id}`)} style={styles.avatarContainerLarge}>
-                <Image source={{ uri: item.streamer.avatar }} style={styles.viewerAvatarLarge} />
-                {item.isLive && (
-                  <View style={styles.liveTagOnAvatar}>
-            <Text style={styles.liveText}>LIVE</Text>
+            {/* This block is now moved outside the LinearGradient */}
           </View>
-                )}
-          </TouchableOpacity>
-              <TouchableOpacity style={styles.actionBtn} onPress={() => handleToggleMute(item.id)}>
-                <Feather name={isMuted ? "volume-x" : "volume-2"} size={22} color="#fff" />
-          </TouchableOpacity>
-              <TouchableOpacity style={styles.actionBtn} onPress={() => {}}>
-                <Feather name="share-2" size={22} color="#fff" />
-            </TouchableOpacity>
-              <TouchableOpacity style={styles.actionBtn} onPress={() => {}}>
-                <MoreVertical size={22} color="#fff" />
-          </TouchableOpacity>
-        </View>
-        </View>
-      </LinearGradient>
+        </LinearGradient>
     </View>
   );
   };
@@ -159,10 +176,16 @@ export default function LiveStreamApp() {
 
 const styles = StyleSheet.create({
   streamContainer: {
-    width,
-    backgroundColor: "#000",
-    position: "relative",
+    height: VISIBLE_HEIGHT,
+    width: '100%',
+    backgroundColor: '#000',
+    position: 'relative',
     flex: 1,
+    bottom: 60,
+    marginTop: 0, // ensure no vertical margin
+    marginBottom: 0, // ensure no vertical margin
+    paddingTop: 0, // ensure no vertical padding
+    paddingBottom: 0, // ensure no vertical padding
   },
   video: {
     width: width,
@@ -176,7 +199,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    paddingHorizontal: 16,
+    paddingHorizontal: 10,
     paddingBottom: 0,
     paddingTop: 16,
     backgroundColor: "transparent",
@@ -263,17 +286,6 @@ const styles = StyleSheet.create({
   profileInfo: {
     justifyContent: "center",
   },
-  actionRow: {
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-    marginBottom: 8,
-    gap: 24,
-  },
-  actionBtn: {
-    alignItems: "center",
-    marginHorizontal: 18,
-  },
   actionLabel: {
     color: "#fff",
     fontSize: 13,
@@ -285,11 +297,6 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     width: "100%",
     marginBottom: 10,
-  },
-  leftActionGroup: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
   },
   avatarContainerLarge: {
     position: "relative",
@@ -319,6 +326,7 @@ const styles = StyleSheet.create({
     gap: 4,
     flex: 1,
     zIndex: 1,
+    paddingRight: 70,
   },
   rightActionStack: {
     alignItems: "center",
@@ -331,11 +339,6 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0,0,0,0.15)",
     borderTopLeftRadius: 24,
     minWidth: 80,
-  },
-  streamerRowLive: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 2,
   },
   streamerNameLive: {
     color: "#fff",
@@ -361,7 +364,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
   followersLive: {
-    color: "#9147FF",
+    color: "#006eff",
     fontSize: 16,
   },
   rightActionStackLive: {
@@ -370,13 +373,7 @@ const styles = StyleSheet.create({
     gap: 20,
     zIndex: 2,
     minWidth: 80,
-  },
-  profileRowLive: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 2,
-    gap: 12,
-  },
+},
   nameAndFollowRow: {
     flexDirection: "row",
     alignItems: "center",
@@ -385,20 +382,15 @@ const styles = StyleSheet.create({
     flexWrap: "wrap",
     width: 240,
   },
-  streamerNameRowLive: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
   statsRowLive: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 8,
+    gap: 2,
     marginBottom: 2,
   },
   statsSeparator: {
-    color: "#9147FF",
+    color: "#aaa",
     fontSize: 16,
     marginHorizontal: 6,
-    fontWeight: "bold",
   },
 });

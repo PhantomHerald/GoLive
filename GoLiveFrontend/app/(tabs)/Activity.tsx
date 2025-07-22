@@ -111,7 +111,7 @@ export default function Activity() {
                       padding: 14,
                     }}
                   >
-                    <Bell size={24} color="#BF94FE" style={{ marginRight: 14 }} />
+                    <Bell size={24} color="#006eff" style={{ marginRight: 14 }} />
                     <View style={{ flex: 1 }}>
                       <Text style={{ color: "#fff", fontSize: 16 }}>{notif.message}</Text>
                       <Text style={{ color: "#aaa", fontSize: 12, marginTop: 2 }}>{notif.time} ago</Text>
@@ -145,7 +145,7 @@ export default function Activity() {
                 </Text>
                 <TouchableOpacity
                   style={{
-                    backgroundColor: "#9147FF",
+                    backgroundColor: "#006eff",
                     padding: 10,
                     borderRadius: 5,
                     marginTop: 10,
@@ -189,7 +189,7 @@ export default function Activity() {
                     />
                     <View style={{ flex: 1 }}>
                       <Text style={{ color: "#fff", fontSize: 16 }}>
-                        <Text style={{ color: "#BF94FE", fontWeight: "bold" }}>{whisper.from}: </Text>
+                        <Text style={{ color: "#006eff", fontWeight: "bold" }}>{whisper.from}: </Text>
                         {whisper.message}
                       </Text>
                       <Text style={{ color: "#aaa", fontSize: 12, marginTop: 2 }}>{whisper.time} ago</Text>
@@ -230,7 +230,7 @@ export default function Activity() {
                       styles.underline,
                       {
                         width: tabWidths[tab],
-                        backgroundColor: "#BF94FE",
+                        backgroundColor: "#006eff",
                         height: 3,
                         transform: [
                           {

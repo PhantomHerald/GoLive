@@ -124,7 +124,7 @@ const styles = StyleSheet.create({
     backgroundColor: "transparent",
   },
   activeTab: {
-    borderBottomColor: "#9147FF",
+    borderBottomColor: "#006eff",
     backgroundColor: "transparent",
   },
   tabText: {

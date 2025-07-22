@@ -33,10 +33,6 @@ const styles = StyleSheet.create({
     left: 20,
     padding: 8,
   },
-  backText: {
-    color: "#BF94FE",
-    fontSize: 16,
-  },
   title: {
     color: "#fff",
     fontSize: 28,
@@ -44,15 +40,15 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   subtitle: {
-    color: "#BF94FE",
+    color: "#006eff",
     fontSize: 18,
     marginBottom: 24,
   },
   actionButton: {
-    backgroundColor: "#BF94FE",
+    backgroundColor: "#006eff",
     borderRadius: 8,
     paddingVertical: 14,
-    paddingHorizontal: 32,
+    paddingHorizontal: 15,
     marginVertical: 10,
     width: "80%",
     alignItems: "center",

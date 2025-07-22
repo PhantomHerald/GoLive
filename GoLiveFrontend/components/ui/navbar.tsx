@@ -233,7 +233,7 @@ export default function Navbar({ initialTab = "Live" }: NavbarProps) {
                       styles.underline,
                       {
                         width: tabWidths[tab],
-                        backgroundColor: "#BF94FE",
+                        backgroundColor: "#006eff",
                         height: 3,
                         marginTop: 2,
                         opacity: 1,
@@ -256,8 +256,8 @@ export default function Navbar({ initialTab = "Live" }: NavbarProps) {
         </View>
         {/* Stacked Circles (Icon) */}
         <View style={styles.circlesContainer}>
-          <View style={[styles.circle, { right: 20 }]} />
-          <View style={[styles.circle, { right: 10 }]} />
+          <View style={[styles.circle, { right: 14 }]} />
+          <View style={[styles.circle, { right: 7 }]} />
           <View style={[styles.circle, { right: 0 }]} />
         </View>
       </View>
@@ -276,16 +276,12 @@ const styles = StyleSheet.create({
   topBar: {
     flexDirection: "row",
     alignItems: "center",
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
     zIndex: 100,
     height: 60,
-    backgroundColor: "rgba(0, 0, 0, 0)", // true transparent overlay
-    paddingTop: Platform.OS === "android" ? 20 : 10,
+    backgroundColor: "rgba(10,10,20,0.7)", // dark transparent background
+    paddingTop: 0, // SafeAreaView handles status bar
     elevation: 0,
-    shadowOpacity: 0,
+    shadowOpacity: 1,
   },
   tabContainer: {
     flexDirection: "row",
@@ -339,7 +335,8 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     position: "relative",
     flexDirection: "row",
-    marginLeft: 16,
+    marginHorizontal: 15,
+    bottom: -5,
     backgroundColor: "transparent", // Make container transparent
   },
   circle: {

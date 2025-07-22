@@ -60,7 +60,7 @@ const styles = StyleSheet.create({
     left: 10,
   },
   question: {
-    color: "#BF94FE",
+    color: "#006eff",
     fontSize: 18,
     fontWeight: "bold",
   },

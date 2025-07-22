@@ -80,7 +80,7 @@ const styles = StyleSheet.create({
     zIndex: 9999,
   },
   toast: {
-    backgroundColor: "#ae44fe",
+    backgroundColor: "#006eff",
     paddingHorizontal: 20,
     borderRadius: 8,
     shadowColor: '#000',

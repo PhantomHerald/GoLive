@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { View, Text, TouchableOpacity, StyleSheet, Image, Dimensions, TextInput, ScrollView, KeyboardAvoidingView, Platform, Share, TouchableWithoutFeedback, Animated } from "react-native";
+import { View, Text, TouchableOpacity, StyleSheet, Image, Dimensions, TextInput, ScrollView, KeyboardAvoidingView, Platform, Share, TouchableWithoutFeedback, Animated, Modal, Keyboard } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Icon from "@expo/vector-icons/MaterialCommunityIcons";
 import { useLocalSearchParams, router } from "expo-router";
@@ -8,11 +8,13 @@ import { Volume2, VolumeX, Share2, MoreVertical } from "lucide-react-native";
 import { formatFollowers } from "@/utils/formatFollowers";
 import { Video, ResizeMode } from "expo-av";
 import { Feather } from "@expo/vector-icons";
+import { useAuth } from "@/hooks/useAuth";
 
 const { width } = Dimensions.get("window");
 
 export default function StreamScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
+  const { user } = useAuth();
   const stream = mockStreams.find((s) => s.id === id);
   const videoRef = useRef<Video>(null);
   const [muted, setMuted] = useState(false);
@@ -26,6 +28,11 @@ export default function StreamScreen() {
   const hideInfoTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const infoAnim = useRef(new Animated.Value(0)).current; // 0: visible, 1: hidden
   const infoRowHeight = 120; // px, must match outputRange in infoAnim
+  const chatInputRef = useRef<TextInput>(null);
+  const [inputModalVisible, setInputModalVisible] = useState(false);
+  const chatInputModalRef = useRef<TextInput>(null);
+  const [joinTime, setJoinTime] = useState<Date | null>(null);
+  const [moreModalVisible, setMoreModalVisible] = useState(false);
 
   // Animate info row in/out
   useEffect(() => {
@@ -46,6 +53,52 @@ export default function StreamScreen() {
       if (hideInfoTimeout.current !== null) clearTimeout(hideInfoTimeout.current);
     };
   }, [infoVisible]);
+
+  // Scroll to bottom on new message or input focus
+  useEffect(() => {
+    if (scrollViewRef.current) {
+      scrollViewRef.current.scrollToEnd({ animated: true });
+    }
+  }, [messages]);
+  const handleInputFocus = () => {
+    setTimeout(() => {
+      if (scrollViewRef.current) {
+        scrollViewRef.current.scrollToEnd({ animated: true });
+      }
+    }, 100);
+  };
+
+  // Track when the user joins/views the stream
+  useEffect(() => {
+    const now = new Date();
+    setJoinTime(now);
+    // For demonstration, log it
+    console.log(`User joined stream ${id} at`, now.toISOString());
+  }, []);
+
+  useEffect(() => {
+    if (!id || !user?.id) return;
+    const now = new Date();
+    fetch('https://your-backend.com/api/stream-events/on-join', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        streamId: id,
+        userId: user.id,
+        joinedAt: now.toISOString(),
+      }),
+    })
+    .then(response => response.json())
+    .then(data => {
+      // Optionally handle response
+      console.log('Join event sent:', data);
+    })
+    .catch(error => {
+      console.error('Error sending join event:', error);
+    });
+  }, [id, user?.id]);
 
   const handleStreamTap = () => {
     setInfoVisible(true);
@@ -88,154 +141,195 @@ export default function StreamScreen() {
     }
   };
 
+  const openInputModal = () => {
+    setInputModalVisible(true);
+    setTimeout(() => {
+      chatInputModalRef.current?.focus();
+    }, 200);
+  };
+  const closeInputModal = () => {
+    setInputModalVisible(false);
+    Keyboard.dismiss();
+  };
+  const handleModalSend = () => {
+    if (chatInput.trim()) {
+      setMessages(prev => [
+        ...prev,
+        {
+          id: String(Date.now()),
+          username: "You",
+          message: chatInput,
+          badges: [],
+          time: new Date(),
+        },
+      ]);
+      setChatInput("");
+      closeInputModal();
+    }
+  };
+
     return (
     <SafeAreaView style={styles.container}>
       <View style={styles.topBar}>
         <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
           <Icon name="arrow-left" size={28} color="#fff" />
-          </TouchableOpacity>
+        </TouchableOpacity>
         <Text style={styles.heading}>Live Stream</Text>
         <View style={{ width: 40 }} />
       </View>
-      <View style={styles.content}>
-        {stream ? (
-          <View style={{ position: 'relative' }}>
-            <TouchableWithoutFeedback onPress={handleStreamTap}>
-              <View style={{ position: 'relative' }}>
-                <Video
-                  ref={videoRef}
-                  source={{ uri: stream.videoUrl }}
-                  style={[styles.thumbnail, { zIndex: 30 }]}
-                  resizeMode={ResizeMode.COVER}
-                  shouldPlay
-                  isMuted={muted}
-                  isLooping
-                />
-                <View style={styles.verticalActionIcons}>
-                  <TouchableOpacity style={styles.iconBtn} onPress={handleMuteToggle}>
-                    {muted ? (
-                      <VolumeX size={22} color="#fff" />
-                    ) : (
-                      <Volume2 size={22} color="#fff" />
-                    )}
-                  </TouchableOpacity>
-                  <TouchableOpacity style={styles.iconBtn} onPress={handleShare}>
-                    <Share2 size={22} color="#fff" />
-                  </TouchableOpacity>
-                  <TouchableOpacity style={styles.iconBtn} onPress={() => {}}>
-                    <MoreVertical size={22} color="#fff" />
-                  </TouchableOpacity>
-                </View>
-                {/* Animated info row absolutely positioned at bottom of video */}
-                <Animated.View
-                  style={[
-                    styles.infoRowAbsolute,
-                    {
-                      transform: [
-                        {
-                          translateY: infoAnim.interpolate({
-                            inputRange: [1, 1],
-                            outputRange: [infoRowHeight, 0],
-                          }),
-                        },
-                      ],
-                      opacity: infoAnim.interpolate({ inputRange: [0, 1], outputRange: [0, 1] }),
-                      zIndex: 20,
-                    },
-                  ]}
-                  pointerEvents={infoVisible ? 'auto' : 'none'}
-                >
-                  <View style={styles.infoRow}>
-                    <View style={styles.profileGroupSmall}>
-                      <View style={styles.avatarColumn}>
-                        <View style={styles.avatarContainer}>
-                          <Image source={{ uri: stream.streamer.avatar }} style={styles.avatar} />
-                          <View style={styles.liveTag}>
-                            <Text style={styles.liveText}>LIVE</Text>
+      {stream ? (
+        <View style={{ flex: 1, width: '100%' }}>
+          {/* Stream video with overlay icons */}
+          <View style={{ position: 'relative', width: '100%' }}>
+            <Video
+              ref={videoRef}
+              source={{ uri: stream.videoUrl }}
+              style={styles.thumbnail}
+              resizeMode={ResizeMode.COVER}
+              shouldPlay
+              isMuted={muted}
+              isLooping
+            />
+            <View style={{
+              position: 'absolute',
+              right: 16,
+              bottom: 10,
+              gap: 10,
+              flexDirection: 'column',
+              alignItems: 'center',
+              zIndex: 10,
+            }}>
+              <TouchableOpacity style={styles.iconBtn} onPress={handleMuteToggle}>
+                {muted ? (
+                  <VolumeX size={22} color="#fff" />
+                ) : (
+                  <Volume2 size={22} color="#fff" />
+                )}
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.iconBtn} onPress={handleShare}>
+                <Share2 size={22} color="#fff" />
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.iconBtn} onPress={() => setMoreModalVisible(true)}>
+                <MoreVertical size={22} color="#fff" />
+          </TouchableOpacity>
         </View>
       </View>
-                        <View style={styles.profileInfoColumn}>
-                          <Text style={styles.streamerGroup}>
-                {stream.streamer.displayName}
-                            {streamerUser ? (
-                              <Text style={styles.followersInline}>
-                                {` · ${formatFollowers(streamerUser.followers)}`}
-              </Text>
-                            ) : null}
-            </Text>
-          </View>
+          {/* Info row (no animation, no absolute) */}
+          <View style={styles.infoRow}>
+            <View style={styles.profileGroupSmall}>
+              <View style={{ alignItems: 'center', width: '100%' }}>
+                <View style={styles.avatarContainer}>
+                  <Image source={{ uri: stream.streamer.avatar }} style={styles.avatar} />
+                  <View style={styles.liveTag}>
+                    <Text style={styles.liveText}>LIVE</Text>
         </View>
-                    </View>
-                    <View style={styles.titleGroup}>
-                      <Text style={styles.title}>{stream.title}</Text>
-                      <TouchableOpacity
-                        style={[styles.followBtn, following && { borderColor: "#9147FF", backgroundColor: "#9147FF22" }, styles.followBtnFixed]}
-                        onPress={handleToggleFollow}
-                      >
-                        <Feather name="heart" size={16} color={following ? "#9147FF" : "#fff"} />
-                        <Text style={[styles.followText, following && { color: "#9147FF" }]}> {following ? "Following" : "Follow"}</Text>
+      </View>
+                {/* Only streamer name below avatar */}
+                <View style={{ marginTop: 6, maxWidth: 90 }}>
+                  <Text style={styles.streamerGroup} numberOfLines={2} ellipsizeMode="tail">
+                {stream.streamer.displayName}
+              </Text>
+                </View>
+              </View>
+            </View>
+            <View style={styles.titleGroup}>
+              <Text style={styles.title}>{stream.title}</Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', width: '100%' }}>
+                <TouchableOpacity
+                  style={[styles.followBtn, following && { borderColor: "#006eff", backgroundColor: "#006eff22" }, styles.followBtnFixed]}
+                  onPress={handleToggleFollow}
+                >
+                  <Feather name="heart" size={16} color={following ? "#006eff" : "#fff"} />
+                  <Text style={[styles.followText, following && { color: "#006eff" }]}> {following ? "Following" : "Follow"}</Text>
+                </TouchableOpacity>
+                {/* Viewers and Followers count stacked vertically */}
+                <View style={{ flexDirection: 'column', alignItems: 'flex-start', marginLeft: 8 }}>
+                  <Text style={{ color: "rgba(0, 120, 255, 0.7)", fontWeight: 'bold' }}>{formatFollowers(stream.viewers)} Viewers</Text>
+                  <Text style={{ color: "rgba(0, 120, 255, 0.7)", fontWeight: 'bold' }}>{streamerUser ? formatFollowers(streamerUser.followers) : '0'} Followers</Text>
+                </View>
+              </View>
+            </View>
+          </View>
+          {/* Comments */}
+          <View style={{ flex: 1, width: '100%' }}>
+            <ScrollView
+              ref={scrollViewRef}
+              style={styles.chatScroll}
+              contentContainerStyle={{ paddingBottom: 20 }}
+              onContentSizeChange={() => scrollViewRef.current?.scrollToEnd({ animated: true })}
+            >
+              {messages.map((msg) => (
+                <View key={msg.id} style={styles.chatMsgRow}>
+                  <Text style={styles.chatUsername}>{msg.username}:</Text>
+                  <Text style={styles.chatMsg}>{msg.message}</Text>
+                </View>
+              ))}
+            </ScrollView>
+          </View>
+          {/* Input field row */}
+          <View style={styles.chatInputRow}>
+            <TouchableOpacity style={{ flex: 1 }} onPress={openInputModal} activeOpacity={0.8}>
+              <Text style={[styles.chatInput, { color: '#888' }]}>Type a message...</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.chatMoreBtn} onPress={() => setMoreModalVisible(true)}>
+              <MoreVertical size={22} color="#fff" />
+            </TouchableOpacity>
+          </View>
+          {/* Modal for input field */}
+          <Modal
+            visible={inputModalVisible}
+            transparent
+            animationType="fade"
+            onRequestClose={closeInputModal}
+          >
+            <TouchableWithoutFeedback onPress={closeInputModal}>
+              <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.7)', justifyContent: 'flex-end' }}>
+                <TouchableWithoutFeedback>
+                  <View style={{ padding: 16, backgroundColor: '#23232a', borderTopLeftRadius: 16, borderTopRightRadius: 16 }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                      <TextInput
+                        ref={chatInputModalRef}
+                        style={styles.chatInput}
+                        value={chatInput}
+                        onChangeText={setChatInput}
+                        placeholder="Type a message..."
+                        placeholderTextColor="#888"
+                        onSubmitEditing={handleModalSend}
+                        returnKeyType="send"
+                        autoFocus
+                        blurOnSubmit={false}
+                      />
+                      <TouchableOpacity style={styles.chatMoreBtn} onPress={handleModalSend}>
+                        <Feather name="send" size={22} color="#fff" />
         </TouchableOpacity>
       </View>
                   </View>
-                </Animated.View>
-        </View>
-            </TouchableWithoutFeedback>
-            {/* Chat area (messages) */}
-            <Animated.View
-              style={{
-                transform: [
-                  {
-                    translateY: infoAnim.interpolate({
-                      inputRange: [0, 1],
-                      outputRange: [0, infoRowHeight],
-                    }),
-                  },
-                ],
-                zIndex: 10,
-                flex: 1,
-              }}
-            >
-              {/* Chat Scroll View */}
-              <ScrollView
-                ref={scrollViewRef}
-                style={styles.chatScroll}
-                contentContainerStyle={{ paddingBottom: 60 }}
-                onContentSizeChange={() => scrollViewRef.current?.scrollToEnd({ animated: true })}
-              >
-                {messages.map((msg) => (
-                  <View key={msg.id} style={styles.chatMsgRow}>
-                    <Text style={styles.chatUsername}>{msg.username}:</Text>
-                    <Text style={styles.chatMsg}>{msg.message}</Text>
-                  </View>
-                ))}
-              </ScrollView>
-            </Animated.View>
-            {/* Chat input always at bottom or above keyboard */}
-            <KeyboardAvoidingView
-              behavior={Platform.OS === "ios" ? "padding" : undefined}
-              style={styles.chatInputAvoid}
-              keyboardVerticalOffset={80}
-            >
-              <View style={styles.chatInputRow}>
-                <TextInput
-                  style={styles.chatInput}
-                  value={chatInput}
-                  onChangeText={setChatInput}
-                  placeholder="Type a message..."
-                  placeholderTextColor="#888"
-                  onSubmitEditing={handleSend}
-                  returnKeyType="send"
-                />
-                <TouchableOpacity style={styles.chatMoreBtn}>
-                  <MoreVertical size={22} color="#fff" />
-                </TouchableOpacity>
+                </TouchableWithoutFeedback>
               </View>
-            </KeyboardAvoidingView>
-          </View>
-        ) : (
-          <Text style={styles.text}>Stream not found.</Text>
-        )}
-      </View>
+            </TouchableWithoutFeedback>
+          </Modal>
+          {/* More modal */}
+          <Modal
+            visible={moreModalVisible}
+            transparent
+            animationType="fade"
+            onRequestClose={() => setMoreModalVisible(false)}
+          >
+            <TouchableWithoutFeedback onPress={() => setMoreModalVisible(false)}>
+              <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.7)', justifyContent: 'flex-end' }}>
+                <TouchableWithoutFeedback>
+                  <View style={{ padding: 16, backgroundColor: '#23232a', borderTopLeftRadius: 16, borderTopRightRadius: 16 }}>
+                    <Text style={{ color: '#fff', fontSize: 18, textAlign: 'center', marginBottom: 12 }}>More Options (Coming Soon)</Text>
+                    {/* Add more options here as needed */}
+                  </View>
+                </TouchableWithoutFeedback>
+              </View>
+            </TouchableWithoutFeedback>
+          </Modal>
+        </View>
+      ) : (
+        <Text style={styles.text}>Stream not found.</Text>
+      )}
     </SafeAreaView>
   );
 }
@@ -366,9 +460,10 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     width: "100%",
-    paddingVertical: 8,
+    paddingVertical: 15,
     paddingHorizontal: 8,
     gap: 16,
+    backgroundColor: "black",
   },
   profileGroupSmall: {
     flexDirection: "row",
@@ -383,18 +478,11 @@ const styles = StyleSheet.create({
     justifyContent: "flex-start",
     alignItems: "flex-start",
   },
-  chatContainer: {
-    flex: 1,
-    width: "100%",
-    justifyContent: "flex-end",
-    backgroundColor: "#18181b",
-    borderTopWidth: 1,
-    borderTopColor: "#222",
-  },
   chatScroll: {
     flex: 1,
     paddingHorizontal: 12,
     paddingTop: 8,
+    marginBottom: 5,
   },
   chatMsgRow: {
     flexDirection: "row",
@@ -402,7 +490,7 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   chatUsername: {
-    color: "#9147FF",
+    color: "#006eff",
     fontWeight: "bold",
     marginRight: 4,
     fontSize: 15,
@@ -417,9 +505,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: 10,
     paddingVertical: 10,
+    paddingBottom: 15,
     backgroundColor: "#23232a",
-    borderTopWidth: 1,
-    borderTopColor: "#222",
   },
   chatInput: {
     flex: 1,
@@ -432,18 +519,8 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   chatMoreBtn: {
-    padding: 6,
+    padding: 10,
     marginLeft: 2,
-  },
-  avatarColumn: {
-    flexDirection: "column",
-    alignItems: "center",
-    justifyContent: "flex-start",
-    alignSelf: "center",
-  },
-  profileInfoColumn: {
-    alignItems: "center",
-    marginTop: 4,
   },
   streamerGroup: {
     color: "#fff",
@@ -466,7 +543,7 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   followBtnFixed: {
-    width: 98,
+    width: 100,
     justifyContent: "center",
   },
   followText: {
@@ -474,19 +551,5 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     fontSize: 14,
     marginLeft: 4,
-  },
-  infoRowAbsolute: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 0,
-    zIndex: 20,
-  },
-  chatInputAvoid: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 0,
-    zIndex: 50,
   },
 });
