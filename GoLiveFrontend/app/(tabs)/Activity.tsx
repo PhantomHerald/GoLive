@@ -1,6 +1,6 @@
 import { Image } from "expo-image";
 import React, { useRef, useState } from "react";
-import { StyleSheet, Text, TouchableOpacity, View, ScrollView, Animated } from "react-native";
+import { StyleSheet, Text, TouchableOpacity, View, ScrollView, Animated, ScrollView as RNScrollView } from "react-native";
 import { useLocalSearchParams } from "expo-router";
 import { Bell } from "lucide-react-native";
 
@@ -52,12 +52,13 @@ const mockWhispers = Array.from({ length: 18 }, (_, i) => ({
 }));
 
 export default function Activity() {
-  const tabs = ["Notifications", "Whisper"];
+  const tabs = React.useMemo(() => ["Notifications", "Whisper"], []);
   const params = useLocalSearchParams();
   const initialTab = typeof params.tab === 'string' && tabs.includes(params.tab) ? params.tab : "Notifications";
   const [activeTab, setActiveTab] = useState(initialTab);
   const [tabWidths, setTabWidths] = useState<{ [key: string]: number }>({});
   const underlineAnim = useRef(new Animated.Value(tabs.indexOf(activeTab))).current;
+  const scrollRef = useRef<RNScrollView>(null);
 
   React.useEffect(() => {
     Animated.spring(underlineAnim, {
@@ -66,7 +67,22 @@ export default function Activity() {
       friction: 7,
       tension: 80,
     }).start();
-  }, [activeTab]);
+  }, [activeTab, tabs, underlineAnim]);
+
+  // When tab is pressed, scroll to the correct page
+  const handleTabPress = (tab: string, index: number) => {
+    setActiveTab(tab);
+    scrollRef.current?.scrollTo({ x: index * 1000, animated: true });
+  };
+
+  // When swiped, update the active tab
+  const handleScroll = (e: any) => {
+    const x = e.nativeEvent.contentOffset.x;
+    const index = Math.round(x / 1000);
+    if (tabs[index] && tabs[index] !== activeTab) {
+      setActiveTab(tabs[index]);
+    }
+  };
 
   const handleTabTextLayout = (tab: string, event: any) => {
     const width = event.nativeEvent.layout.width;
@@ -91,7 +107,7 @@ export default function Activity() {
                   }}
                 />
                 <Text style={styles.followingTitle}>
-                  You're all caught up. What a pro! {"\n"}
+                  You&apos;re all caught up. What a pro! {"\n"}
                 </Text>
                 <Text style={styles.followingSub}>You have no notifications.</Text>
               </ScrollView>
@@ -213,7 +229,7 @@ export default function Activity() {
           {tabs.map((tab, index) => (
             <TouchableOpacity
               key={index}
-              onPress={() => setActiveTab(tab)}
+              onPress={() => handleTabPress(tab, index)}
               style={styles.tab}
               activeOpacity={0.7}
             >
@@ -250,7 +266,10 @@ export default function Activity() {
           ))}
         </View>
       </View>
-      <View style={styles.contentContainer}>{renderTabContent()}</View>
+      {/* Only show the active tab's content, no horizontal scroll */}
+      <View style={{ flex: 1, width: '100%' }}>
+        {renderTabContent()}
+      </View>
     </View>
   );
 }

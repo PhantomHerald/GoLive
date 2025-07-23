@@ -19,6 +19,7 @@ import {
 } from "react-native";
 import SuccessToast from "@/components/SuccessToast";
 import { useIsFocused, useFocusEffect } from "@react-navigation/native";
+import { router } from "expo-router";
 
 const styles = StyleSheet.create({
   container: {
@@ -101,10 +102,14 @@ function Create() {
   const [toastMessage, setToastMessage] = useState("");
   const recordingIntervalRef = useRef<number | null>(null);
   const isFocused = useIsFocused();
+  // Store previous tab route
+  const prevRouteRef = useRef<string | null>(null);
 
-  // Show modal every time the tab is focused
   useFocusEffect(
     React.useCallback(() => {
+      // Save the previous route when this tab is focused
+      // @ts-ignore: router.history is not officially typed in expo-router
+      prevRouteRef.current = (router as any)?.history?.entries?.[(router as any)?.history?.index - 1]?.pathname || null;
       setShowModal(true);
       setShowCamera(false);
     }, [])
@@ -113,19 +118,19 @@ function Create() {
   // Timer effect for recording, now also depends on isFocused
   useEffect(() => {
     if (recordpressed && isFocused) {
-      recordingIntervalRef.current = setInterval(() => {
+      recordingIntervalRef.current = window.setInterval(() => {
         setRecordingTime((prev) => prev + 1);
       }, 1000);
     } else {
       if (recordingIntervalRef.current) {
-        clearInterval(recordingIntervalRef.current);
+        window.clearInterval(recordingIntervalRef.current);
         recordingIntervalRef.current = null;
       }
     }
 
     return () => {
       if (recordingIntervalRef.current) {
-        clearInterval(recordingIntervalRef.current);
+        window.clearInterval(recordingIntervalRef.current);
         recordingIntervalRef.current = null;
       }
     };
@@ -200,7 +205,17 @@ function Create() {
         visible={showModal}
         transparent
         animationType="fade"
-        onRequestClose={() => setShowModal(false)}
+        onRequestClose={() => {
+          setShowModal(false);
+          // If modal is closed by tapping outside, revert to previous tab
+          const validTabs = ["/Home", "/Browse", "/Activity", "/Profile"] as const;
+          type TabRoute = typeof validTabs[number];
+          if (prevRouteRef.current && (validTabs as readonly string[]).includes(prevRouteRef.current)) {
+            router.replace(prevRouteRef.current as TabRoute);
+          } else {
+            router.replace("/Home"); // fallback
+          }
+        }}
       >
         <Pressable
           style={{
@@ -209,7 +224,17 @@ function Create() {
             justifyContent: "center",
             alignItems: "center",
           }}
-          onPress={() => setShowModal(false)}
+          onPress={() => {
+            setShowModal(false);
+            // If modal is closed by tapping outside, revert to previous tab
+            const validTabs = ["/Home", "/Browse", "/Activity", "/Profile"] as const;
+            type TabRoute = typeof validTabs[number];
+            if (prevRouteRef.current && (validTabs as readonly string[]).includes(prevRouteRef.current)) {
+              router.replace(prevRouteRef.current as TabRoute);
+            } else {
+              router.replace("/Home"); // fallback
+            }
+          }}
         >
           <View
             style={{
@@ -219,6 +244,8 @@ function Create() {
               minWidth: 250,
               alignItems: "center",
             }}
+            // Prevent closing when pressing inside the modal
+            onStartShouldSetResponder={() => true}
           >
             <Text
               style={{

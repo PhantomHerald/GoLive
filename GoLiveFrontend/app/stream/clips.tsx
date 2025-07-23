@@ -14,6 +14,7 @@ import {
   TextInput,
   Share,
   ScrollView,
+  ActivityIndicator,
 } from "react-native";
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
@@ -21,8 +22,8 @@ import { MoreVertical } from "lucide-react-native";
 import { CLIPS } from "@/data/mockdata";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const TAB_BAR_HEIGHT = 80; // Adjust to your actual tab bar height
-const { height: SCREEN_HEIGHT } = Dimensions.get("window");
+const TAB_BAR_HEIGHT = 70; // Adjust to your actual tab bar height
+const { width ,height: SCREEN_HEIGHT } = Dimensions.get("window");
 const CLIP_HEIGHT = SCREEN_HEIGHT - TAB_BAR_HEIGHT;
 
 // Utility to capitalize first letter
@@ -53,6 +54,9 @@ export default function ClipsScreen({ paused = false }: { paused?: boolean }) {
   const [initialIndex, setInitialIndex] = useState<number | null>(null);
   const commentInputRef = useRef<TextInput>(null);
   const commentsScrollRef = useRef<ScrollView>(null);
+  const [showPlayPause, setShowPlayPause] = useState<{ visible: boolean; isPlaying: boolean }>({ visible: false, isPlaying: true });
+  const playPauseTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [loading, setLoading] = useState(false);
 
   // Persist mute state across tabs and restore last index
   useEffect(() => {
@@ -192,15 +196,13 @@ export default function ClipsScreen({ paused = false }: { paused?: boolean }) {
   };
 
   const handleVideoPress = () => {
-    setIsPlaying((prev) => !prev);
-    const ref = videoRefs.current[viewableIndex];
-    if (ref) {
-      if (isPlaying) {
-        ref.pauseAsync && ref.pauseAsync();
-      } else {
-        ref.playAsync && ref.playAsync();
-      }
-    }
+    setIsPlaying((prev) => {
+      const newPlaying = !prev;
+      setShowPlayPause({ visible: true, isPlaying: newPlaying });
+      if (playPauseTimeout.current) clearTimeout(playPauseTimeout.current);
+      playPauseTimeout.current = setTimeout(() => setShowPlayPause((s) => ({ ...s, visible: false })), 700);
+      return newPlaying;
+    });
   };
 
   const renderItem = ({ item, index }: { item: typeof CLIPS[0]; index: number; }) => {
@@ -211,18 +213,52 @@ export default function ClipsScreen({ paused = false }: { paused?: boolean }) {
     const extraInfo = extraInfoArr.join(", ");
     return (
     <View style={styles.clipContainer}>
-        <TouchableOpacity style={{ flex: 1, position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 0 }} activeOpacity={1} onPress={handleVideoPress}>
+        <TouchableOpacity
+          activeOpacity={1}
+          onPress={handleVideoPress}
+          style={{ flex: 1, position: 'absolute', top: 0, left: 0, right: 0, bottom: 36, zIndex: 0 }}
+        >
+          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
       <Video
-        ref={(ref) => {
-          videoRefs.current[index] = ref;
-        }}
-        source={{ uri: item.uri }}
-            style={resizeMode === ResizeMode.CONTAIN ? styles.videoFullScreen : styles.video}
+              ref={(ref) => { videoRefs.current[index] = ref as any; }}
+              source={{ uri: item.uri }}
+              style={{ width: '100%', height: CLIP_HEIGHT+40 }}
         resizeMode={resizeMode}
-            shouldPlay={isPlaying && !paused && index === viewableIndex}
+              shouldPlay={isPlaying && index === viewableIndex && !paused}
         isMuted={isMuted}
-            isLooping={true}
-          />
+              isLooping
+              onLoadStart={() => {
+                if (isPlaying && index === viewableIndex && !paused) setLoading(true);
+              }}
+              onReadyForDisplay={() => {
+                setLoading(false);
+              }}
+              onPlaybackStatusUpdate={(status) => {
+                if (!status.isLoaded) return;
+                if (status.isBuffering && isPlaying && index === viewableIndex && !paused) {
+                  setLoading(true);
+                } else if (status.isPlaying && !status.isBuffering) {
+                  setLoading(false);
+                }
+                if (status.didJustFinish) setLoading(false);
+                if (!status.isPlaying) setLoading(false);
+              }}
+            />
+            {loading && isPlaying && index === viewableIndex && !paused && (
+              <View style={{ position: 'absolute', top: '50%', left: '50%', transform: [{ translateX: -35 }, { translateY: -36 }], opacity: 0.5 }}>
+                <ActivityIndicator size={62} color="#fff" />
+              </View>
+            )}
+            {showPlayPause.visible && index === viewableIndex && (
+              <View style={{ position: 'absolute', top: '50%', left: '50%', transform: [{ translateX: -40 }, { translateY: -42 }], opacity: 0.5 }}>
+                <MaterialCommunityIcons
+                  name={showPlayPause.isPlaying ? 'pause-circle' : 'play-circle'}
+                  size={72}
+                  color="#fff"
+                />
+              </View>
+            )}
+          </View>
         </TouchableOpacity>
         {/* Left info group, bottom-aligned, fills left side */}
         <View style={styles.leftInfoGroup}>
@@ -391,8 +427,7 @@ export default function ClipsScreen({ paused = false }: { paused?: boolean }) {
 const styles = StyleSheet.create({
   clipContainer: {
     height: CLIP_HEIGHT,
-    width: '100%',
-    bottom: 60,
+    width: width,
     backgroundColor: '#000',
     overflow: 'hidden',
     position: 'relative',
@@ -407,22 +442,6 @@ const styles = StyleSheet.create({
     top: 0,
     left: 0,
     width: "100%",
-    height: CLIP_HEIGHT,
-  },
-  leftButtons: {
-    position: "absolute",
-    left: 16,
-    bottom: 24,
-    flexDirection: "column",
-    alignItems: "center",
-    zIndex: 2,
-  },
-  rightInfo: {
-    position: "absolute",
-    right: 16,
-    bottom: 24,
-    alignItems: "center",
-    zIndex: 2,
   },
   avatar: {
     borderRadius: 50,
@@ -503,26 +522,6 @@ const styles = StyleSheet.create({
     marginLeft: 8,
     padding: 8,
   },
-  leftButtonsFull: {
-    position: "absolute",
-    left: 16,
-    bottom: 24,
-    flexDirection: "column",
-    alignItems: "center",
-    zIndex: 2,
-    justifyContent: "flex-end",
-    height: "60%",
-  },
-  rightInfoFull: {
-    position: "absolute",
-    right: 16,
-    bottom: 24,
-    flexDirection: "column",
-    alignItems: "center",
-    zIndex: 2,
-    justifyContent: "flex-end",
-    height: "60%",
-  },
   avatarBtn: {
     alignItems: "center",
     justifyContent: "center",
@@ -550,7 +549,7 @@ const styles = StyleSheet.create({
   rightIconGroup: {
     position: "absolute",
     right: 16,
-    bottom: 24,
+    bottom: 40,
     flexDirection: "column",
     alignItems: "center",
     zIndex: 2,
@@ -574,12 +573,12 @@ const styles = StyleSheet.create({
   leftInfoGroup: {
     position: "absolute",
     left: 16,
-    bottom: 34,
+    bottom: 50,
     flexDirection: "column",
     alignItems: "flex-start",
     zIndex: 2,
     justifyContent: "flex-end",
-    maxWidth: 230,
+    maxWidth: '100%',
     gap: 5,
   },
   streamerRow: {

@@ -12,7 +12,7 @@ import {
 } from "react-native";
 
 export default function Searchtabs() {
-  const tabs = ["Categories", "Live channels"];
+  const tabs = React.useMemo(() => ["Categories", "Live channels"], []);
   const [activeTab, setActiveTab] = useState("Categories");
   const [tabWidths, setTabWidths] = useState<{ [key: string]: number }>({});
   const underlineAnim = useRef(new Animated.Value(tabs.indexOf(activeTab))).current;
@@ -24,7 +24,7 @@ export default function Searchtabs() {
       friction: 7,
       tension: 80,
     }).start();
-  }, [activeTab]);
+  }, [activeTab, tabs, underlineAnim]);
 
   const handleTabTextLayout = (tab: string, event: any) => {
     const width = event.nativeEvent.layout.width;

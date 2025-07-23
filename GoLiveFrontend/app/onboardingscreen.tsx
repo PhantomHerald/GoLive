@@ -57,7 +57,7 @@ const OnboardingModal: React.FC = () => {
 
   useEffect(() => {
     progressPosition.value = currentStep / (steps.length - 1);
-  }, [currentStep]);
+  }, [currentStep, progressPosition]);
 
   const progressAnimatedStyle = useAnimatedStyle(() => {
     return {

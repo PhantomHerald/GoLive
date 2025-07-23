@@ -274,12 +274,16 @@ const styles = StyleSheet.create({
     backgroundColor: "transparent",
   },
   topBar: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
     flexDirection: "row",
     alignItems: "center",
     zIndex: 100,
     height: 60,
-    backgroundColor: "rgba(10,10,20,0.7)", // dark transparent background
-    paddingTop: 0, // SafeAreaView handles status bar
+    backgroundColor: "rgba(10,10,20,0.3)", // dark transparent background
+    paddingTop: 0,
     elevation: 0,
     shadowOpacity: 1,
   },
@@ -306,7 +310,8 @@ const styles = StyleSheet.create({
   },
   contentContainer: {
     flex: 1,
-    // Removed marginTop so content starts at the very top, under the overlay navbar
+    backgroundColor: "transparent",
+    // Removed any paddingTop or marginTop
   },
   followingTitle: {
     textAlign: "center",
@@ -343,7 +348,7 @@ const styles = StyleSheet.create({
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: "rgba(68,68,68,0.3)",
+    backgroundColor: "rgba(68,68,68,0.8)",
     position: "absolute",
   },
   channelRow: {

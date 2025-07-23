@@ -1,10 +1,9 @@
 import React, { useState, useRef, useEffect } from "react";
-import { View, Text, TouchableOpacity, StyleSheet, Image, Dimensions, TextInput, ScrollView, KeyboardAvoidingView, Platform, Share, TouchableWithoutFeedback, Animated, Modal, Keyboard } from "react-native";
+import { View, Text, TouchableOpacity, StyleSheet, Image, Dimensions, TextInput, ScrollView, KeyboardAvoidingView, Platform, Share, TouchableWithoutFeedback, Animated, Modal, Keyboard, ActivityIndicator } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import Icon from "@expo/vector-icons/MaterialCommunityIcons";
 import { useLocalSearchParams, router } from "expo-router";
 import { mockStreams, mockUsers, mockChatMessages } from "@/data/mockdata";
-import { Volume2, VolumeX, Share2, MoreVertical } from "lucide-react-native";
+import { ChevronLeft, MoreVertical, Volume2, VolumeX, Share2, EyeOff, UserX, Flag } from "lucide-react-native";
 import { formatFollowers } from "@/utils/formatFollowers";
 import { Video, ResizeMode } from "expo-av";
 import { Feather } from "@expo/vector-icons";
@@ -24,35 +23,14 @@ export default function StreamScreen() {
   const scrollViewRef = useRef<ScrollView>(null);
   const [following, setFollowing] = useState(false);
   const handleToggleFollow = () => setFollowing(f => !f);
-  const [infoVisible, setInfoVisible] = useState(true);
-  const hideInfoTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const infoAnim = useRef(new Animated.Value(0)).current; // 0: visible, 1: hidden
-  const infoRowHeight = 120; // px, must match outputRange in infoAnim
-  const chatInputRef = useRef<TextInput>(null);
+  const [infoVisible, setInfoVisible] = useState(false);
+  const infoAnim = useRef(new Animated.Value(0)).current; // 0: hidden, 1: visible
   const [inputModalVisible, setInputModalVisible] = useState(false);
   const chatInputModalRef = useRef<TextInput>(null);
-  const [joinTime, setJoinTime] = useState<Date | null>(null);
   const [moreModalVisible, setMoreModalVisible] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [videoLayout, setVideoLayout] = useState<{ y: number; height: number }>({ y: 0, height: 0 });
 
-  // Animate info row in/out
-  useEffect(() => {
-    Animated.timing(infoAnim, {
-      toValue: infoVisible ? 1 : 0,
-      duration: 350,
-      useNativeDriver: true,
-    }).start();
-  }, [infoVisible]);
-
-  // Auto-hide info after 5 seconds
-  useEffect(() => {
-    if (infoVisible) {
-      if (hideInfoTimeout.current !== null) clearTimeout(hideInfoTimeout.current);
-      hideInfoTimeout.current = window.setTimeout(() => setInfoVisible(false), 5000);
-    }
-    return () => {
-      if (hideInfoTimeout.current !== null) clearTimeout(hideInfoTimeout.current);
-    };
-  }, [infoVisible]);
 
   // Scroll to bottom on new message or input focus
   useEffect(() => {
@@ -60,21 +38,7 @@ export default function StreamScreen() {
       scrollViewRef.current.scrollToEnd({ animated: true });
     }
   }, [messages]);
-  const handleInputFocus = () => {
-    setTimeout(() => {
-      if (scrollViewRef.current) {
-        scrollViewRef.current.scrollToEnd({ animated: true });
-      }
-    }, 100);
-  };
 
-  // Track when the user joins/views the stream
-  useEffect(() => {
-    const now = new Date();
-    setJoinTime(now);
-    // For demonstration, log it
-    console.log(`User joined stream ${id} at`, now.toISOString());
-  }, []);
 
   useEffect(() => {
     if (!id || !user?.id) return;
@@ -100,9 +64,22 @@ export default function StreamScreen() {
     });
   }, [id, user?.id]);
 
-  const handleStreamTap = () => {
-    setInfoVisible(true);
-  };
+  // Animate info row in/out
+  useEffect(() => {
+    Animated.timing(infoAnim, {
+      toValue: infoVisible ? 1 : 0,
+      duration: 300,
+      useNativeDriver: true,
+    }).start();
+  }, [infoVisible, infoAnim]);
+
+  // Hide info row after 5 seconds if visible
+  useEffect(() => {
+    if (infoVisible) {
+      const timeout = setTimeout(() => setInfoVisible(false), 5000);
+      return () => clearTimeout(timeout);
+    }
+  }, [infoVisible]);
 
   const handleMuteToggle = () => {
     setMuted((prev) => !prev);
@@ -116,28 +93,9 @@ export default function StreamScreen() {
           url: `https://yourapp.com/stream/${stream.id}`,
           title: stream.title,
         });
-      } catch (error) {
+      } catch {
         alert("Could not share the stream.");
       }
-    }
-  };
-
-  const handleSend = () => {
-    if (chatInput.trim()) {
-      setMessages(prev => [
-        ...prev,
-        {
-          id: String(Date.now()),
-          username: "You",
-          message: chatInput,
-          badges: [],
-          time: new Date(),
-        },
-      ]);
-      setChatInput("");
-      setTimeout(() => {
-        scrollViewRef.current?.scrollToEnd({ animated: true });
-      }, 100);
     }
   };
 
@@ -170,17 +128,21 @@ export default function StreamScreen() {
 
     return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.topBar}>
-        <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
-          <Icon name="arrow-left" size={28} color="#fff" />
-        </TouchableOpacity>
-        <Text style={styles.heading}>Live Stream</Text>
-        <View style={{ width: 40 }} />
-      </View>
       {stream ? (
         <View style={{ flex: 1, width: '100%' }}>
           {/* Stream video with overlay icons */}
           <View style={{ position: 'relative', width: '100%' }}>
+            <View
+              onLayout={e => setVideoLayout({ y: e.nativeEvent.layout.y, height: e.nativeEvent.layout.height })}
+              style={{ width: '100%' }}
+            >
+              <TouchableOpacity
+                activeOpacity={1}
+                onPress={() => setInfoVisible(v => !v)}
+                style={{ width: '100%', height: styles.thumbnail.height, position: 'absolute', top: 0, left: 0, zIndex: 2 }}
+              >
+                {/* Empty view to capture taps over the video only */}
+              </TouchableOpacity>
             <Video
               ref={videoRef}
               source={{ uri: stream.videoUrl }}
@@ -189,8 +151,52 @@ export default function StreamScreen() {
               shouldPlay
               isMuted={muted}
               isLooping
-            />
-            <View style={{
+                onLoadStart={() => {
+                  setLoading(true);
+                }}
+                onReadyForDisplay={() => {
+                  setLoading(false);
+                }}
+                onPlaybackStatusUpdate={(status) => {
+                  if (!status.isLoaded) return;
+                  if (status.isBuffering) {
+                    setLoading(true);
+                  } else if (status.isPlaying && !status.isBuffering) {
+                    setLoading(false);
+                  }
+                  if (status.didJustFinish) setLoading(false);
+                  if (!status.isPlaying) setLoading(false);
+                }}
+              />
+              {loading && (
+                <View style={{ position: 'absolute', top: '50%', left: '50%', transform: [{ translateX: -36 }, { translateY: -36 }], opacity: 0.5 }}>
+                  <ActivityIndicator size={62} color="#fff" />
+                </View>
+              )}
+              {/* Back chevron icon absolutely at top-left of video */}
+              <Animated.View
+                pointerEvents={infoVisible ? 'auto' : 'none'}
+                style={{
+                  position: 'absolute',
+                  top: 16,
+                  left: 16,
+                  zIndex: 20,
+                  opacity: infoAnim,
+                }}
+              >
+                <TouchableOpacity
+                  style={{ backgroundColor: 'rgba(0,0,0,0.5)', borderRadius: 50, padding: 4 }}
+                  onPress={() => router.back()}
+                  activeOpacity={0.7}
+                  hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+                >
+                  <ChevronLeft size={32} color="#fff" />
+                </TouchableOpacity>
+              </Animated.View>
+              {/* Video icons: always visible, absolutely positioned on the video */}
+              <Animated.View
+                pointerEvents={infoVisible ? 'auto' : 'none'}
+                style={{
               position: 'absolute',
               right: 16,
               bottom: 10,
@@ -198,7 +204,9 @@ export default function StreamScreen() {
               flexDirection: 'column',
               alignItems: 'center',
               zIndex: 10,
-            }}>
+                  opacity: infoAnim,
+                }}
+              >
               <TouchableOpacity style={styles.iconBtn} onPress={handleMuteToggle}>
                 {muted ? (
                   <VolumeX size={22} color="#fff" />
@@ -212,9 +220,24 @@ export default function StreamScreen() {
               <TouchableOpacity style={styles.iconBtn} onPress={() => setMoreModalVisible(true)}>
                 <MoreVertical size={22} color="#fff" />
           </TouchableOpacity>
+              </Animated.View>
         </View>
-      </View>
-          {/* Info row (no animation, no absolute) */}
+            {/* Animated info row and overlay (as before) */}
+            <Animated.View
+              pointerEvents={infoVisible ? 'auto' : 'none'}
+              style={{
+                position: 'absolute',
+                top: videoLayout.height,
+                left: 0,
+                right: 0,
+                height: 120,
+                opacity: infoAnim,
+                backgroundColor: infoAnim.interpolate({ inputRange: [0, 1], outputRange: ['transparent', 'black'] }),
+                zIndex: 2,
+                justifyContent: 'flex-start',
+              }}
+            >
+              {/* Info row content (unchanged) */}
           <View style={styles.infoRow}>
             <View style={styles.profileGroupSmall}>
               <View style={{ alignItems: 'center', width: '100%' }}>
@@ -249,6 +272,60 @@ export default function StreamScreen() {
                 </View>
               </View>
             </View>
+              </View>
+            </Animated.View>
+            {/* More Modal (bottom sheet style, same as live.tsx) */}
+            <Modal
+              visible={moreModalVisible}
+              transparent
+              animationType="slide"
+              onRequestClose={() => setMoreModalVisible(false)}
+            >
+              <TouchableWithoutFeedback onPress={() => setMoreModalVisible(false)}>
+                <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'flex-end' }}>
+                  <TouchableWithoutFeedback>
+                    <View style={{ backgroundColor: '#18181b', borderTopLeftRadius: 18, borderTopRightRadius: 18, paddingBottom: 24, paddingTop: 12, alignItems: 'center', minHeight: 260 }}>
+                      {/* Not Interested */}
+                      <TouchableOpacity
+                        style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: '80%', alignSelf: 'center', paddingVertical: 18, paddingHorizontal: 24, borderBottomWidth: 1, borderBottomColor: '#23232a', borderRadius: 10, marginBottom: 10, backgroundColor: '#23232a' }}
+                        activeOpacity={0.7}
+                        onPress={() => setMoreModalVisible(false)}
+                      >
+                        <Text style={{ color: '#fff', fontSize: 18, fontWeight: '500' }}>Not Interested</Text>
+                        <EyeOff size={24} color="#fff" />
+                      </TouchableOpacity>
+                      {/* Block and Report (closer together) */}
+                      <View style={{ width: '80%', alignSelf: 'center', marginBottom: 10 }}>
+                        <TouchableOpacity
+                          style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 16, paddingHorizontal: 24, borderBottomWidth: 1, borderBottomColor: '#23232a', borderRadius: 10, backgroundColor: '#23232a', marginBottom: 0 }}
+                          activeOpacity={0.7}
+                          onPress={() => setMoreModalVisible(false)}
+                        >
+                          <Text style={{ color: '#ff4d4f', fontSize: 18, fontWeight: '500' }}>Block {stream.streamer.displayName}</Text>
+                          <UserX size={24} color="#ff4d4f" />
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                          style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 16, paddingHorizontal: 24, borderRadius: 10, backgroundColor: '#23232a', marginTop: 0 }}
+                          activeOpacity={0.7}
+                          onPress={() => setMoreModalVisible(false)}
+                        >
+                          <Text style={{ color: '#ff4d4f', fontSize: 18, fontWeight: '500' }}>Report {stream.streamer.displayName}</Text>
+                          <Flag size={24} color="#ff4d4f" />
+                        </TouchableOpacity>
+                      </View>
+                      {/* Cancel */}
+                      <TouchableOpacity
+                        style={{ width: '80%', alignSelf: 'center', alignItems: 'center', justifyContent: 'center', paddingVertical: 18, borderRadius: 10, backgroundColor: '#23232a', marginTop: 10 }}
+                        activeOpacity={0.7}
+                        onPress={() => setMoreModalVisible(false)}
+                      >
+                        <Text style={{ color: '#fff', fontSize: 18, fontWeight: '500', textAlign: 'center' }}>Cancel</Text>
+                      </TouchableOpacity>
+                    </View>
+                  </TouchableWithoutFeedback>
+                </View>
+              </TouchableWithoutFeedback>
+            </Modal>
           </View>
           {/* Comments */}
           <View style={{ flex: 1, width: '100%' }}>
@@ -284,6 +361,10 @@ export default function StreamScreen() {
           >
             <TouchableWithoutFeedback onPress={closeInputModal}>
               <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.7)', justifyContent: 'flex-end' }}>
+                <KeyboardAvoidingView
+                  behavior={Platform.OS === "ios" ? "padding" : "height"}
+                  style={{ width: '100%' }}
+                >
                 <TouchableWithoutFeedback>
                   <View style={{ padding: 16, backgroundColor: '#23232a', borderTopLeftRadius: 16, borderTopRightRadius: 16 }}>
                     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
@@ -305,24 +386,7 @@ export default function StreamScreen() {
       </View>
                   </View>
                 </TouchableWithoutFeedback>
-              </View>
-            </TouchableWithoutFeedback>
-          </Modal>
-          {/* More modal */}
-          <Modal
-            visible={moreModalVisible}
-            transparent
-            animationType="fade"
-            onRequestClose={() => setMoreModalVisible(false)}
-          >
-            <TouchableWithoutFeedback onPress={() => setMoreModalVisible(false)}>
-              <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.7)', justifyContent: 'flex-end' }}>
-                <TouchableWithoutFeedback>
-                  <View style={{ padding: 16, backgroundColor: '#23232a', borderTopLeftRadius: 16, borderTopRightRadius: 16 }}>
-                    <Text style={{ color: '#fff', fontSize: 18, textAlign: 'center', marginBottom: 12 }}>More Options (Coming Soon)</Text>
-                    {/* Add more options here as needed */}
-                  </View>
-                </TouchableWithoutFeedback>
+                </KeyboardAvoidingView>
               </View>
             </TouchableWithoutFeedback>
           </Modal>
@@ -446,15 +510,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     position: "relative",
-  },
-  verticalActionIcons: {
-    position: "absolute",
-    right: 16,
-    bottom: 0,
-    zIndex: 100,
-    flexDirection: "column",
-    alignItems: "center",
-    gap: 14,
   },
   infoRow: {
     flexDirection: "row",

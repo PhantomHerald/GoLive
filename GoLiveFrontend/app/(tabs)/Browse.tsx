@@ -9,7 +9,6 @@ import {
   View,
   TouchableWithoutFeedback,
   Keyboard,
-  ScrollView,
 } from "react-native";
 
 const styles = StyleSheet.create({

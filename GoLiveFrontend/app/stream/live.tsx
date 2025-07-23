@@ -1,17 +1,16 @@
 import React, { useState, useRef } from "react";
-import { Dimensions, FlatList, Image, StyleSheet, Text, View, TouchableOpacity } from "react-native";
+import { Dimensions, FlatList, Image, StyleSheet, Text, View, TouchableOpacity, ActivityIndicator, Modal, TouchableWithoutFeedback } from "react-native";
 import { Video, ResizeMode } from "expo-av";
 import { LinearGradient } from "expo-linear-gradient";
 import { MaterialCommunityIcons, Feather } from "@expo/vector-icons";
 import { Stream, mockStreams, mockUsers } from "@/data/mockdata";
-import { router } from "expo-router";
-import { MoreVertical } from "lucide-react-native";
+import { router, useFocusEffect } from "expo-router";
+import { MoreVertical, EyeOff, UserX, Flag } from "lucide-react-native";
 import { formatFollowers } from "@/utils/formatFollowers";
-import { useFocusEffect } from 'expo-router';
 
 const { width, height } = Dimensions.get("window");
-const TAB_BAR_HEIGHT = 80;
-const VISIBLE_HEIGHT = height - TAB_BAR_HEIGHT;
+const TAB_BAR_HEIGHT = 70;
+const VISIBLE_HEIGHT = height-TAB_BAR_HEIGHT;
 
 export default function LiveStreamApp() {
   // Get all live streams
@@ -22,6 +21,8 @@ export default function LiveStreamApp() {
   const [muted, setMuted] = useState<{ [id: string]: boolean }>({});
   const [paused, setPaused] = useState(false);
   const [resizeModes, setResizeModes] = useState<{ [id: string]: ResizeMode }>({});
+  const [loading, setLoading] = useState(false);
+  const [moreModalVisible, setMoreModalVisible] = useState(false);
 
   useFocusEffect(
     React.useCallback(() => {
@@ -67,17 +68,40 @@ export default function LiveStreamApp() {
     const videoUrl = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4";
     const resizeMode = resizeModes[item.id] || ResizeMode.COVER;
     return (
-    <View style={[styles.streamContainer, { height: VISIBLE_HEIGHT }]}>
-        <Video
-          source={{ uri: videoUrl }}
-        style={[styles.video, { height: VISIBLE_HEIGHT }]}
-        resizeMode={resizeMode}
-          shouldPlay={index === viewableIndex && !paused}
-          isMuted={isMuted}
-          isLooping
-      />
+      <View style={[styles.streamContainer, { height: VISIBLE_HEIGHT, top: 0, left: 0, right: 0, bottom: 0 }]}> 
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <Video
+            source={{ uri: videoUrl }}
+            style={[styles.video, { height: VISIBLE_HEIGHT }]}
+            resizeMode={resizeMode}
+            shouldPlay={index === viewableIndex && !paused}
+            isMuted={isMuted}
+            isLooping
+            onLoadStart={() => {
+              if (!paused && index === viewableIndex) setLoading(true);
+            }}
+            onReadyForDisplay={() => {
+              setLoading(false);
+            }}
+            onPlaybackStatusUpdate={(status) => {
+              if (!status.isLoaded) return;
+              if (status.isBuffering && !paused && index === viewableIndex) {
+                setLoading(true);
+              } else if (status.isPlaying && !status.isBuffering) {
+                setLoading(false);
+              }
+              if (status.didJustFinish) setLoading(false);
+              if (!status.isPlaying) setLoading(false);
+            }}
+          />
+          {loading && !paused && index === viewableIndex && (
+            <View style={{ position: 'absolute', top: '50%', left: '50%', transform: [{ translateX: -35 }, { translateY: -36 }], opacity: 0.5 }}>
+              <ActivityIndicator size={62} color="#fff" />
+            </View>
+          )}
+        </View>
         {/* Right icon group, vertical stack, with profile pic and live tag, OUTSIDE gradient */}
-        <View style={[styles.rightActionStackLive, { position: 'absolute', right: 16, bottom: TAB_BAR_HEIGHT + 10, zIndex: 10 }]}>
+        <View style={[styles.rightActionStackLive, { position: 'absolute', right: 5, bottom: 50, zIndex: 10 }]}> 
           <TouchableOpacity onPress={() => router.push(`/stream/${item.id}`)} style={styles.avatarContainerLarge}>
             <Image source={{ uri: item.streamer.avatar }} style={styles.viewerAvatarLarge} />
             {item.isLive && (
@@ -87,26 +111,26 @@ export default function LiveStreamApp() {
             )}
           </TouchableOpacity>
           <TouchableOpacity style={{ alignItems: "center", marginHorizontal: 18 }} onPress={() => handleToggleMute(item.id)}>
-            <Feather name={isMuted ? "volume-x" : "volume-2"} size={22} color="#fff" />
+            <Feather name={isMuted ? "volume-x" : "volume-2"} size={26} color="#fff" />
           </TouchableOpacity>
           <TouchableOpacity style={{ alignItems: "center", marginHorizontal: 18 }} onPress={() => handleToggleResize(item.id)}>
             {resizeMode === ResizeMode.COVER ? (
-              <MaterialCommunityIcons name="arrow-expand" size={22} color="#fff" />
+              <MaterialCommunityIcons name="arrow-expand" size={26} color="#fff" />
             ) : (
-              <MaterialCommunityIcons name="arrow-collapse" size={22} color="#fff" />
+              <MaterialCommunityIcons name="arrow-collapse" size={26} color="#fff" />
             )}
           </TouchableOpacity>
           <TouchableOpacity style={{ alignItems: "center", marginHorizontal: 18 }} onPress={() => {}}>
-            <Feather name="share-2" size={22} color="#fff" />
+            <Feather name="share-2" size={26} color="#fff" />
           </TouchableOpacity>
-          <TouchableOpacity style={{ alignItems: "center", marginHorizontal: 18 }} onPress={() => {}}>
-            <MoreVertical size={22} color="#fff" />
+          <TouchableOpacity style={{ alignItems: "center", marginHorizontal: 18 }} onPress={() => setMoreModalVisible(true)}>
+            <MoreVertical size={26} color="#fff" />
           </TouchableOpacity>
         </View>
         {/* Overlay for info and actions, styled like clips */}
       <LinearGradient
         colors={["rgba(0,0,0,0.7)", "rgba(0,0,0,0.2)", "transparent"]}
-        style={[styles.bottomOverlay, { bottom: TAB_BAR_HEIGHT }]}
+          style={styles.bottomOverlay}
       >
           <View style={styles.infoRowFull}>
             <View style={styles.leftInfoGroupFull}>
@@ -148,6 +172,58 @@ export default function LiveStreamApp() {
             {/* This block is now moved outside the LinearGradient */}
           </View>
         </LinearGradient>
+        {/* Bottom Sheet Modal for More Options */}
+        <Modal
+          visible={moreModalVisible}
+          transparent
+          animationType="slide"
+          onRequestClose={() => setMoreModalVisible(false)}
+        >
+          <TouchableWithoutFeedback onPress={() => setMoreModalVisible(false)}>
+            <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'flex-end' }}>
+              <TouchableWithoutFeedback>
+                <View style={{ backgroundColor: '#18181b', borderTopLeftRadius: 18, borderTopRightRadius: 18, paddingBottom: 20, paddingTop: 12, alignItems: 'center', minHeight: 260 }}>
+                  {/* Not Interested */}
+                  <TouchableOpacity
+                    style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: '90%', alignSelf: 'center', paddingVertical: 15, paddingHorizontal: 24, borderBottomWidth: 1, borderBottomColor: '#23232a', borderRadius: 10, marginBottom: 15, backgroundColor: '#23232a' }}
+                    activeOpacity={0.7}
+                    onPress={() => setMoreModalVisible(false)}
+                  >
+                    <Text style={{ color: '#fff', fontSize: 18, fontWeight: '500' }}>Not Interested</Text>
+                    <EyeOff size={24} color="#fff" />
+                  </TouchableOpacity>
+                  {/* Block and Report (closer together) */}
+                  <View style={{ width: '90%', alignSelf: 'center', marginBottom: 10 }}>
+                    <TouchableOpacity
+                      style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 15, paddingHorizontal: 24, borderBottomWidth: 1, borderBottomColor: '#23232a', borderRadius: 10, backgroundColor: '#23232a', marginBottom: 2 }}
+                      activeOpacity={0.7}
+                      onPress={() => setMoreModalVisible(false)}
+                    >
+                      <Text style={{ color: '#ff4d4f', fontSize: 18, fontWeight: '500' }}>Block {item.streamer.displayName}</Text>
+                      <UserX size={24} color="#ff4d4f" />
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 15, paddingHorizontal: 24, borderRadius: 10, backgroundColor: '#23232a', marginTop: 0 }}
+                      activeOpacity={0.7}
+                      onPress={() => setMoreModalVisible(false)}
+                    >
+                      <Text style={{ color: '#ff4d4f', fontSize: 18, fontWeight: '500' }}>Report {item.streamer.displayName}</Text>
+                      <Flag size={24} color="#ff4d4f" />
+                    </TouchableOpacity>
+                  </View>
+                  {/* Cancel */}
+                  <TouchableOpacity
+                    style={{ width: '80%', alignSelf: 'center', alignItems: 'center', justifyContent: 'center', paddingVertical: 15, borderRadius: 10, backgroundColor: '#23232a', marginTop: 10 }}
+                    activeOpacity={0.7}
+                    onPress={() => setMoreModalVisible(false)}
+                  >
+                    <Text style={{ color: '#fff', fontSize: 18, fontWeight: '500', textAlign: 'center' }}>Cancel</Text>
+                  </TouchableOpacity>
+                </View>
+              </TouchableWithoutFeedback>
+            </View>
+          </TouchableWithoutFeedback>
+        </Modal>
     </View>
   );
   };
@@ -181,7 +257,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#000',
     position: 'relative',
     flex: 1,
-    bottom: 60,
     marginTop: 0, // ensure no vertical margin
     marginBottom: 0, // ensure no vertical margin
     paddingTop: 0, // ensure no vertical padding
@@ -192,13 +267,12 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: 0,
     left: 0,
-    paddingBottom: 200,
   },
   bottomOverlay: {
     position: "absolute",
     left: 0,
     right: 0,
-    bottom: 0,
+    bottom: 45,
     paddingHorizontal: 10,
     paddingBottom: 0,
     paddingTop: 16,
@@ -226,12 +300,6 @@ const styles = StyleSheet.create({
     fontSize: 10,
     letterSpacing: 1,
   },
-  streamerName: {
-    color: "#fff",
-    fontWeight: "bold",
-    fontSize: 16,
-    marginRight: 4,
-  },
   followBtn: {
     flexDirection: "row",
     alignItems: "center",
@@ -251,74 +319,23 @@ const styles = StyleSheet.create({
     fontSize: 14,
     marginLeft: 4,
   },
-  viewerBox: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "rgba(0,0,0,0.5)",
-    borderRadius: 16,
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    marginLeft: 8,
-  },
-  viewerAvatar: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    marginRight: 4,
-    borderWidth: 1,
-    borderColor: "#fff",
-  },
-  viewerCount: {
-    color: "#fff",
-    fontWeight: "bold",
-    fontSize: 14,
-  },
-  streamTitle: {
-    color: "#fff",
-    fontWeight: "bold",
-    fontSize: 15,
-    marginBottom: 2,
-    marginLeft: 2,
-    textShadowColor: "#000",
-    textShadowOffset: { width: 1, height: 1 },
-    textShadowRadius: 4,
-  },
-  profileInfo: {
-    justifyContent: "center",
-  },
-  actionLabel: {
-    color: "#fff",
-    fontSize: 13,
-    marginTop: 4,
-  },
-  profileActionRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    width: "100%",
-    marginBottom: 10,
-  },
   avatarContainerLarge: {
     position: "relative",
   },
   viewerAvatarLarge: {
-    width: 50,
-    height: 50,
+    width: 60,
+    height: 60,
+    borderWidth: 2,
+    borderColor: "#006eff",
     borderRadius: 32,
     backgroundColor: "#333",
-  },
-  bottomRightOverlay: {
-    alignItems: "center",
-    justifyContent: "flex-end",
-    position: "relative",
-    gap: 12,
-    paddingBottom: 4,
   },
   infoRowFull: {
     flexDirection: "row",
     alignItems: "flex-end",
     justifyContent: "space-between",
-    width: "100%",
+    width: "90%",
+    left: 5,
   },
   leftInfoGroupFull: {
     flexDirection: "column",
@@ -327,18 +344,6 @@ const styles = StyleSheet.create({
     flex: 1,
     zIndex: 1,
     paddingRight: 70,
-  },
-  rightActionStack: {
-    alignItems: "center",
-    justifyContent: "flex-end",
-    height: "100%",
-    paddingBottom: 4,
-    paddingRight: 4,
-    gap: 18,
-    zIndex: 2,
-    backgroundColor: "rgba(0,0,0,0.15)",
-    borderTopLeftRadius: 24,
-    minWidth: 80,
   },
   streamerNameLive: {
     color: "#fff",
@@ -370,7 +375,7 @@ const styles = StyleSheet.create({
   rightActionStackLive: {
     alignItems: "center",
     justifyContent: "center",
-    gap: 20,
+    gap: 30,
     zIndex: 2,
     minWidth: 80,
 },
@@ -378,9 +383,9 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "flex-start",
-    gap: 8,
+    gap: 10,
     flexWrap: "wrap",
-    width: 240,
+    width: '100%',
   },
   statsRowLive: {
     flexDirection: "row",
@@ -392,5 +397,11 @@ const styles = StyleSheet.create({
     color: "#aaa",
     fontSize: 16,
     marginHorizontal: 6,
+  },
+  iconBtn: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 10,
+    paddingHorizontal: 10,
   },
 });
