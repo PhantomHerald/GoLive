@@ -20,6 +20,8 @@ public interface StreamRepository extends JpaRepository<Stream, Long> {
 
     Optional<Stream> findByStreamKey(String streamKey);
 
+    Optional<Stream> findByMuxStreamId(String muxStreamId);
+
     @Query("SELECT s FROM Stream s WHERE s.streamer.id = :streamerId AND s.isLive = true")
     Optional<Stream> findLiveStreamByStreamerId(@Param("streamerId") Long streamerId);
 

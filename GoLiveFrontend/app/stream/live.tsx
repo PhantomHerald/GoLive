@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Dimensions, FlatList, Image, StyleSheet, Text, View, TouchableOpacity, ActivityIndicator, Modal, TouchableWithoutFeedback } from "react-native";
 import { Video, ResizeMode } from "expo-av";
 import { LinearGradient } from "expo-linear-gradient";
@@ -7,14 +7,36 @@ import { Stream, mockStreams, mockUsers } from "@/data/mockdata";
 import { router, useFocusEffect } from "expo-router";
 import { MoreVertical, EyeOff, UserX, Flag } from "lucide-react-native";
 import { formatFollowers } from "@/utils/formatFollowers";
+import { useAuth } from "@/hooks/useAuth";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { WebView } from 'react-native-webview';
 
 const { width, height } = Dimensions.get("window");
 const TAB_BAR_HEIGHT = 70;
 const VISIBLE_HEIGHT = height-TAB_BAR_HEIGHT;
 
 export default function LiveStreamApp() {
-  // Get all live streams
-  const liveStreams = mockStreams.filter((s) => s.isLive);
+  const { token: authToken } = useAuth();
+  // Fetch all live streams from backend
+  const [liveStreams, setLiveStreams] = useState<any[]>([]);
+  const [loadingStreams, setLoadingStreams] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    setLoadingStreams(true);
+    fetch("https://5e6ffe7f3715.ngrok-free.app/api/streams/live"/*, {
+      headers: authToken ? { Authorization: `Bearer ${authToken}` } : undefined
+    }*/)
+      .then(res => res.json())
+      .then(data => {
+        setLiveStreams(data);
+        setLoadingStreams(false);
+      })
+      .catch(err => {
+        setError("Failed to load live streams");
+        setLoadingStreams(false);
+      });
+  }, [authToken]);
 
   // Track following state per stream id
   const [following, setFollowing] = useState<{ [id: string]: boolean }>({});
@@ -23,6 +45,7 @@ export default function LiveStreamApp() {
   const [resizeModes, setResizeModes] = useState<{ [id: string]: ResizeMode }>({});
   const [loading, setLoading] = useState(false);
   const [moreModalVisible, setMoreModalVisible] = useState(false);
+  const [videoError, setVideoError] = useState<{ [id: string]: boolean }>({});
 
   useFocusEffect(
     React.useCallback(() => {
@@ -58,42 +81,72 @@ export default function LiveStreamApp() {
     itemVisiblePercentThreshold: 80,
   }).current;
 
-  const renderStream = ({ item, index }: { item: Stream, index: number }) => {
+  const renderStream = ({ item, index }: { item: any, index: number }) => {
     const isFollowing = !!following[item.id];
     const isMuted = !!muted[item.id];
     const streamerUser = mockUsers.find(u => u.username === item.streamer.username);
     const followerCount = streamerUser ? formatFollowers(streamerUser.followers) : "";
     const isVerified = !!(streamerUser && "verified" in streamerUser && streamerUser.verified);
     const viewersCount = item.viewers ? formatFollowers(item.viewers) : "0";
-    const videoUrl = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4";
+    const videoUrl = item.muxPlaybackId ? `https://stream.mux.com/${item.muxPlaybackId}.m3u8` : null;
     const resizeMode = resizeModes[item.id] || ResizeMode.COVER;
     return (
       <View style={[styles.streamContainer, { height: VISIBLE_HEIGHT, top: 0, left: 0, right: 0, bottom: 0 }]}> 
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-          <Video
-            source={{ uri: videoUrl }}
-            style={[styles.video, { height: VISIBLE_HEIGHT }]}
-            resizeMode={resizeMode}
-            shouldPlay={index === viewableIndex && !paused}
-            isMuted={isMuted}
-            isLooping
-            onLoadStart={() => {
-              if (!paused && index === viewableIndex) setLoading(true);
-            }}
-            onReadyForDisplay={() => {
-              setLoading(false);
-            }}
-            onPlaybackStatusUpdate={(status) => {
-              if (!status.isLoaded) return;
-              if (status.isBuffering && !paused && index === viewableIndex) {
-                setLoading(true);
-              } else if (status.isPlaying && !status.isBuffering) {
+          {!videoError[item.id] ? (
+            <Video
+              source={videoUrl ? { uri: videoUrl } : undefined}
+              style={[styles.video, { height: VISIBLE_HEIGHT }]}
+              resizeMode={resizeMode}
+              shouldPlay={index === viewableIndex && !paused}
+              isMuted={isMuted}
+              isLooping
+              onLoadStart={() => {
+                if (!paused && index === viewableIndex) setLoading(true);
+              }}
+              onReadyForDisplay={() => {
                 setLoading(false);
-              }
-              if (status.didJustFinish) setLoading(false);
-              if (!status.isPlaying) setLoading(false);
-            }}
-          />
+              }}
+              onPlaybackStatusUpdate={(status) => {
+                if (!status.isLoaded) return;
+                if (status.isBuffering && !paused && index === viewableIndex) {
+                  setLoading(true);
+                } else if (status.isPlaying && !status.isBuffering) {
+                  setLoading(false);
+                }
+                if (status.didJustFinish) setLoading(false);
+                if (!status.isPlaying) setLoading(false);
+              }}
+              onError={() => setVideoError(prev => ({ ...prev, [item.id]: true }))}
+            />
+          ) : videoUrl ? (
+            <WebView
+              style={{ width: '100%', height: VISIBLE_HEIGHT, backgroundColor: '#000' }}
+              source={{ html: `
+                <html><body style='margin:0;background:#000;'>
+                <video id='video' controls autoplay style='width:100vw;height:100vh;background:#000' playsinline></video>
+                <script src='https://cdn.jsdelivr.net/npm/hls.js@latest'></script>
+                <script>
+                  var video = document.getElementById('video');
+                  if (Hls.isSupported()) {
+                    var hls = new Hls();
+                    hls.loadSource('${videoUrl}');
+                    hls.attachMedia(video);
+                  } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+                    video.src = '${videoUrl}';
+                  }
+                </script>
+                </body></html>
+              ` }}
+              allowsInlineMediaPlayback
+              mediaPlaybackRequiresUserAction={false}
+              javaScriptEnabled
+              domStorageEnabled
+              originWhitelist={['*']}
+            />
+          ) : (
+            <Text style={{ color: '#fff', textAlign: 'center', marginTop: 40 }}>Unable to play this stream.</Text>
+          )}
           {loading && !paused && index === viewableIndex && (
             <View style={{ position: 'absolute', top: '50%', left: '50%', transform: [{ translateX: -35 }, { translateY: -36 }], opacity: 0.5 }}>
               <ActivityIndicator size={62} color="#fff" />
@@ -224,29 +277,7 @@ export default function LiveStreamApp() {
             </View>
           </TouchableWithoutFeedback>
         </Modal>
-    </View>
-  );
-  };
-
-  return (
-    <FlatList
-      data={liveStreams}
-      keyExtractor={(item) => item.id}
-      renderItem={(props) => renderStream({ ...props, index: props.index })}
-      pagingEnabled
-      horizontal={false}
-      snapToInterval={VISIBLE_HEIGHT}
-      decelerationRate="fast"
-      showsVerticalScrollIndicator={false}
-      style={{ flex: 1, backgroundColor: "#000" }}
-      getItemLayout={(_, index) => ({
-        length: VISIBLE_HEIGHT,
-        offset: VISIBLE_HEIGHT * index,
-        index,
-      })}
-      onViewableItemsChanged={onViewableItemsChanged}
-      viewabilityConfig={viewabilityConfig}
-    />
+      </View>
   );
 }
 
@@ -404,4 +435,5 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 10,
   },
-});
+}
+)};

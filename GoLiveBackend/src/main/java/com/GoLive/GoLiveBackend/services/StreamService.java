@@ -19,10 +19,10 @@ public class StreamService {
     private static final Logger logger = LoggerFactory.getLogger(StreamService.class);
 
     @Autowired
-    private StreamRepository streamRepository;
+    public StreamRepository streamRepository;
 
     @Autowired
-    private UserService userService;
+    public UserService userService;
 
     @Autowired
     private NotificationService notificationService;
@@ -74,14 +74,14 @@ public class StreamService {
 
         Stream updatedStream = streamRepository.save(stream);
         logger.info("Stream went live successfully: {}", updatedStream.getId());
-        
+
         // Notify followers that streamer went live
         try {
             notificationService.notifyStreamLive(streamer.getId(), stream.getTitle(), stream.getId());
         } catch (Exception e) {
             logger.error("Error notifying followers about stream going live", e);
         }
-        
+
         return updatedStream;
     }
 
@@ -114,7 +114,9 @@ public class StreamService {
     public List<Stream> getLiveStreams() {
         logger.info("Fetching all live streams");
         List<Stream> liveStreams = streamRepository.findByIsLiveTrue();
-        logger.info("Found {} live streams", liveStreams.size());
+        // Only return streams that have a muxPlaybackId (i.e., are Mux streams)
+        liveStreams.removeIf(s -> s.getMuxPlaybackId() == null || s.getMuxPlaybackId().isEmpty());
+        logger.info("Found {} live Mux streams", liveStreams.size());
         return liveStreams;
     }
 

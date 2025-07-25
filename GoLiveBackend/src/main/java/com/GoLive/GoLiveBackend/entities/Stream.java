@@ -36,6 +36,15 @@ public class Stream {
     @Column(name = "category")
     private String category;
 
+    @Column(name = "mux_stream_id")
+    private String muxStreamId;
+
+    @Column(name = "mux_playback_id")
+    private String muxPlaybackId;
+
+    @Column(name = "mux_status")
+    private String muxStatus;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User streamer;
@@ -155,6 +164,30 @@ public class Stream {
     @PreUpdate
     protected void onUpdate() {
         this.updatedAt = new Timestamp(System.currentTimeMillis());
+    }
+
+    public String getMuxStreamId() {
+        return muxStreamId;
+    }
+
+    public void setMuxStreamId(String muxStreamId) {
+        this.muxStreamId = muxStreamId;
+    }
+
+    public String getMuxPlaybackId() {
+        return muxPlaybackId;
+    }
+
+    public void setMuxPlaybackId(String muxPlaybackId) {
+        this.muxPlaybackId = muxPlaybackId;
+    }
+
+    public String getMuxStatus() {
+        return muxStatus;
+    }
+
+    public void setMuxStatus(String muxStatus) {
+        this.muxStatus = muxStatus;
     }
 
     @Override

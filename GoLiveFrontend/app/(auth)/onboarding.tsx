@@ -292,7 +292,7 @@ export default function Onboarding() {
             fontWeight: !isShort ? 900 : 600,
           }}
         >
-          There’s always something for you on GoLive
+          There’s always something for you on goLive
         </Text>
       </View>
       <View style={styles.buttonContainer}>

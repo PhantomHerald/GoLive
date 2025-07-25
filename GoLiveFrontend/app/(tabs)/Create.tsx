@@ -7,7 +7,7 @@ import {
   ZoomOut,
 } from "lucide-react-native";
 import React, { useState, useEffect, useRef } from "react";
-import { Modal, Pressable } from "react-native";
+import { Modal, Pressable, ActivityIndicator } from "react-native";
 import * as ImagePicker from 'expo-image-picker';
 import {
   Button,
@@ -20,6 +20,7 @@ import {
 import SuccessToast from "@/components/SuccessToast";
 import { useIsFocused, useFocusEffect } from "@react-navigation/native";
 import { router } from "expo-router";
+import { useAuth } from "@/hooks/useAuth";
 
 const styles = StyleSheet.create({
   container: {
@@ -104,6 +105,12 @@ function Create() {
   const isFocused = useIsFocused();
   // Store previous tab route
   const prevRouteRef = useRef<string | null>(null);
+  const [muxStreamKey, setMuxStreamKey] = useState<string | null>(null);
+  const [muxPlaybackId, setMuxPlaybackId] = useState<string | null>(null);
+  const [muxStreamId, setMuxStreamId] = useState<string | null>(null);
+  const [muxLoading, setMuxLoading] = useState(false);
+  const [muxError, setMuxError] = useState<string | null>(null);
+  const { token: authToken } = useAuth();
 
   useFocusEffect(
     React.useCallback(() => {
@@ -199,6 +206,33 @@ function Create() {
     }
   };
 
+  const handleGoLiveMux = async () => {
+    setMuxLoading(true);
+    setMuxError(null);
+    try {
+      if (!authToken) throw new Error("Not authenticated");
+      const token = `Bearer ${authToken}`;
+      const res = await fetch("https://5e6ffe7f3715.ngrok-free.app/api/streams/mux", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": token,
+        },
+        body: JSON.stringify({ title: "My MUX Stream" }),
+      });
+      if (!res.ok) throw new Error("Failed to create MUX stream");
+      const data = await res.json();
+      setMuxStreamKey(data.streamKey);
+      setMuxPlaybackId(data.muxPlaybackId);
+      setMuxStreamId(data.muxStreamId);
+      setShowCamera(false);
+    } catch (e: any) {
+      setMuxError(e.message || "Unknown error");
+    } finally {
+      setMuxLoading(false);
+    }
+  };
+
   return (
     <SafeAreaView style={{ flex: 1, height: "70%" }}>
       <Modal
@@ -267,10 +301,7 @@ function Create() {
                 width: 180,
                 alignItems: "center",
               }}
-              onPress={() => {
-                setShowModal(false);
-                setShowCamera(true);
-              }}
+              onPress={handleGoLiveMux}
             >
               <Text style={{ color: "#fff", fontWeight: "bold", fontSize: 18 }}>
                 Go Live
@@ -300,6 +331,22 @@ function Create() {
         onHide={() => setShowSuccessToast(false)}
         top={70}
       />
+      {muxStreamKey && (
+        <View style={{ padding: 24, alignItems: 'center' }}>
+          <Text style={{ color: '#fff', fontSize: 18, fontWeight: 'bold', marginBottom: 8 }}>MUX Stream Created!</Text>
+          <Text style={{ color: '#fff', marginBottom: 4 }}>RTMP URL:</Text>
+          <Text selectable style={{ color: '#00e', marginBottom: 8 }}>rtmps://global-live.mux.com:443/app</Text>
+          <Text style={{ color: '#fff', marginBottom: 4 }}>Stream Key:</Text>
+          <Text selectable style={{ color: '#00e', marginBottom: 8 }}>{muxStreamKey}</Text>
+          <Text style={{ color: '#fff', marginBottom: 4 }}>Playback HLS URL:</Text>
+          <Text selectable style={{ color: '#00e', marginBottom: 8 }}>https://stream.mux.com/{muxPlaybackId}.m3u8</Text>
+          <Text style={{ color: '#fff', marginTop: 12, fontSize: 16 }}>
+            Use a compatible RTMP app or dev client to push your camera stream to the above RTMP URL and stream key.
+          </Text>
+        </View>
+      )}
+      {muxLoading && <ActivityIndicator size="large" color="#fff" style={{ marginTop: 24 }} />}
+      {muxError && <Text style={{ color: 'red', marginTop: 12 }}>{muxError}</Text>}
       <View style={styles.container}>
         {isFocused && permission.granted && showCamera && (
           <CameraView style={styles.camera} facing={facing}>

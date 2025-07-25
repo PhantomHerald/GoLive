@@ -48,6 +48,7 @@
     "formik": "^2.4.6",
     "lucide": "^0.513.0",
     "lucide-react-native": "^0.513.0",
+    "moti": "^0.30.0",
     "react": "19.0.0",
     "react-dom": "19.0.0",
     "react-native": "0.79.5",

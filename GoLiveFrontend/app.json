@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "GoLive",
-    "slug": "GoLive",
+    "name": "goLive",
+    "slug": "goLive",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/GoLive.png",

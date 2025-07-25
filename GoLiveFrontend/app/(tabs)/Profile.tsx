@@ -355,7 +355,7 @@ export default function ProfileScreen() {
               style={[
                 styles.buttonContainer,
                 {
-                  backgroundColor: Colors.primary.dark,
+                  backgroundColor: Colors.primary.main,
                   borderRadius: 8,
                   padding: 10,
                   marginRight: 8,

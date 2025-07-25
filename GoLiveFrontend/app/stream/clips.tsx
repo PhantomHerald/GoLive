@@ -221,7 +221,7 @@ export default function ClipsScreen({ paused = false }: { paused?: boolean }) {
           <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
       <Video
               ref={(ref) => { videoRefs.current[index] = ref as any; }}
-              source={{ uri: item.uri }}
+        source={{ uri: item.uri }}
               style={{ width: '100%', height: CLIP_HEIGHT+40 }}
         resizeMode={resizeMode}
               shouldPlay={isPlaying && index === viewableIndex && !paused}
