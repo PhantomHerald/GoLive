@@ -15,7 +15,8 @@ const { width, height } = Dimensions.get("window");
 const TAB_BAR_HEIGHT = 70;
 const VISIBLE_HEIGHT = height-TAB_BAR_HEIGHT;
 
-export default function LiveStreamApp() {
+const LiveStreamApp: React.FC = () =>  {
+
   const { token: authToken } = useAuth();
   // Fetch all live streams from backend
   const [liveStreams, setLiveStreams] = useState<any[]>([]);
@@ -278,6 +279,47 @@ export default function LiveStreamApp() {
           </TouchableWithoutFeedback>
         </Modal>
       </View>
+    );
+  };
+
+  // Main render: show loading, error, or FlatList of streams
+  if (loadingStreams) {
+    return (
+      <SafeAreaView style={{ flex: 1, backgroundColor: "#000", justifyContent: "center", alignItems: "center" }}>
+        <ActivityIndicator size={48} color="#006eff" />
+        <Text style={{ color: "#fff", marginTop: 12, fontSize: 18 }}>Loading live streams...</Text>
+      </SafeAreaView>
+    );
+  }
+
+  if (error) {
+    return (
+      <SafeAreaView style={{ flex: 1, backgroundColor: "#000", justifyContent: "center", alignItems: "center" }}>
+        <Text style={{ color: "#ff4d4f", fontSize: 18 }}>{error}</Text>
+      </SafeAreaView>
+    );
+  }
+
+  return (
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#000" }}>
+      <FlatList
+        data={liveStreams}
+        keyExtractor={(item) => item.id}
+        renderItem={renderStream}
+        pagingEnabled
+        horizontal={false}
+        showsVerticalScrollIndicator={false}
+        snapToInterval={VISIBLE_HEIGHT}
+        decelerationRate="fast"
+        onViewableItemsChanged={onViewableItemsChanged}
+        viewabilityConfig={viewabilityConfig}
+        getItemLayout={(_, index) => ({
+          length: VISIBLE_HEIGHT,
+          offset: VISIBLE_HEIGHT * index,
+          index,
+        })}
+      />
+    </SafeAreaView>
   );
 }
 
@@ -435,5 +477,5 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 10,
   },
-}
-)};
+});
+export default LiveStreamApp;
