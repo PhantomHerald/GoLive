@@ -25,15 +25,32 @@ const LiveStreamApp: React.FC = () =>  {
 
   useEffect(() => {
     setLoadingStreams(true);
-    fetch("https://a5aadd488c6e.ngrok-free.app/api/streams/live"/*, {
+    console.log('🔄 Fetching live streams from:', "https://def24ff5b820.ngrok-free.app/api/streams/live");
+    
+    fetch("https://def24ff5b820.ngrok-free.app/api/streams/live"/*, {
       headers: authToken ? { Authorization: `Bearer ${authToken}` } : undefined
     }*/)
-      .then(res => res.json())
+      .then(res => {
+        console.log('📡 Response status:', res.status);
+        return res.json();
+      })
       .then(data => {
+        console.log('📊 Live streams data received:', data);
+        console.log('📊 Number of streams:', data.length);
+        if (data.length > 0) {
+          console.log('📊 First stream details:', {
+            id: data[0].id,
+            title: data[0].title,
+            isLive: data[0].isLive,
+            muxPlaybackId: data[0].muxPlaybackId,
+            streamer: data[0].streamer
+          });
+        }
         setLiveStreams(data);
         setLoadingStreams(false);
       })
       .catch(err => {
+        console.error('❌ Error fetching live streams:', err);
         setError("Failed to load live streams");
         setLoadingStreams(false);
       });
@@ -91,6 +108,20 @@ const LiveStreamApp: React.FC = () =>  {
     const viewersCount = item.viewers ? formatFollowers(item.viewers) : "0";
     const videoUrl = item.muxPlaybackId ? `https://stream.mux.com/${item.muxPlaybackId}.m3u8` : null;
     const resizeMode = resizeModes[item.id] || ResizeMode.COVER;
+    
+    // Debug logging
+    console.log('🔍 Stream Debug:', {
+      streamId: item.id,
+      streamer: item.streamer.username,
+      isLive: item.isLive,
+      muxPlaybackId: item.muxPlaybackId,
+      videoUrl: videoUrl,
+      viewableIndex: viewableIndex,
+      currentIndex: index,
+      shouldPlay: index === viewableIndex && !paused,
+      hasVideoError: videoError[item.id]
+    });
+    
     return (
       <View style={[styles.streamContainer, { height: VISIBLE_HEIGHT, top: 0, left: 0, right: 0, bottom: 0 }]}> 
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
@@ -103,13 +134,24 @@ const LiveStreamApp: React.FC = () =>  {
               isMuted={isMuted}
               isLooping
               onLoadStart={() => {
+                console.log('🎬 Video load started for stream:', item.id);
                 if (!paused && index === viewableIndex) setLoading(true);
               }}
               onReadyForDisplay={() => {
+                console.log('✅ Video ready for display for stream:', item.id);
                 setLoading(false);
               }}
               onPlaybackStatusUpdate={(status) => {
-                if (!status.isLoaded) return;
+                if (!status.isLoaded) {
+                  console.log('❌ Video not loaded for stream:', item.id, status);
+                  return;
+                }
+                console.log('📺 Playback status for stream:', item.id, {
+                  isPlaying: status.isPlaying,
+                  isBuffering: status.isBuffering,
+                  position: status.positionMillis,
+                  duration: status.durationMillis
+                });
                 if (status.isBuffering && !paused && index === viewableIndex) {
                   setLoading(true);
                 } else if (status.isPlaying && !status.isBuffering) {
@@ -118,7 +160,10 @@ const LiveStreamApp: React.FC = () =>  {
                 if (status.didJustFinish) setLoading(false);
                 if (!status.isPlaying) setLoading(false);
               }}
-              onError={() => setVideoError(prev => ({ ...prev, [item.id]: true }))}
+              onError={(error) => {
+                console.error('❌ Video error for stream:', item.id, error);
+                setVideoError(prev => ({ ...prev, [item.id]: true }));
+              }}
             />
           ) : videoUrl ? (
             <WebView
@@ -146,7 +191,17 @@ const LiveStreamApp: React.FC = () =>  {
               originWhitelist={['*']}
             />
           ) : (
-            <Text style={{ color: '#fff', textAlign: 'center', marginTop: 40 }}>Unable to play this stream.</Text>
+            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#000' }}>
+              <Text style={{ color: '#fff', textAlign: 'center', marginTop: 40, fontSize: 16 }}>
+                No video URL available for this stream.
+              </Text>
+              <Text style={{ color: '#666', textAlign: 'center', marginTop: 10, fontSize: 14 }}>
+                Stream ID: {item.id}
+              </Text>
+              <Text style={{ color: '#666', textAlign: 'center', marginTop: 5, fontSize: 14 }}>
+                Mux ID: {item.muxPlaybackId || 'None'}
+              </Text>
+            </View>
           )}
           {loading && !paused && index === viewableIndex && (
             <View style={{ position: 'absolute', top: '50%', left: '50%', transform: [{ translateX: -35 }, { translateY: -36 }], opacity: 0.5 }}>

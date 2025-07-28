@@ -3,6 +3,7 @@ package com.GoLive.GoLiveBackend.entities;
 import jakarta.persistence.*;
 import java.sql.Timestamp;
 import java.util.UUID;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @Entity
 @Table(name = "streams")
@@ -47,6 +48,7 @@ public class Stream {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
+    @JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
     private User streamer;
 
     @Column(name = "created_at", nullable = false, updatable = false)
