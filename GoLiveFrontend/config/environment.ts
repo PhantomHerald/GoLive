@@ -61,7 +61,7 @@ const getMobileEnvironment = (): Environment => {
     return {
       ...env,
       // Using your computer's IP address for hotspot connection
-      API_BASE_URL: 'https://5e6ffe7f3715.ngrok-free.app',
+      API_BASE_URL: 'https://a5aadd488c6e.ngrok-free.app',
     };
   }
   

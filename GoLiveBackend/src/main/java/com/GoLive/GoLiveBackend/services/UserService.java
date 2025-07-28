@@ -102,6 +102,13 @@ public class UserService {
 
         logger.debug("User found: {}", user.getUsername());
 
+        // Fix displayName if it's null (for existing users)
+        if (user.getDisplayName() == null || user.getDisplayName().trim().isEmpty()) {
+            user.setDisplayName(user.getUsername());
+            userRepository.save(user);
+            logger.info("Fixed null displayName for user: {}", user.getUsername());
+        }
+
         // Verify password
         if (!passwordEncoder.matches(password, user.getPassword())) {
             logger.warn("Invalid password for user: {}", identifier);

@@ -25,7 +25,7 @@ const LiveStreamApp: React.FC = () =>  {
 
   useEffect(() => {
     setLoadingStreams(true);
-    fetch("https://5e6ffe7f3715.ngrok-free.app/api/streams/live"/*, {
+    fetch("https://a5aadd488c6e.ngrok-free.app/api/streams/live"/*, {
       headers: authToken ? { Authorization: `Bearer ${authToken}` } : undefined
     }*/)
       .then(res => res.json())

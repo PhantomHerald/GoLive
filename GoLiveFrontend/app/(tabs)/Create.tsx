@@ -212,7 +212,7 @@ function Create() {
     try {
       if (!authToken) throw new Error("Not authenticated");
       const token = `Bearer ${authToken}`;
-      const res = await fetch("https://5e6ffe7f3715.ngrok-free.app/api/streams/mux", {
+      const res = await fetch("https://a5aadd488c6e.ngrok-free.app/api/streams/mux", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

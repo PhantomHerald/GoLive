@@ -1,5 +1,6 @@
 import api from './api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { environment } from '../config/environment';
 
 export interface AuthRequest {
   username?: string;
@@ -46,12 +47,23 @@ class AuthService {
   // Login with email or username
   async login(request: AuthRequest): Promise<AuthResponse> {
     try {
+      console.log('🔐 Attempting login with:', { email: request.email, username: request.username });
+      console.log('🌐 API Base URL:', environment.API_BASE_URL);
+      
       const response = await api.post<AuthResponse>('/api/auth/login', request);
+      console.log('✅ Login response:', response.data);
+      
       if (response.data.token) {
         await this.storeAuthToken(response.data.token);
       }
       return response.data;
     } catch (error: any) {
+      console.error('❌ Login error details:', {
+        message: error.message,
+        status: error.response?.status,
+        data: error.response?.data,
+        config: error.config
+      });
       throw new Error(error.response?.data?.message || 'Login failed');
     }
   }
