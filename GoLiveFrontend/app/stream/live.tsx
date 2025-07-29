@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Dimensions, FlatList, Image, StyleSheet, Text, View, TouchableOpacity, ActivityIndicator, Modal, TouchableWithoutFeedback } from "react-native";
+import { Dimensions, FlatList, Image, StyleSheet, Text, View, TouchableOpacity, ActivityIndicator, Modal, TouchableWithoutFeedback, RefreshControl, ScrollView } from "react-native";
 import { Video, ResizeMode } from "expo-av";
 import { LinearGradient } from "expo-linear-gradient";
 import { MaterialCommunityIcons, Feather } from "@expo/vector-icons";
@@ -10,6 +10,7 @@ import { formatFollowers } from "@/utils/formatFollowers";
 import { useAuth } from "@/hooks/useAuth";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { WebView } from 'react-native-webview';
+import { environment } from "@/config/environment";
 
 const { width, height } = Dimensions.get("window");
 const TAB_BAR_HEIGHT = 70;
@@ -21,39 +22,54 @@ const LiveStreamApp: React.FC = () =>  {
   // Fetch all live streams from backend
   const [liveStreams, setLiveStreams] = useState<any[]>([]);
   const [loadingStreams, setLoadingStreams] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
+  const fetchLiveStreams = async (isRefresh = false) => {
+    if (isRefresh) {
+      setRefreshing(true);
+    } else {
     setLoadingStreams(true);
-    console.log('🔄 Fetching live streams from:', "https://def24ff5b820.ngrok-free.app/api/streams/live");
+    }
     
-    fetch("https://def24ff5b820.ngrok-free.app/api/streams/live"/*, {
+    const apiUrl = `${environment.API_BASE_URL}/api/streams/live`;
+    console.log('🔄 Fetching live streams from:', apiUrl);
+    
+    try {
+      const res = await fetch(apiUrl/*, {
       headers: authToken ? { Authorization: `Bearer ${authToken}` } : undefined
-    }*/)
-      .then(res => {
-        console.log('📡 Response status:', res.status);
-        return res.json();
-      })
-      .then(data => {
-        console.log('📊 Live streams data received:', data);
-        console.log('📊 Number of streams:', data.length);
-        if (data.length > 0) {
-          console.log('📊 First stream details:', {
-            id: data[0].id,
-            title: data[0].title,
-            isLive: data[0].isLive,
-            muxPlaybackId: data[0].muxPlaybackId,
-            streamer: data[0].streamer
-          });
-        }
+      }*/);
+      console.log('📡 Response status:', res.status);
+      const data = await res.json();
+      console.log('📊 Live streams data received:', data);
+      console.log('📊 Number of streams:', data.length);
+      if (data.length > 0) {
+        console.log('📊 First stream details:', {
+          id: data[0].id,
+          title: data[0].title,
+          isLive: data[0].isLive,
+          muxPlaybackId: data[0].muxPlaybackId,
+          streamer: data[0].streamer
+        });
+      }
         setLiveStreams(data);
-        setLoadingStreams(false);
-      })
-      .catch(err => {
-        console.error('❌ Error fetching live streams:', err);
+      setError(null);
+    } catch (err) {
+      console.error('❌ Error fetching live streams:', err);
         setError("Failed to load live streams");
+    } finally {
         setLoadingStreams(false);
-      });
+      setRefreshing(false);
+    }
+  };
+
+  const onRefresh = () => {
+    setLoadingStreams(true);
+    fetchLiveStreams(true);
+  };
+
+  useEffect(() => {
+    fetchLiveStreams();
   }, [authToken]);
 
   // Track following state per stream id
@@ -355,6 +371,30 @@ const LiveStreamApp: React.FC = () =>  {
     );
   }
 
+  // Show "no live streams" state when there are no streams
+  if (!liveStreams || liveStreams.length === 0) {
+    return (
+      <SafeAreaView style={{ flex: 1, backgroundColor: "#000" }}>
+        <ScrollView
+          contentContainerStyle={{ flex: 1, justifyContent: "center", alignItems: "center" }}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={["#006eff"]} />
+          }
+        >
+          <View style={styles.noStreamsContainer}>
+            <Image 
+              source={require("@/assets/images/nolivesimg.png")} 
+              style={styles.noStreamsImage}
+              resizeMode="contain"
+            />
+            <Text style={styles.noStreamsTitle}>No one is live right now</Text>
+            <Text style={styles.noStreamsSubtitle}>Come back later to see live streams!</Text>
+          </View>
+        </ScrollView>
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#000" }}>
       <FlatList
@@ -373,6 +413,9 @@ const LiveStreamApp: React.FC = () =>  {
           offset: VISIBLE_HEIGHT * index,
           index,
         })}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={["#006eff"]} />
+        }
       />
     </SafeAreaView>
   );
@@ -389,6 +432,30 @@ const styles = StyleSheet.create({
     marginBottom: 0, // ensure no vertical margin
     paddingTop: 0, // ensure no vertical padding
     paddingBottom: 0, // ensure no vertical padding
+  },
+  noStreamsContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 40,
+  },
+  noStreamsImage: {
+    width: 200,
+    height: 200,
+    marginBottom: 24,
+  },
+  noStreamsTitle: {
+    color: "#fff",
+    fontSize: 24,
+    fontWeight: "bold",
+    textAlign: "center",
+    marginBottom: 12,
+  },
+  noStreamsSubtitle: {
+    color: "#999",
+    fontSize: 16,
+    textAlign: "center",
+    lineHeight: 22,
   },
   video: {
     width: width,

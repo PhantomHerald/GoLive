@@ -8,6 +8,7 @@ import { formatFollowers } from "@/utils/formatFollowers";
 import { Video, ResizeMode } from "expo-av";
 import { Feather } from "@expo/vector-icons";
 import { useAuth } from "@/hooks/useAuth";
+import { environment } from "@/config/environment";
 
 const { width } = Dimensions.get("window");
 
@@ -43,7 +44,7 @@ export default function StreamScreen() {
   useEffect(() => {
     if (!id || !user?.id) return;
     const now = new Date();
-    fetch('https://your-backend.com/api/stream-events/on-join', {
+    fetch(`${environment.API_BASE_URL}/api/stream-events/on-join`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

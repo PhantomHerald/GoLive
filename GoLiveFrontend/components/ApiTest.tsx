@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, StyleSheet, Alert, ScrollView } from 'rea
 import authService from '../services/authService';
 import streamService from '../services/streamService';
 import userService from '../services/userService';
+import { environment } from '../config/environment';
 
 export default function ApiTest() {
   const [testResults, setTestResults] = useState<string[]>([]);
@@ -117,7 +118,7 @@ export default function ApiTest() {
     try {
       addResult(`🔄 Testing basic connection to backend...`);
       // Try a simple fetch to see if the server is reachable
-      const response = await fetch('http://100.66.109.16:8080/api/auth/test');
+      const response = await fetch(`${environment.API_BASE_URL}/api/auth/test`);
       const text = await response.text();
       addResult(`✅ Connection test: ${text}`);
       addResult(`   Status: ${response.status}`);

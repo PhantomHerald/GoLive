@@ -21,6 +21,7 @@ import SuccessToast from "@/components/SuccessToast";
 import { useIsFocused, useFocusEffect } from "@react-navigation/native";
 import { router } from "expo-router";
 import { useAuth } from "@/hooks/useAuth";
+import { environment } from "@/config/environment";
 
 const styles = StyleSheet.create({
   container: {
@@ -212,7 +213,7 @@ function Create() {
     try {
       if (!authToken) throw new Error("Not authenticated");
       const token = `Bearer ${authToken}`;
-      const res = await fetch("https://def24ff5b820.ngrok-free.app/api/streams/mux", {
+      const res = await fetch(`${environment.API_BASE_URL}/api/streams/mux`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
