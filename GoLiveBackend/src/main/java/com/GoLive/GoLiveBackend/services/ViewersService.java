@@ -12,6 +12,8 @@ import java.util.Optional;
 
 @Service
 public class ViewersService {
+    private static final Logger logger = LoggerFactory.getLogger(ViewersService.class);
+    
     @Autowired
     private ViewersRepository viewersRepository;
 
@@ -29,5 +31,12 @@ public class ViewersService {
 
     public void deleteViewer(Integer id) {
         viewersRepository.deleteById(id);
+    }
+
+    public Long getViewerCount(Long streamId) {
+        logger.info("Getting viewer count for stream: {}", streamId);
+        Long count = viewersRepository.countByStreamId(streamId);
+        logger.info("Stream {} has {} viewers", streamId, count);
+        return count;
     }
 } 

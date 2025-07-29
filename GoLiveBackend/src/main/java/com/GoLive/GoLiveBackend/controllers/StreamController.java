@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.*;
 import com.GoLive.GoLiveBackend.services.StreamService;
 import com.GoLive.GoLiveBackend.entities.Stream;
 import com.GoLive.GoLiveBackend.dtos.StreamRequest;
+import com.GoLive.GoLiveBackend.dtos.StreamDTO;
+import com.GoLive.GoLiveBackend.controllers.WebSocketController;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 import java.util.Base64;
@@ -23,13 +25,16 @@ public class StreamController {
     @Autowired
     private StreamService streamService;
 
+    @Autowired
+    private WebSocketController webSocketController;
+
     @Value("${mux.accessToken:9d2072eb-88d1-413a-bb0b-300852912600}")
     private String muxAccessToken;
     @Value("${mux.secretKey:k0HUYhgUZX8UBFC/8Ke5nxVhyfEstAJs1qqJNNUeOksj7P49hvZgknvo5f2luFoKfqzL1lrEfGc}")
     private String muxSecretKey;
 
     @GetMapping
-    public List<Stream> getAllStreams() {
+    public List<StreamDTO> getAllStreams() {
         return streamService.getLiveStreams();
     }
 
@@ -54,7 +59,7 @@ public class StreamController {
     }
 
     @GetMapping("/live")
-    public List<Stream> getLiveStreams() {
+    public List<StreamDTO> getLiveStreams() {
         return streamService.getLiveStreams();
     }
 
@@ -94,6 +99,10 @@ public class StreamController {
     public ResponseEntity<Stream> goLive(@PathVariable Long id, @RequestHeader("Authorization") String token) {
         try {
             Stream stream = streamService.goLive(id, token);
+
+            // Send WebSocket notification that stream started
+            webSocketController.notifyStreamStarted(stream);
+
             return ResponseEntity.ok(stream);
         } catch (Exception e) {
             return ResponseEntity.badRequest().build();
@@ -104,6 +113,10 @@ public class StreamController {
     public ResponseEntity<Stream> endStream(@PathVariable Long id, @RequestHeader("Authorization") String token) {
         try {
             Stream stream = streamService.endStream(id, token);
+
+            // Send WebSocket notification that stream ended
+            webSocketController.notifyStreamEnded(stream);
+
             return ResponseEntity.ok(stream);
         } catch (Exception e) {
             return ResponseEntity.badRequest().build();
@@ -158,18 +171,17 @@ public class StreamController {
                     stream.setCategory(body.get("category"));
             }
             // Get user from token
-            com.GoLive.GoLiveBackend.entities.User user = streamService.userService
-                    .validateToken(token.startsWith("Bearer ") ? token.substring(7) : token);
+            com.GoLive.GoLiveBackend.entities.User user = streamService.getUserFromToken(token);
             stream.setStreamer(user);
             stream.setLive(false);
-            streamService.streamRepository.save(stream);
+            Stream savedStream = streamService.saveStream(stream);
 
             // 3. Return credentials
             return ResponseEntity.ok(Map.of(
                     "streamKey", streamKey,
                     "muxStreamId", muxStreamId,
                     "muxPlaybackId", muxPlaybackId,
-                    "streamId", stream.getId()));
+                    "streamId", savedStream.getId()));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Failed to create MUX stream: " + e.getMessage());
@@ -184,17 +196,20 @@ public class StreamController {
             Map data = (Map) payload.get("data");
             String muxStreamId = (String) data.get("id");
             String eventType = (String) payload.get("type");
-            com.GoLive.GoLiveBackend.entities.Stream stream = streamService.streamRepository
-                    .findByMuxStreamId(muxStreamId).orElse(null);
+            com.GoLive.GoLiveBackend.entities.Stream stream = streamService.findStreamByMuxStreamId(muxStreamId);
             if (stream != null) {
                 switch (eventType) {
                     case "video.live_stream.connected":
                         stream.setMuxStatus("active");
                         stream.setLive(true);
+                        // Send WebSocket notification that stream started
+                        webSocketController.notifyStreamStarted(stream);
                         break;
                     case "video.live_stream.disconnected":
                         stream.setMuxStatus("idle");
                         stream.setLive(false);
+                        // Send WebSocket notification that stream ended
+                        webSocketController.notifyStreamEnded(stream);
                         break;
                     case "video.live_stream.recording":
                         stream.setMuxStatus("recording");
@@ -202,13 +217,17 @@ public class StreamController {
                     case "video.live_stream.idle":
                         stream.setMuxStatus("idle");
                         stream.setLive(false);
+                        // Send WebSocket notification that stream ended
+                        webSocketController.notifyStreamEnded(stream);
                         break;
                     case "video.live_stream.completed":
                         stream.setMuxStatus("completed");
                         stream.setLive(false);
+                        // Send WebSocket notification that stream ended
+                        webSocketController.notifyStreamEnded(stream);
                         break;
                 }
-                streamService.streamRepository.save(stream);
+                streamService.saveStream(stream);
             }
             return ResponseEntity.ok("ok");
         } catch (Exception e) {

@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Dimensions, FlatList, Image, StyleSheet, Text, View, TouchableOpacity, ActivityIndicator, Modal, TouchableWithoutFeedback, RefreshControl, ScrollView } from "react-native";
+import { Dimensions, FlatList, Image, StyleSheet, Text, View, TouchableOpacity, ActivityIndicator, Modal, TouchableWithoutFeedback, RefreshControl, ScrollView, Alert } from "react-native";
 import { Video, ResizeMode } from "expo-av";
 import { LinearGradient } from "expo-linear-gradient";
 import { MaterialCommunityIcons, Feather } from "@expo/vector-icons";
@@ -55,7 +55,46 @@ const LiveStreamApp: React.FC = () =>  {
           streamer: data[0].streamer
         });
       }
-        setLiveStreams(data);
+      
+      // Check if streams changed (new stream started or ended)
+      const currentStreamCount = data.length;
+      const previousStreamCount = lastStreamCount;
+      
+      if (currentStreamCount > previousStreamCount) {
+        // New stream(s) started
+        console.log('🎉 New stream(s) detected!');
+        const newStreams = data.filter((stream: any) => 
+          !liveStreams.some(existing => existing.id === stream.id)
+        );
+        
+        if (newStreams.length > 0) {
+          // Show notification for the first new stream
+          const newStream = newStreams[0];
+          notificationService.showStreamStartNotification(
+            newStream.streamer.displayName || newStream.streamer.username,
+            newStream.title
+          );
+        }
+      } else if (currentStreamCount < previousStreamCount) {
+        // Stream(s) ended
+        console.log('🔚 Stream(s) ended');
+        const endedStreams = liveStreams.filter(existing => 
+          !data.some((stream: any) => stream.id === existing.id)
+        );
+        
+        if (endedStreams.length > 0) {
+          // Show notification for the first ended stream
+          const endedStream = endedStreams[0];
+          notificationService.showStreamEndNotification({
+            streamerUsername: endedStream.streamer.username,
+            streamerDisplayName: endedStream.streamer.displayName || endedStream.streamer.username,
+            title: endedStream.title
+          });
+        }
+      }
+      
+      setLiveStreams(data);
+      setLastStreamCount(currentStreamCount);
       setError(null);
     } catch (err) {
       console.error('❌ Error fetching live streams:', err);
@@ -73,6 +112,9 @@ const LiveStreamApp: React.FC = () =>  {
 
   // WebSocket connection and real-time updates
   useEffect(() => {
+    // Initialize notification service
+    notificationService.initialize();
+    
     // Connect to WebSocket for real-time updates
     websocketService.connect();
     
@@ -87,14 +129,14 @@ const LiveStreamApp: React.FC = () =>  {
         
         // Show notification for new stream
         notificationService.showStreamStartNotification(
-          data.streamerDisplayName,
+          data.streamerDisplayName || data.streamerUsername,
           data.title
         );
       } else if (data.type === 'stream_ended') {
         // Show notification when stream ends
         notificationService.showStreamEndNotification({
           streamerUsername: data.streamerUsername,
-          streamerDisplayName: data.streamerDisplayName,
+          streamerDisplayName: data.streamerDisplayName || data.streamerUsername,
           title: data.title
         });
         
@@ -629,7 +671,6 @@ const styles = StyleSheet.create({
   },
   titleLive: {
     color: "#fff",
-    fontWeight: "bold",
     fontSize: 18,
     marginBottom: 2,
   },
@@ -682,4 +723,4 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
   },
 });
-export default LiveStreamApp;
+export default LiveStreamApp; 

@@ -5,27 +5,35 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.GoLive.GoLiveBackend.entities.Stream;
+import com.GoLive.GoLiveBackend.entities.User;
 import com.GoLive.GoLiveBackend.repositories.StreamRepository;
 import com.GoLive.GoLiveBackend.dtos.StreamRequest;
-import com.GoLive.GoLiveBackend.entities.User;
+import com.GoLive.GoLiveBackend.dtos.StreamDTO;
 
 import java.sql.Timestamp;
 import java.util.List;
+import java.util.stream.Collectors;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class StreamService {
-
     private static final Logger logger = LoggerFactory.getLogger(StreamService.class);
 
     @Autowired
-    public StreamRepository streamRepository;
+    private StreamRepository streamRepository;
 
     @Autowired
-    public UserService userService;
+    private UserService userService;
 
     @Autowired
     private NotificationService notificationService;
+
+    @Autowired
+    private ViewersService viewersService;
+
+    @Autowired
+    private FollowService followService;
 
     public Stream createStream(StreamRequest request, String token) throws Exception {
         logger.info("Creating stream for user with token");
@@ -111,13 +119,18 @@ public class StreamService {
         return updatedStream;
     }
 
-    public List<Stream> getLiveStreams() {
+    public List<StreamDTO> getLiveStreams() {
         logger.info("Fetching all live streams");
         List<Stream> liveStreams = streamRepository.findByIsLiveTrue();
         // Only return streams that have a muxPlaybackId (i.e., are Mux streams)
         liveStreams.removeIf(s -> s.getMuxPlaybackId() == null || s.getMuxPlaybackId().isEmpty());
         logger.info("Found {} live Mux streams", liveStreams.size());
-        return liveStreams;
+        
+        return liveStreams.stream().map(stream -> {
+            Long viewerCount = viewersService.getViewerCount(stream.getId());
+            Long followerCount = followService.getFollowersCount(stream.getStreamer().getId());
+            return new StreamDTO(stream, viewerCount, followerCount);
+        }).collect(Collectors.toList());
     }
 
     public Stream getStreamById(Long streamId) throws Exception {
@@ -226,13 +239,24 @@ public class StreamService {
             throw new RuntimeException("Unauthorized: You can only regenerate keys for your own streams");
         }
 
-        // Generate new stream key
-        String newStreamKey = java.util.UUID.randomUUID().toString().replace("-", "");
+        String newStreamKey = UUID.randomUUID().toString().replace("-", "");
         stream.setStreamKey(newStreamKey);
 
-        streamRepository.save(stream);
-        logger.info("New stream key generated for stream: {}", streamId);
+        Stream updatedStream = streamRepository.save(stream);
+        logger.info("New stream key generated successfully: {}", newStreamKey);
 
         return newStreamKey;
+    }
+
+    public User getUserFromToken(String token) throws Exception {
+        return userService.validateToken(token.startsWith("Bearer ") ? token.substring(7) : token);
+    }
+
+    public Stream saveStream(Stream stream) {
+        return streamRepository.save(stream);
+    }
+
+    public Stream findStreamByMuxStreamId(String muxStreamId) {
+        return streamRepository.findByMuxStreamId(muxStreamId).orElse(null);
     }
 }
