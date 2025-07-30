@@ -22,6 +22,7 @@ import { useRouter } from "expo-router";
 import { MoreVertical } from "lucide-react-native";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import uploadService, { VideoInfo } from "@/services/uploadService";
+import { CLIPS } from "@/data/mockdata";
 
 const TAB_BAR_HEIGHT = 70;
 const { width, height: SCREEN_HEIGHT } = Dimensions.get("window");
@@ -97,18 +98,82 @@ export default function ClipsS3Screen({ paused = false }: { paused?: boolean }) 
     
     try {
       const result = await uploadService.getAllVideos();
-      if (result.success && result.videos) {
-        setVideos(result.videos);
-        // Initialize likes and comments for new videos
-        setLikes(result.videos.map(() => Math.floor(Math.random() * 100) + 10));
-        setLiked(result.videos.map(() => false));
-        setCommentsData(result.videos.map(() => []));
+      if (result.success && result.videos && result.videos.length > 0) {
+        // Use S3 videos but with mock metadata
+        const videosWithMockData = result.videos.map((video, index) => {
+          const mockClip = CLIPS[index % CLIPS.length]; // Cycle through mock data
+          return {
+            ...video,
+            title: mockClip.title,
+            game: mockClip.game,
+            tags: mockClip.tags,
+            streamer: {
+              avatar: mockClip.streamer.avatar,
+              name: mockClip.streamer.name,
+              verified: mockClip.streamer.verified,
+            },
+            likes: mockClip.likes,
+            comments: mockClip.comments,
+          };
+        });
+        
+        setVideos(videosWithMockData);
+        setLikes(videosWithMockData.map(() => Math.floor(Math.random() * 100) + 10));
+        setLiked(videosWithMockData.map(() => false));
+        setCommentsData(videosWithMockData.map(() => []));
         setError(null);
+        console.log('📹 Using S3 videos with mock metadata:', videosWithMockData.length);
       } else {
-        setError(result.message || 'Failed to fetch videos');
+        // Fall back to mock data when no S3 videos
+        console.log('📹 No S3 videos found, using mock data');
+        const mockVideos: VideoInfo[] = CLIPS.map((clip, index) => ({
+          key: `mock-${clip.id}`,
+          presignedUrl: clip.uri,
+          size: Math.floor(Math.random() * 50000000) + 10000000, // Random file size
+          lastModified: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString(), // Random date within last 30 days
+          title: clip.title,
+          game: clip.game,
+          tags: clip.tags,
+          streamer: {
+            avatar: clip.streamer.avatar,
+            name: clip.streamer.name,
+            verified: clip.streamer.verified,
+          },
+          likes: clip.likes,
+          comments: clip.comments,
+        }));
+        
+        setVideos(mockVideos);
+        setLikes(mockVideos.map(() => Math.floor(Math.random() * 100) + 10));
+        setLiked(mockVideos.map(() => false));
+        setCommentsData(mockVideos.map(() => []));
+        setError(null);
       }
     } catch (err) {
-      setError('Failed to fetch videos');
+      // Fall back to mock data on error
+      console.log('📹 Error fetching S3 videos, using mock data');
+              const mockVideos: VideoInfo[] = CLIPS.map((clip, index) => ({
+          key: `mock-${clip.id}`,
+          presignedUrl: clip.uri,
+          size: Math.floor(Math.random() * 50000000) + 10000000,
+          lastModified: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString(),
+          title: clip.title,
+          game: clip.game,
+          tags: clip.tags,
+          streamer: {
+            avatar: clip.streamer.avatar,
+            name: clip.streamer.name,
+            verified: clip.streamer.verified,
+          },
+          likes: clip.likes,
+          comments: clip.comments,
+        }));
+      
+      setVideos(mockVideos);
+      setLikes(mockVideos.map(() => Math.floor(Math.random() * 100) + 10));
+      setLiked(mockVideos.map(() => false));
+      setCommentsData(mockVideos.map(() => []));
+      setError(null);
       console.error('Error fetching videos:', err);
     } finally {
       setLoadingVideos(false);
@@ -277,6 +342,10 @@ export default function ClipsS3Screen({ paused = false }: { paused?: boolean }) 
   const renderItem = ({ item, index }: { item: VideoInfo; index: number; }) => {
     const fileName = item.key.split('/').pop() || 'Video';
     const postedAgo = formatDate(item.lastModified);
+    const title = item.title || fileName;
+    const streamerName = item.streamer?.name || 'Unknown Streamer';
+    const streamerAvatar = item.streamer?.avatar || 'https://randomuser.me/api/portraits/men/1.jpg';
+    const isVerified = item.streamer?.verified || false;
     
     return (
       <View style={styles.clipContainer}>
@@ -331,9 +400,12 @@ export default function ClipsS3Screen({ paused = false }: { paused?: boolean }) 
         {/* Left info group */}
         <View style={styles.leftInfoGroup}>
           <View style={styles.streamerNameRow}>
-            <Text style={styles.streamerNameText}>S3 Video</Text>
+            <Text style={styles.streamerNameText}>{streamerName}</Text>
+            {isVerified && (
+              <MaterialCommunityIcons name="check-decagram" size={16} color="#006eff" style={{ marginLeft: 4 }} />
+            )}
           </View>
-          <Text style={styles.titleText}>{capitalizeFirst(fileName)}</Text>
+          <Text style={styles.titleText}>{title}</Text>
           <View style={styles.postedAgoContainer}>
             <Text style={styles.postedAgoText}>{postedAgo}</Text>
           </View>
@@ -345,7 +417,7 @@ export default function ClipsS3Screen({ paused = false }: { paused?: boolean }) 
         {/* Right icon group */}
         <View style={styles.rightIconGroup}>
           <TouchableOpacity style={styles.avatarBtn}>
-            <MaterialCommunityIcons name="video" size={30} color="#006eff" />
+            <Image source={{ uri: streamerAvatar }} style={styles.avatarImage} />
           </TouchableOpacity>
           <TouchableOpacity style={styles.iconButton} onPress={() => handleLike(index)}>
             {liked[index] ? (
@@ -656,6 +728,13 @@ const styles = StyleSheet.create({
     height: 60,
     borderRadius: 30,
     backgroundColor: "rgba(0,0,0,0.5)",
+  },
+  avatarImage: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    borderWidth: 2,
+    borderColor: "#006eff",
   },
   rightIconGroup: {
     position: "absolute",

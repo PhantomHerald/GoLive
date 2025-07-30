@@ -35,9 +35,11 @@ public class SecurityConfig {
                         .requestMatchers("/api/streams/**").permitAll()
                         .requestMatchers("/").permitAll()
                         .requestMatchers("/error").permitAll()
-                        .anyRequest().authenticated())
+                        .anyRequest().authenticated()
+                )
                 .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

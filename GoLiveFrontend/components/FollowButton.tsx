@@ -26,7 +26,7 @@ export default function FollowButton({
 
   // Check if current user is following the target user
   useEffect(() => {
-    if (user?.id && user.id !== targetUserId) {
+    if (user?.id && parseInt(user.id, 10) !== targetUserId) {
       checkFollowingStatus();
     } else {
       setCheckingStatus(false);
@@ -72,7 +72,7 @@ export default function FollowButton({
   };
 
   // Don't show follow button if it's the current user's profile
-  if (user?.id === targetUserId) {
+  if (user?.id && parseInt(user.id, 10) === targetUserId) {
     return null;
   }
 

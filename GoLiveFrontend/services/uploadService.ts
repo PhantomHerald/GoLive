@@ -22,6 +22,17 @@ export interface VideoInfo {
   presignedUrl: string;
   size: number;
   lastModified: string;
+  // Extended properties for mock data
+  title?: string;
+  game?: string;
+  tags?: string[];
+  streamer?: {
+    avatar: string;
+    name: string;
+    verified: boolean;
+  };
+  likes?: number;
+  comments?: any[];
 }
 
 export interface VideosResponse {

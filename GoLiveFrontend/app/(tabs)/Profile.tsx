@@ -253,6 +253,9 @@ export default function ProfileScreen() {
   const [followStats, setFollowStats] = useState({ followersCount: 0, followingCount: 0 });
   const [loadingStats, setLoadingStats] = useState(false);
 
+  // Type user as UserProfile | null for correct property access
+  const typedUser = user as UserProfile | null;
+
   useEffect(() => {
     setSettingsExpanded(false);
   }, [activeTab]);
@@ -269,7 +272,12 @@ export default function ProfileScreen() {
     
     setLoadingStats(true);
     try {
-      const result = await followService.getFollowStats(typedUser.id);
+      const userId = parseInt(typedUser.id, 10);
+      if (isNaN(userId)) {
+        console.error('Invalid user ID:', typedUser.id);
+        return;
+      }
+      const result = await followService.getFollowStats(userId);
       if (result.success && result.stats) {
         setFollowStats(result.stats);
       }
@@ -320,9 +328,6 @@ export default function ProfileScreen() {
       ]
     );
   };
-
-  // Type user as UserProfile | null for correct property access
-  const typedUser = user as UserProfile | null;
 
   return (
     <SafeAreaView
