@@ -1,4 +1,5 @@
 import ClipsScreen from "@/app/stream/clips";
+import ClipsS3Screen from "@/app/stream/clips-s3";
 import { mockFollowedChannels, mockStreams } from "@/data/mockdata";
 import { Image } from "expo-image";
 import React, { useState } from "react";
@@ -197,7 +198,7 @@ export default function Navbar({ initialTab = "Live" }: NavbarProps) {
       case "Clips":
         return (
           <View style={{ flex: 1 }}>
-            <ClipsScreen paused={!isHomeFocused || activeTab !== "Clips"} />
+            <ClipsS3Screen paused={!isHomeFocused || activeTab !== "Clips"} />
           </View>
         );
       default:

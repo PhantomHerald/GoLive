@@ -39,6 +39,7 @@ import SuccessToast from "@/components/SuccessToast";
 import { useFocusEffect } from "@react-navigation/native";
 import { useAuth } from "@/hooks/useAuth";
 import { UserProfile } from "@/services/userService";
+import followService from "@/services/followService";
 
 const TAB_BAR_HEIGHT = 48;
 
@@ -249,10 +250,35 @@ export default function ProfileScreen() {
   const { user, loading, refetchUser } = useAuth();
   const [error, setError] = useState("");
   const [settingsExpanded, setSettingsExpanded] = useState(false);
+  const [followStats, setFollowStats] = useState({ followersCount: 0, followingCount: 0 });
+  const [loadingStats, setLoadingStats] = useState(false);
 
   useEffect(() => {
     setSettingsExpanded(false);
   }, [activeTab]);
+
+  // Fetch follow statistics when user is available
+  useEffect(() => {
+    if (typedUser?.id) {
+      fetchFollowStats();
+    }
+  }, [typedUser?.id]);
+
+  const fetchFollowStats = async () => {
+    if (!typedUser?.id) return;
+    
+    setLoadingStats(true);
+    try {
+      const result = await followService.getFollowStats(typedUser.id);
+      if (result.success && result.stats) {
+        setFollowStats(result.stats);
+      }
+    } catch (error) {
+      console.error('Error fetching follow stats:', error);
+    } finally {
+      setLoadingStats(false);
+    }
+  };
 
   useFocusEffect(
     React.useCallback(() => {
@@ -338,7 +364,9 @@ export default function ProfileScreen() {
               onPress={() => router.push("/followers")}
               style={styles.statitem}
             >
-              <Text style={styles.statNumber}>{typedUser?.followers ?? 0}</Text>
+              <Text style={styles.statNumber}>
+                {loadingStats ? "..." : followStats.followersCount}
+              </Text>
               <Text style={styles.statLabel}>Followers</Text>
             </TouchableOpacity>
             <View style={styles.statDivider} />
@@ -346,7 +374,9 @@ export default function ProfileScreen() {
               onPress={() => router.push("/following")}
               style={styles.statitem}
             >
-              <Text style={styles.statNumber}>{typedUser?.following ?? 0}</Text>
+              <Text style={styles.statNumber}>
+                {loadingStats ? "..." : followStats.followingCount}
+              </Text>
               <Text style={styles.statLabel}>Following</Text>
             </TouchableOpacity>
           </View>

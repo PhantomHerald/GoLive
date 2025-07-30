@@ -18,6 +18,7 @@ import {
   View,
 } from "react-native";
 import SuccessToast from "@/components/SuccessToast";
+import UploadPreviewModal from "@/components/UploadPreviewModal";
 import { useIsFocused, useFocusEffect } from "@react-navigation/native";
 import { router } from "expo-router";
 import { useAuth } from "@/hooks/useAuth";
@@ -111,6 +112,7 @@ function Create() {
   const [muxStreamId, setMuxStreamId] = useState<string | null>(null);
   const [muxLoading, setMuxLoading] = useState(false);
   const [muxError, setMuxError] = useState<string | null>(null);
+  const [showUploadModal, setShowUploadModal] = useState(false);
   const { token: authToken } = useAuth();
 
   useFocusEffect(
@@ -194,17 +196,9 @@ function Create() {
   };
 
   // Handler for Upload
-  const handleUpload = async () => {
+  const handleUpload = () => {
     setShowModal(false);
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.All,
-      allowsEditing: false,
-      quality: 1,
-    });
-    if (!result.canceled && result.assets && result.assets.length > 0) {
-      setToastMessage("Media Uploaded Successfully");
-      setShowSuccessToast(true);
-    }
+    setShowUploadModal(true);
   };
 
   const handleGoLiveMux = async () => {
@@ -331,6 +325,26 @@ function Create() {
         visible={showSuccessToast}
         onHide={() => setShowSuccessToast(false)}
         top={70}
+      />
+      <UploadPreviewModal
+        visible={showUploadModal}
+        onClose={() => setShowUploadModal(false)}
+        onSuccess={() => {
+          setShowUploadModal(false);
+          // Show toast after modal is closed
+          setTimeout(() => {
+            setToastMessage("Video uploaded successfully!");
+            setShowSuccessToast(true);
+          }, 300);
+        }}
+        onError={(message) => {
+          setShowUploadModal(false);
+          // Show toast after modal is closed
+          setTimeout(() => {
+            setToastMessage(message);
+            setShowSuccessToast(true);
+          }, 300);
+        }}
       />
       {muxStreamKey && (
         <View style={{ padding: 24, alignItems: 'center' }}>

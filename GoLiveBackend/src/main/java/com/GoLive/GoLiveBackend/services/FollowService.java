@@ -64,12 +64,19 @@ public class FollowService {
     }
 
     public List<User> getFollowedUsers(String token) throws Exception {
-        logger.info("Getting followed users for user with token");
+        logger.info("Getting followed users for user with token: {}", token);
 
-        User user = userService.validateToken(token);
-        List<User> followedUsers = followRepository.findFollowedByFollowerId(user.getId());
-        logger.info("Found {} followed users for user {}", followedUsers.size(), user.getUsername());
-        return followedUsers;
+        try {
+            User user = userService.validateToken(token);
+            logger.info("Token validated for user: {}", user.getUsername());
+
+            List<User> followedUsers = followRepository.findFollowedByFollowerId(user.getId());
+            logger.info("Found {} followed users for user {}", followedUsers.size(), user.getUsername());
+            return followedUsers;
+        } catch (Exception e) {
+            logger.error("Error in getFollowedUsers: {}", e.getMessage());
+            throw e;
+        }
     }
 
     public List<User> getFollowers(Long userId) {
@@ -101,5 +108,12 @@ public class FollowService {
         Long count = followRepository.countFollowedByUserId(userId);
         logger.info("User {} is following {} users", userId, count);
         return count;
+    }
+
+    public List<User> getFollowedUsersByUserId(Long userId) {
+        logger.info("Getting followed users for user: {}", userId);
+        List<User> followedUsers = followRepository.findFollowedByFollowerId(userId);
+        logger.info("Found {} followed users for user {}", followedUsers.size(), userId);
+        return followedUsers;
     }
 }

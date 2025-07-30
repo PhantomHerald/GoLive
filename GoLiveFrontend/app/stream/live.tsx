@@ -114,13 +114,13 @@ const LiveStreamApp: React.FC = () =>  {
     };
   }, []);
 
-  // Polling fallback for real-time updates (every 30 seconds)
+  // Polling fallback for real-time updates (every 3 minutes)
   useEffect(() => {
     const pollInterval = setInterval(() => {
       // Always poll as a fallback, even if WebSocket is connected
       console.log('🔄 Polling for stream updates...');
       fetchLiveStreams(true);
-    }, 30000); // 30 seconds
+    }, 180000); // 3 minutes
     
     return () => clearInterval(pollInterval);
   }, []);

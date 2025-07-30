@@ -13,6 +13,7 @@ import com.GoLive.GoLiveBackend.repositories.LikeRepository;
 import com.GoLive.GoLiveBackend.repositories.FollowRepository;
 import com.GoLive.GoLiveBackend.repositories.NotificationRepository;
 import com.GoLive.GoLiveBackend.repositories.StreamRepository;
+import com.GoLive.GoLiveBackend.security.JwtUtil;
 
 @Service
 public class UserService {
@@ -39,6 +40,9 @@ public class UserService {
 
     @Autowired
     private StreamRepository streamRepository;
+
+    @Autowired
+    private JwtUtil jwtUtil;
 
     public User registerUser(AuthRequest request) {
         logger.info("Registering user: {}", request.getUsername());
@@ -129,18 +133,32 @@ public class UserService {
     public User validateToken(String token) throws Exception {
         logger.info("Validating token");
 
-        User user = userRepository.findByRefreshToken(token)
-                .orElseThrow(() -> new Exception("Invalid token"));
+        // Remove "Bearer " prefix if present
+        if (token.startsWith("Bearer ")) {
+            token = token.substring(7);
+        }
 
-        logger.info("Token validated for user: {}", user.getUsername());
-        return user;
+        try {
+            String username = jwtUtil.extractUsername(token);
+            User user = userRepository.findByUsername(username)
+                    .orElseThrow(() -> new Exception("User not found"));
+
+            if (!jwtUtil.validateToken(token, username)) {
+                throw new Exception("Invalid token");
+            }
+
+            logger.info("Token validated for user: {}", user.getUsername());
+            return user;
+        } catch (Exception e) {
+            logger.error("Token validation failed: {}", e.getMessage());
+            throw new Exception("Invalid token");
+        }
     }
 
     public User updateUserBio(String token, String newBio) throws Exception {
         logger.info("Updating bio for user with token");
 
-        User user = userRepository.findByRefreshToken(token)
-                .orElseThrow(() -> new Exception("Invalid token"));
+        User user = validateToken(token);
 
         // Set bio to null if it's empty or null, otherwise use the provided bio
         if (newBio == null || newBio.trim().isEmpty()) {
