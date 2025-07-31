@@ -288,6 +288,21 @@ export default function ProfileScreen() {
     }
   };
 
+  const handleFollowCountUpdate = (isFollowing: boolean, followersCount?: number, followingCount?: number) => {
+    if (followersCount !== undefined) {
+      setFollowStats(prev => ({
+        ...prev,
+        followersCount: followersCount
+      }));
+    }
+    if (followingCount !== undefined) {
+      setFollowStats(prev => ({
+        ...prev,
+        followingCount: followingCount
+      }));
+    }
+  };
+
   useFocusEffect(
     React.useCallback(() => {
       // On focus: do nothing

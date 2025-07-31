@@ -16,6 +16,7 @@ import {
 import { useEffect, useRef } from "react";
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import LiveStreamApp from "@/app/stream/live";
+import FollowingScreen from "@/app/following";
 
 type NavbarProps = {
   initialTab?: string;
@@ -87,7 +88,10 @@ export default function Navbar({ initialTab = "Live" }: NavbarProps) {
     switch (activeTab) {
       case "Following":
         return (
-          <FlatList
+          <View style={{ flex: 1 }}>
+            <FollowingScreen/>
+          </View>
+         /* <FlatList
             data={mockFollowedChannels || []}
             keyExtractor={(item) => item?.id || Math.random().toString()}
             renderItem={({ item }) =>
@@ -143,7 +147,7 @@ export default function Navbar({ initialTab = "Live" }: NavbarProps) {
                 </Text>
               </View>
             }
-          />
+          />*/
         );
       case "Live":
         return (

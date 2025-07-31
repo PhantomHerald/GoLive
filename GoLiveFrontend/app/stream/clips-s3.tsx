@@ -489,8 +489,8 @@ export default function ClipsS3Screen({ paused = false }: { paused?: boolean }) 
     );
   }
 
-  // Only render FlatList after initialIndex is loaded
-  if (initialIndex === null) return null;
+  // Only render FlatList after initialIndex is loaded and videos are available
+  if (initialIndex === null || videos.length === 0) return null;
 
   return (
     <View style={{ flex: 1, backgroundColor: "#000" }}>
@@ -512,7 +512,7 @@ export default function ClipsS3Screen({ paused = false }: { paused?: boolean }) 
         contentContainerStyle={{ flexGrow: 1 }}
         onViewableItemsChanged={onViewableItemsChanged}
         viewabilityConfig={viewabilityConfig}
-        initialScrollIndex={initialIndex}
+        initialScrollIndex={videos.length > 0 && initialIndex !== null ? Math.min(initialIndex, videos.length - 1) : undefined}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}

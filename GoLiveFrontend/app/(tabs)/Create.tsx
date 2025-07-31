@@ -19,6 +19,7 @@ import {
 } from "react-native";
 import SuccessToast from "@/components/SuccessToast";
 import UploadPreviewModal from "@/components/UploadPreviewModal";
+import GoLiveModal from "@/components/GoLiveModal";
 import { useIsFocused, useFocusEffect } from "@react-navigation/native";
 import { router } from "expo-router";
 import { useAuth } from "@/hooks/useAuth";
@@ -112,6 +113,7 @@ function Create() {
   const [muxStreamId, setMuxStreamId] = useState<string | null>(null);
   const [muxLoading, setMuxLoading] = useState(false);
   const [muxError, setMuxError] = useState<string | null>(null);
+  const [showGoLiveModal, setShowGoLiveModal] = useState(false);
   const [showUploadModal, setShowUploadModal] = useState(false);
   const { token: authToken } = useAuth();
 
@@ -202,6 +204,11 @@ function Create() {
   };
 
   const handleGoLiveMux = async () => {
+    // Dismiss the current modal first
+    setShowModal(false);
+    
+    // Then show the Go Live modal and start the stream setup
+    setShowGoLiveModal(true);
     setMuxLoading(true);
     setMuxError(null);
     try {
@@ -220,7 +227,6 @@ function Create() {
       setMuxStreamKey(data.streamKey);
       setMuxPlaybackId(data.muxPlaybackId);
       setMuxStreamId(data.muxStreamId);
-      setShowCamera(false);
     } catch (e: any) {
       setMuxError(e.message || "Unknown error");
     } finally {
@@ -346,22 +352,7 @@ function Create() {
           }, 300);
         }}
       />
-      {muxStreamKey && (
-        <View style={{ padding: 24, alignItems: 'center' }}>
-          <Text style={{ color: '#fff', fontSize: 18, fontWeight: 'bold', marginBottom: 8 }}>MUX Stream Created!</Text>
-          <Text style={{ color: '#fff', marginBottom: 4 }}>RTMP URL:</Text>
-          <Text selectable style={{ color: '#00e', marginBottom: 8 }}>rtmps://global-live.mux.com:443/app</Text>
-          <Text style={{ color: '#fff', marginBottom: 4 }}>Stream Key:</Text>
-          <Text selectable style={{ color: '#00e', marginBottom: 8 }}>{muxStreamKey}</Text>
-          <Text style={{ color: '#fff', marginBottom: 4 }}>Playback HLS URL:</Text>
-          <Text selectable style={{ color: '#00e', marginBottom: 8 }}>https://stream.mux.com/{muxPlaybackId}.m3u8</Text>
-          <Text style={{ color: '#fff', marginTop: 12, fontSize: 16 }}>
-            Use a compatible RTMP app or dev client to push your camera stream to the above RTMP URL and stream key.
-          </Text>
-        </View>
-      )}
-      {muxLoading && <ActivityIndicator size="large" color="#fff" style={{ marginTop: 24 }} />}
-      {muxError && <Text style={{ color: 'red', marginTop: 12 }}>{muxError}</Text>}
+
       <View style={styles.container}>
         {isFocused && permission.granted && showCamera && (
           <CameraView style={styles.camera} facing={facing}>
@@ -403,6 +394,17 @@ function Create() {
           </CameraView>
         )}
       </View>
+      
+      {/* Go Live Modal */}
+      <GoLiveModal
+        visible={showGoLiveModal}
+        onClose={() => setShowGoLiveModal(false)}
+        streamKey={muxStreamKey || undefined}
+        playbackId={muxPlaybackId || undefined}
+        streamId={muxStreamId || undefined}
+        loading={muxLoading}
+        error={muxError}
+      />
     </SafeAreaView>
   );
 }

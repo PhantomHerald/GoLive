@@ -26,9 +26,16 @@ public class FollowController {
     public ResponseEntity<?> followUser(@PathVariable Long userId, @RequestHeader("Authorization") String token) {
         try {
             followService.followUser(userId, token);
+
+            // Get updated follow counts for both users
+            Long followersCount = followService.getFollowersCount(userId);
+            Long followingCount = followService.getFollowingCount(userId);
+
             return ResponseEntity.ok(Map.of(
                     "success", true,
-                    "message", "Successfully followed user"));
+                    "message", "Successfully followed user",
+                    "followersCount", followersCount,
+                    "followingCount", followingCount));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of(
                     "success", false,
@@ -40,9 +47,16 @@ public class FollowController {
     public ResponseEntity<?> unfollowUser(@PathVariable Long userId, @RequestHeader("Authorization") String token) {
         try {
             followService.unfollowUser(userId, token);
+
+            // Get updated follow counts for both users
+            Long followersCount = followService.getFollowersCount(userId);
+            Long followingCount = followService.getFollowingCount(userId);
+
             return ResponseEntity.ok(Map.of(
                     "success", true,
-                    "message", "Successfully unfollowed user"));
+                    "message", "Successfully unfollowed user",
+                    "followersCount", followersCount,
+                    "followingCount", followingCount));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of(
                     "success", false,

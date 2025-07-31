@@ -92,14 +92,14 @@ public class UploadController {
         try {
             List<S3Service.VideoInfo> videos = s3Service.listVideos();
             return ResponseEntity.ok(Map.of(
-                "success", true,
-                "videos", videos
-            ));
+                    "success", true,
+                    "videos", videos));
         } catch (Exception e) {
+            System.err.println("Error in getAllVideos: " + e.getMessage());
+            e.printStackTrace();
             return ResponseEntity.badRequest().body(Map.of(
-                "success", false,
-                "message", "Failed to fetch videos: " + e.getMessage()
-            ));
+                    "success", false,
+                    "message", "Failed to fetch videos: " + e.getMessage()));
         }
     }
 }

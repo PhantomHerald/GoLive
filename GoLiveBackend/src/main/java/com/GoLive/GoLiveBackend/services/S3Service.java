@@ -56,6 +56,8 @@ public class S3Service {
 
     public List<VideoInfo> listVideos() {
         try {
+            logger.info("Attempting to list videos from S3 bucket: {}", bucketName);
+
             ListObjectsV2Request request = ListObjectsV2Request.builder()
                     .bucket(bucketName)
                     .prefix("videos/")
@@ -74,9 +76,16 @@ public class S3Service {
 
             logger.info("Found {} videos in S3 bucket", videos.size());
             return videos;
+        } catch (software.amazon.awssdk.services.s3.model.NoSuchBucketException e) {
+            logger.error("S3 bucket '{}' does not exist", bucketName, e);
+            throw new RuntimeException(
+                    "S3 bucket '" + bucketName + "' does not exist. Please check your AWS configuration.", e);
+        } catch (software.amazon.awssdk.services.s3.model.S3Exception e) {
+            logger.error("S3 error while listing videos: {}", e.getMessage(), e);
+            throw new RuntimeException("S3 error: " + e.getMessage(), e);
         } catch (Exception e) {
             logger.error("Error listing videos from S3", e);
-            throw new RuntimeException("Failed to list videos from S3", e);
+            throw new RuntimeException("Failed to list videos from S3: " + e.getMessage(), e);
         }
     }
 

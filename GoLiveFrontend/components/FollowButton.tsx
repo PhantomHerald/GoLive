@@ -7,7 +7,7 @@ import { useAuth } from '@/hooks/useAuth';
 interface FollowButtonProps {
   targetUserId: number;
   initialIsFollowing?: boolean;
-  onFollowChange?: (isFollowing: boolean) => void;
+  onFollowChange?: (isFollowing: boolean, followersCount?: number, followingCount?: number) => void;
   size?: 'small' | 'medium' | 'large';
   variant?: 'primary' | 'secondary' | 'outline';
 }
@@ -60,7 +60,7 @@ export default function FollowButton({
 
       if (result.success) {
         setIsFollowing(!isFollowing);
-        onFollowChange?.(!isFollowing);
+        onFollowChange?.(!isFollowing, result.followersCount, result.followingCount);
       } else {
         console.error('Follow/Unfollow failed:', result.message);
       }

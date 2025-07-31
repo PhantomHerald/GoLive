@@ -1,10 +1,13 @@
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image } from "react-native";
 import { useLocalSearchParams } from "expo-router";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { mockUsers, mockStreams } from "@/data/mockdata";
 import { Avatar } from "@/components/ui/Avatar";
 import Icon from "@expo/vector-icons/MaterialCommunityIcons";
 import { formatFollowers } from "@/utils/formatFollowers";
+import FollowButton from "@/components/FollowButton";
+import { useAuth } from "@/hooks/useAuth";
+import followService from "@/services/followService";
 
 const TABS = ["Home", "About", "Clips", "Chats"];
 
@@ -16,6 +19,7 @@ const MOCK_HOME_ITEMS = Array.from({ length: 20 }, (_, i) => ({
 
 export default function OtherUserProfile() {
   const { username } = useLocalSearchParams();
+  const { user: currentUser } = useAuth();
   let user = mockUsers.find(u => u.username.toLowerCase() === String(username).toLowerCase());
   if (!user) {
     user = mockUsers[0]; // Always show the first mock user if not found
@@ -29,6 +33,8 @@ export default function OtherUserProfile() {
   const [activeTab, setActiveTab] = useState("Home");
   const [isFollowing, setIsFollowing] = useState(false);
   const [isSubscribed, setIsSubscribed] = useState(false);
+  const [followersCount, setFollowersCount] = useState(user.followers);
+  const [followingCount, setFollowingCount] = useState(user.following || 0);
 
   // The tab bar will be the 4th child (index 4) in the ScrollView
   // 0: profileRowOuterCenter, 1: bio, 2: stats, 3: buttons, 4: tabBar
@@ -62,26 +68,27 @@ export default function OtherUserProfile() {
         <Text style={styles.bioText}>{user.bio || "No bio available."}</Text>
       </View>
       <View style={styles.statsContainerCentered}>
-        <Text style={styles.statNumber}>{formatFollowers(user.followers)}</Text>
+        <Text style={styles.statNumber}>{formatFollowers(followersCount)}</Text>
         <Text style={styles.statLabel}> followers</Text>
       </View>
       <View style={styles.buttonRowCentered}>
-        <TouchableOpacity
-          style={[styles.actionBtn, isFollowing && styles.actionBtnActive]}
-          onPress={() => setIsFollowing(f => !f)}
-        >
-          <View style={styles.iconTextRowCentered}>
-            <Icon
-              name={isFollowing ? "heart" : "heart-outline"}
-              size={20}
-              color={isFollowing ? "#006eff" : "#fff"}
-              style={styles.iconLeft}
-            />
-            <Text style={[styles.actionBtnText, isFollowing && styles.actionBtnTextActive]}>
-              {isFollowing ? "Following" : "Follow"}
-            </Text>
-          </View>
-        </TouchableOpacity>
+        {currentUser && parseInt(currentUser.id, 10) !== user.id && (
+          <FollowButton
+            targetUserId={user.id}
+            initialIsFollowing={isFollowing}
+            onFollowChange={(isFollowing, newFollowersCount, newFollowingCount) => {
+              setIsFollowing(isFollowing);
+              if (newFollowersCount !== undefined) {
+                setFollowersCount(newFollowersCount);
+              }
+              if (newFollowingCount !== undefined) {
+                setFollowingCount(newFollowingCount);
+              }
+            }}
+            size="medium"
+            variant="primary"
+          />
+        )}
         <TouchableOpacity
           style={[styles.actionBtn, styles.subscribeBtn, isSubscribed && styles.subscribeBtnActive]}
           onPress={() => setIsSubscribed(s => !s)}

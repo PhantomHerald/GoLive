@@ -12,6 +12,8 @@ export interface FollowResponse {
   stats?: FollowStats;
   following?: any[];
   followers?: any[];
+  followersCount?: number;
+  followingCount?: number;
 }
 
 class FollowService {

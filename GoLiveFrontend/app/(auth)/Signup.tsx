@@ -35,6 +35,88 @@ export default function Signup() {
   const [useemailclicked, setUseEmailClicked] = useState(false);
   const [loading, setLoading] = useState(false);
   const [showSuccessToast, setShowSuccessToast] = useState(false);
+  
+  // Validation error states
+  const [emailError, setEmailError] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+  const [usernameError, setUsernameError] = useState("");
+  const [dobError, setDobError] = useState("");
+
+  // Validation functions
+  const validateEmail = (email: string): boolean => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email.trim()) {
+      setEmailError("Email is required");
+      return false;
+    }
+    if (!emailRegex.test(email)) {
+      setEmailError("Please enter a valid email address");
+      return false;
+    }
+    setEmailError("");
+    return true;
+  };
+
+  const validatePassword = (password: string): boolean => {
+    if (!password.trim()) {
+      setPasswordError("Password is required");
+      return false;
+    }
+    if (password.length < 8) {
+      setPasswordError("Password must be at least 8 characters long");
+      return false;
+    }
+    // Check for at least one special character or number
+    const hasSpecialCharOrNumber = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?0-9]/.test(password);
+    if (!hasSpecialCharOrNumber) {
+      setPasswordError("Password must contain at least one special character or number");
+      return false;
+    }
+    setPasswordError("");
+    return true;
+  };
+
+  const validateUsername = (username: string): boolean => {
+    if (!username.trim()) {
+      setUsernameError("Username is required");
+      return false;
+    }
+    if (username.length < 3) {
+      setUsernameError("Username must be at least 3 characters long");
+      return false;
+    }
+    setUsernameError("");
+    return true;
+  };
+
+  const validateDateOfBirth = (month: string, day: string, year: string): boolean => {
+    if (!month.trim() || !day.trim() || !year.trim()) {
+      setDobError("Date of birth is required");
+      return false;
+    }
+    
+    const monthNum = parseInt(month);
+    const dayNum = parseInt(day);
+    const yearNum = parseInt(year);
+    
+    if (isNaN(monthNum) || monthNum < 1 || monthNum > 12) {
+      setDobError("Please enter a valid month (1-12)");
+      return false;
+    }
+    
+    if (isNaN(dayNum) || dayNum < 1 || dayNum > 31) {
+      setDobError("Please enter a valid day (1-31)");
+      return false;
+    }
+    
+    if (isNaN(yearNum) || yearNum < 1900 || yearNum > new Date().getFullYear()) {
+      setDobError("Please enter a valid year");
+      return false;
+    }
+    
+    setDobError("");
+    return true;
+  };
 
   const clearAllInputs = () => {
     setUsername("");
@@ -45,17 +127,22 @@ export default function Signup() {
     setYear("");
     setPhone("");
     setShowPass(false);
+    // Clear validation errors
+    setEmailError("");
+    setPasswordError("");
+    setUsernameError("");
+    setDobError("");
   };
 
   const handleSigninAndNavigate = async () => {
-    if (!username.trim() || !email.trim() || !password.trim()) {
-      Alert.alert("Error", "Please fill in all fields");
-      return;
-    }
+    // Validate all fields
+    const isUsernameValid = validateUsername(username);
+    const isEmailValid = validateEmail(email);
+    const isPasswordValid = validatePassword(password);
+    const isDobValid = validateDateOfBirth(month, day, year);
 
-    // Check if all date of birth fields are filled
-    if (!month.trim() || !day.trim() || !year.trim()) {
-      Alert.alert("Error", "Please fill in all date of birth fields");
+    // If any validation fails, don't proceed
+    if (!isUsernameValid || !isEmailValid || !isPasswordValid || !isDobValid) {
       return;
     }
 
@@ -122,23 +209,32 @@ export default function Signup() {
           >
             <Text style={styles.label}>Username</Text>
             <TextInput
-              style={styles.input}
+              style={[styles.input, usernameError ? styles.inputError : null]}
               placeholder="Enter username"
               placeholderTextColor="#aaa"
               value={username}
-              onChangeText={setUsername}
+              onChangeText={(text) => {
+                setUsername(text);
+                if (usernameError) validateUsername(text);
+              }}
+              onBlur={() => validateUsername(username)}
               editable={!loading}
             />
+            {usernameError ? <Text style={styles.errorText}>{usernameError}</Text> : null}
 
             <Text style={styles.label}>Password</Text>
             <View style={styles.inputRow}>
               <TextInput
-                style={[styles.input, { flex: 1, marginBottom: 0 }]}
+                style={[styles.input, { flex: 1, marginBottom: 0 }, passwordError ? styles.inputError : null]}
                 placeholder="Password"
                 placeholderTextColor="#aaa"
                 secureTextEntry={!showPass}
                 value={password}
-                onChangeText={setPassword}
+                onChangeText={(text) => {
+                  setPassword(text);
+                  if (passwordError) validatePassword(text);
+                }}
+                onBlur={() => validatePassword(password)}
                 editable={!loading}
               />
               <TouchableOpacity
@@ -153,40 +249,54 @@ export default function Signup() {
                 />
               </TouchableOpacity>
             </View>
+            {passwordError ? <Text style={styles.errorText}>{passwordError}</Text> : null}
 
             <Text style={styles.label}>Date of birth</Text>
             <View style={styles.dobRow}>
               <TextInput
-                style={[styles.input, styles.dobInput]}
+                style={[styles.input, styles.dobInput, dobError ? styles.inputError : null]}
                 placeholder="Month"
                 placeholderTextColor="#aaa"
                 value={month}
-                onChangeText={setMonth}
+                onChangeText={(text) => {
+                  setMonth(text);
+                  if (dobError) validateDateOfBirth(text, day, year);
+                }}
+                onBlur={() => validateDateOfBirth(month, day, year)}
                 keyboardType="numeric"
                 maxLength={2}
                 editable={!loading}
               />
               <TextInput
-                style={[styles.input, styles.dobInput]}
+                style={[styles.input, styles.dobInput, dobError ? styles.inputError : null]}
                 placeholder="Day"
                 placeholderTextColor="#aaa"
                 value={day}
-                onChangeText={setDay}
+                onChangeText={(text) => {
+                  setDay(text);
+                  if (dobError) validateDateOfBirth(month, text, year);
+                }}
+                onBlur={() => validateDateOfBirth(month, day, year)}
                 keyboardType="numeric"
                 maxLength={2}
                 editable={!loading}
               />
               <TextInput
-                style={[styles.input, styles.dobInput]}
+                style={[styles.input, styles.dobInput, dobError ? styles.inputError : null]}
                 placeholder="Year"
                 placeholderTextColor="#aaa"
                 value={year}
-                onChangeText={setYear}
+                onChangeText={(text) => {
+                  setYear(text);
+                  if (dobError) validateDateOfBirth(month, day, text);
+                }}
+                onBlur={() => validateDateOfBirth(month, day, year)}
                 keyboardType="numeric"
                 maxLength={4}
                 editable={!loading}
               />
             </View>
+            {dobError ? <Text style={styles.errorText}>{dobError}</Text> : null}
 
             {useemailclicked ? (
               <>
@@ -222,15 +332,20 @@ export default function Signup() {
                 <Text style={styles.label}>E-mail</Text>
                 <View style={styles.inputRow}>
                   <TextInput
-                    style={[styles.input, { flex: 1, marginBottom: 0 }]}
+                    style={[styles.input, { flex: 1, marginBottom: 0 }, emailError ? styles.inputError : null]}
                     placeholder="E-mail"
                     placeholderTextColor="#aaa"
                     keyboardType="email-address"
                     value={email}
-                    onChangeText={setEmail}
+                    onChangeText={(text) => {
+                      setEmail(text);
+                      if (emailError) validateEmail(text);
+                    }}
+                    onBlur={() => validateEmail(email)}
                     editable={!loading}
                   />
                 </View>
+                {emailError ? <Text style={styles.errorText}>{emailError}</Text> : null}
                 <TouchableOpacity
                   onPress={() => setUseEmailClicked(true)}
                   style={{ width: "auto", alignSelf: "flex-start" }}
@@ -391,5 +506,16 @@ const styles = StyleSheet.create({
   },
   placeholder: {
     width: 40,
+  },
+  inputError: {
+    borderColor: "#ff4d4f",
+    borderWidth: 1,
+  },
+  errorText: {
+    color: "#ff4d4f",
+    fontSize: 12,
+    marginTop: -12,
+    marginBottom: 8,
+    marginLeft: 4,
   },
 });
